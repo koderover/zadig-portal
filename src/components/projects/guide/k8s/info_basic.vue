@@ -54,7 +54,6 @@
                 </div>
               </div>
               <div class="account-box-item__controls">
-
               </div>
             </div>
           </div>
