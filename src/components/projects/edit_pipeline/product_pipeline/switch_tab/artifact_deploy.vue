@@ -55,7 +55,7 @@
               <span class="service-link">
                 <template>
                   <router-link
-                               :to="`/v1/projects/detail/${config.target.service_name}/services?service_name=${config.target.service_name}`">
+                               :to="`/v1/projects/detail/${config.target.product_name}/services?service_name=${config.target.service_name}&rightbar=var`">
                     {{ `${config.target.service_name}/${config.target.service_module}`}}
                   </router-link>
                 </template>
