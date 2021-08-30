@@ -27,7 +27,7 @@
                 </div>
                 <div class="integration-card__info">
                   <div class="integration-name cf-sub-title">2 套测试环境</div>
-                  <div class="integration-details">dev,qa
+                  <div class="integration-details">dev, qa
                   </div>
                 </div>
               </div>
