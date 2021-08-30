@@ -8,7 +8,7 @@
       >全局变量列表
       <el-tooltip
         effect="dark"
-        content="环境所用的变量，你可以修改原有 Value，也可以保持原样"
+        content="环境所用的变量，您可以修改原有 Value，也可以保持原样"
         placement="top"
       >
         <span class="el-icon-question"></span>

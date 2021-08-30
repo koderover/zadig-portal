@@ -69,7 +69,7 @@
           <span slot="label">
             <span>自动取消</span>
             <el-tooltip effect="dark"
-                        content="如果你希望只构建最新的提交，则使用这个选项会自动取消队列中的任务"
+                        content="如果您希望只构建最新的提交，则使用这个选项会自动取消队列中的任务"
                         placement="right">
               <i class="el-icon-question"></i>
             </el-tooltip>
