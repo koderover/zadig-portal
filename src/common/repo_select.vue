@@ -312,11 +312,11 @@ export default {
       }
       this.showTrigger && (repoMeta.enableTrigger = false)
       this.validateForm().then(res => {
-        if (this.allCodeHosts && this.allCodeHosts.length === 1) {
-          const codeHostId = this.allCodeHosts[0].id
-          repoMeta.codehost_id = codeHostId
-          this.getRepoOwnerById(index + 1, codeHostId)
-        }
+        // if (this.allCodeHosts && this.allCodeHosts.length === 1) {
+        //   const codeHostId = this.allCodeHosts[0].id
+        //   repoMeta.codehost_id = codeHostId
+        //   this.getRepoOwnerById(index + 1, codeHostId)
+        // }
         this.config.repos.push(repoMeta)
         this.$set(this.codeInfo, index + 1, {
           repo_owners: [],
@@ -345,11 +345,11 @@ export default {
         branches: [],
         loading: this.$utils.cloneObj(this.loading)
       })
-      if (this.allCodeHosts && this.allCodeHosts.length === 1) {
-        const codeHostId = this.allCodeHosts[0].id
-        repoMeta.codehost_id = codeHostId
-        this.getRepoOwnerById(0, codeHostId)
-      }
+      // if (this.allCodeHosts && this.allCodeHosts.length === 1) {
+      //   const codeHostId = this.allCodeHosts[0].id
+      //   repoMeta.codehost_id = codeHostId
+      //   this.getRepoOwnerById(0, codeHostId)
+      // }
       this.config.repos.push(repoMeta)
     },
     deleteBuildRepo (index) {
