@@ -417,6 +417,7 @@ export default {
         this.$set(this.codeInfo[index], 'repo_owners', orderBy(res, ['name']))
         this.$set(this.codeInfo[index], 'origin_repo_owners', orderBy(res, ['name']))
         this.setLoadingState(index, 'owner', false)
+        console.log(this.codeInfo[index])
       })
       if (this.allCodeHosts && this.allCodeHosts.length > 1) {
         this.config.repos[index].repo_owner = ''
@@ -443,6 +444,7 @@ export default {
             const item = this.codeInfo[index].repo_owners.find(item => { return item.path === repoOwner })
             const type = item ? item.kind : 'group'
             const project_uuid = item.project_uuid ? item.project_uuid : ''
+            console.log(this.codeInfo[index])
             getRepoNameByIdAPI(codehostId, type, encodeURI(repoOwner), '', project_uuid).then((res) => {
               this.$set(this.codeInfo[index], 'repos', orderBy(res, ['name']))
               this.$set(this.codeInfo[index], 'origin_repos', orderBy(res, ['name']))
