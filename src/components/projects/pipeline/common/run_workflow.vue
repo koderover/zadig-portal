@@ -267,7 +267,7 @@
 </template>
 
 <script>
-import { sortBy, keyBy, uniq, orderBy } from 'lodash'
+import { sortBy, keyBy, uniq, orderBy, differenceBy, cloneDeep } from 'lodash'
 import virtualListItem from './virtual_list_item'
 import workflowBuildRows from '@/components/common/workflow_build_rows.vue'
 import workflowTestRows from '@/components/common/workflow_test_rows.vue'
@@ -384,7 +384,7 @@ export default {
     },
     buildRepos () {
       return this.$utils.flattenArray(
-        this.runner.targets.map(tar => tar.build.repos)
+        this.pickedTargetNames.map(tar => tar.build.repos)
       )
     },
     testRepos () {
@@ -447,8 +447,8 @@ export default {
     }
   },
   watch: {
-    allRepos: {
-      handler (newVal) {
+    buildRepos: {
+      handler (newVal, oldVal) {
         for (const repo of newVal) {
           this.$set(
             repo, 'showBranch',
@@ -458,12 +458,112 @@ export default {
           this.$set(repo, 'showTag', this.distributeEnabled && repo.releaseMethod === 'tag')
           this.$set(repo, 'showSwitch', this.distributeEnabled)
           this.$set(repo, 'showPR', !this.distributeEnabled)
+          this.$set(repo, '_id_', this.repoID(repo))
         }
       },
+      deep: true
+    },
+    testRepos: {
+      handler (newVal, oldVal) {
+        const newAdd = differenceBy(newVal, oldVal, (repo) => { return `${repo.repo_owner}/${repo.repo_name}` })
+        for (const repo of newVal) {
+          this.$set(
+            repo, 'showBranch',
+            (this.distributeEnabled && repo.releaseMethod === 'branch') ||
+            !this.distributeEnabled
+          )
+          this.$set(repo, 'showTag', this.distributeEnabled && repo.releaseMethod === 'tag')
+          this.$set(repo, 'showSwitch', this.distributeEnabled)
+          this.$set(repo, 'showPR', !this.distributeEnabled)
+          this.$set(repo, '_id_', this.repoID(repo))
+        }
+        if (newAdd.length > 0) {
+          this.getBranchInfo(newAdd)
+        }
+      },
+      deep: true
+    },
+    pickedTargetNames: {
+      handler (newVal, oldVal) {
+        const newAdd = differenceBy(newVal, oldVal, 'name')
+        const repos = this.$utils.flattenArray(
+          newAdd.map(tar => tar.build.repos)
+        )
+        if (!this.haveForcedInput && repos.length > 0) {
+          this.getBranchInfo(repos)
+        }
+      },
+      immediate: true,
       deep: true
     }
   },
   methods: {
+    getBranchInfo (repos) {
+      const query = cloneDeep(repos).map(re => {
+        if (re.source === 'codehub') {
+          return {
+            source: re.source,
+            repo_owner: re.repo_owner,
+            repo: re.repo_name,
+            default_branch: re.branch,
+            project_uuid: re.project_uuid,
+            repo_uuid: re.repo_uuid,
+            repo_id: re.repo_id,
+            codehost_id: re.codehost_id
+          }
+        } else {
+          return {
+            source: re.source,
+            repo_owner: re.repo_owner,
+            repo: re.repo_name,
+            default_branch: re.branch,
+            codehost_id: re.codehost_id
+          }
+        }
+      })
+      getAllBranchInfoAPI({ infos: query }, this.distributeEnabled ? 'bt' : 'bp').then(res => {
+        // make these repo info more friendly
+        res.forEach(repo => {
+          if (repo.prs) {
+            repo.prs.forEach(element => {
+              element.pr = element.id
+            })
+            repo.branchPRsMap = this.$utils.arrayToMapOfArrays(repo.prs, 'targetBranch')
+          } else {
+            repo.branchPRsMap = {}
+          }
+          if (repo.branches) {
+            repo.branchNames = repo.branches.map(b => b.name)
+          } else {
+            repo.branchNames = []
+          }
+        })
+        // and make a map
+        const repoInfoMap = this.$utils.arrayToMap(res, re => `${re.repo_owner}/${re.repo}`)
+        /* prepare build/test repo for view
+       see watcher for allRepos */
+        for (const repo of repos) {
+          this.$set(repo, '_id_', `${repo.repo_owner}/${repo.repo_name}`)
+          const repoInfo = repoInfoMap[repo._id_]
+          this.$set(repo, 'branchNames', repoInfo && repoInfo.branchNames)
+          this.$set(repo, 'branchPRsMap', repoInfo && repoInfo.branchPRsMap)
+          this.$set(repo, 'tags', (repoInfo && repoInfo.tags) ? repoInfo.tags : [])
+          this.$set(repo, 'prNumberPropName', 'pr')
+          this.$set(repo, 'errorMsg', repoInfo.error_msg || '')
+          if (repo.tag) {
+            this.$set(repo, 'releaseMethod', 'tag')
+          } else {
+            this.$set(repo, 'releaseMethod', 'branch')
+          }
+          // make sure branch/pr/tag is reactive
+          this.$set(repo, 'branch', repo.branch || '')
+          this.$set(repo, repo.prNumberPropName, repo[repo.prNumberPropName] || null)
+          this.$set(repo, 'tag', repo.tag || '')
+        }
+      }).catch((err) => {
+        console.log(err)
+      })
+    },
     async checkProjectFeature (projectName) {
       const res = await getSingleProjectAPI(projectName)
       if (res.product_feature) {
@@ -581,49 +681,6 @@ export default {
 
         this.runner = res
         this.precreateLoading = false
-        getAllBranchInfoAPI({ infos: this.allReposForQuery }, this.distributeEnabled ? 'bt' : 'bp').then(res => {
-          // make these repo info more friendly
-          res.forEach(repo => {
-            if (repo.prs) {
-              repo.prs.forEach(element => {
-                element.pr = element.id
-              })
-              repo.branchPRsMap = this.$utils.arrayToMapOfArrays(repo.prs, 'targetBranch')
-            } else {
-              repo.branchPRsMap = {}
-            }
-            if (repo.branches) {
-              repo.branchNames = repo.branches.map(b => b.name)
-            } else {
-              repo.branchNames = []
-            }
-          })
-          // and make a map
-          this.repoInfoMap = this.$utils.arrayToMap(res, re => `${re.repo_owner}/${re.repo}`)
-
-          /* prepare build/test repo for view
-             see watcher for allRepos */
-          for (const repo of this.allRepos) {
-            this.$set(repo, '_id_', this.repoID(repo))
-            const repoInfo = this.repoInfoMap[repo._id_]
-            this.$set(repo, 'branchNames', repoInfo && repoInfo.branchNames)
-            this.$set(repo, 'branchPRsMap', repoInfo && repoInfo.branchPRsMap)
-            this.$set(repo, 'tags', (repoInfo && repoInfo.tags) ? repoInfo.tags : [])
-            this.$set(repo, 'prNumberPropName', 'pr')
-            this.$set(repo, 'errorMsg', repoInfo.error_msg || '')
-            if (repo.tag) {
-              this.$set(repo, 'releaseMethod', 'tag')
-            } else {
-              this.$set(repo, 'releaseMethod', 'branch')
-            }
-            // make sure branch/pr/tag is reactive
-            this.$set(repo, 'branch', repo.branch || '')
-            this.$set(repo, repo.prNumberPropName, repo[repo.prNumberPropName] || null)
-            this.$set(repo, 'tag', repo.tag || '')
-          }
-        }).catch(() => {
-          this.precreateLoading = false
-        })
       }).catch(() => {
         this.precreateLoading = false
       })
