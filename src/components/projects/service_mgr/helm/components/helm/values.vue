@@ -1,24 +1,40 @@
 <template>
   <div class="values-container">
     <h4>变量</h4>
-    <el-tabs v-model="activeEnv">
+    <el-tabs v-model="activeEnv" :before-leave="switchTabs">
       <el-tab-pane v-for="tab in tabs" :key="tab" :label="tab" :name="tab"></el-tab-pane>
     </el-tabs>
     <div class="value-content" :loading="valuesLoading">
-      <h5>覆盖默认 values 文件</h5>
-      <div v-if="valuesYaml[activeEnv].importRepoInfo.yamlSource === 'default'">
-        <div class="desc">暂无自定义的 values 文件</div>
-        <el-button type="text" @click="valuesYaml[activeEnv].importRepoInfo.yamlSource = 'gitRepo'" icon="el-icon-plus">添加 values 文件</el-button>
-      </div>
-      <ImportValues
-        v-else
-        ref="importValuesRef"
-        showDelete
-        :importRepoInfo.sync="valuesYaml[activeEnv].importRepoInfo"
-        :resize="{ direction: 'vertical' }"
-        @closeValueEdit="valuesYaml[activeEnv].importRepoInfo.yamlSource = 'default'"
-      ></ImportValues>
-      <KeyValue ref="keyValueRef" :keyValues="valuesYaml[activeEnv].keyValues"></KeyValue>
+      <el-collapse class="value-yaml" v-model="activeName" @change="collapseChange" accordion>
+        <el-collapse-item title="默认环境变量" name="env">
+          <div v-if="usedValues.envVarInfo.yamlSource === 'default'" class="default-values">
+            <div class="desc">暂无环境默认变量 values 文件</div>
+            <el-button type="text" @click="usedValues.envVarInfo.yamlSource = 'gitRepo'" icon="el-icon-plus">添加 values 文件</el-button>
+          </div>
+          <ImportValues
+            v-else
+            ref="importValuesEnvRef"
+            showDelete
+            :resize="{direction: 'vertical'}"
+            :importRepoInfo="usedValues.envVarInfo"
+          ></ImportValues>
+        </el-collapse-item>
+        <el-collapse-item :title="`${serviceName} 变量`" name="service">
+          <h5>覆盖默认 values 文件</h5>
+          <div v-if="usedValues.importRepoInfo.yamlSource === 'default'">
+            <div class="desc">暂无自定义的 values 文件</div>
+            <el-button type="text" @click="usedValues.importRepoInfo.yamlSource = 'gitRepo'" icon="el-icon-plus">添加 values 文件</el-button>
+          </div>
+          <ImportValues
+            v-else
+            ref="importValuesServiceRef"
+            showDelete
+            :importRepoInfo.sync="usedValues.importRepoInfo"
+            :resize="{ direction: 'vertical' }"
+          ></ImportValues>
+        </el-collapse-item>
+      </el-collapse>
+      <KeyValue ref="keyValueRef" :keyValues="usedValues.keyValues"></KeyValue>
     </div>
     <div class="bottom">
       <el-button type="primary" size="small" @click="addChartValuesYamlByEnv" :disabled="!serviceName">保存</el-button>
@@ -44,7 +60,8 @@ export default {
         dev: {},
         qa: {}
       },
-      valuesLoading: false
+      valuesLoading: false,
+      activeName: 'service'
     }
   },
   computed: {
@@ -53,9 +70,30 @@ export default {
     },
     serviceName () {
       return this.$route.query.service_name
+    },
+    usedValues () {
+      return this.valuesYaml[this.activeEnv]
     }
   },
   methods: {
+    validate () {
+      const valid = []
+      if (this.$refs.importValuesEnvRef) {
+        valid.push(this.$refs.importValuesEnvRef.validate())
+      }
+      if (this.$refs.importValuesServiceRef) {
+        valid.push(this.$refs.importValuesServiceRef.validate())
+      }
+      return Promise.all(valid)
+    },
+    switchTabs () {
+      return this.validate()
+    },
+    collapseChange (activeName) {
+      this.validate().catch(() => {
+        this.activeName = activeName === 'env' ? 'service' : 'env'
+      })
+    },
     getChartValuesYaml ({ env = this.activeEnv, service = this.serviceName }) {
       return getChartValuesYamlAPI(this.projectName, env, [service])
         .then(res => {
@@ -89,6 +127,7 @@ export default {
 
       for (const key in this.valuesYaml) {
         this.valuesYaml[key] = {
+          envVarInfo: cloneDeep(importRepoInfo),
           importRepoInfo: cloneDeep(importRepoInfo),
           keyValues: cloneDeep(keyValues),
           updated: false
@@ -110,16 +149,38 @@ export default {
       if (valuesYaml.importRepoInfo.yamlSource === 'freeEdit') {
         payload = {
           ...payload,
-          yamlSource: valuesYaml.importRepoInfo.yamlSource,
-          valuesYAML: valuesYaml.importRepoInfo.valuesYAML
+          serviceYaml: {
+            yamlSource: valuesYaml.importRepoInfo.yamlSource,
+            valuesYAML: valuesYaml.importRepoInfo.valuesYAML
+          }
         }
       } else if (valuesYaml.importRepoInfo.yamlSource === 'gitRepo') {
         payload = {
           ...payload,
-          yamlSource: valuesYaml.importRepoInfo.yamlSource,
-          gitRepoConfig: valuesYaml.importRepoInfo.gitRepoConfig
+          serviceYaml: {
+            yamlSource: valuesYaml.importRepoInfo.yamlSource,
+            gitRepoConfig: valuesYaml.importRepoInfo.gitRepoConfig
+          }
         }
       }
+      if (valuesYaml.envVarInfo.yamlSource === 'freeEdit') {
+        payload = {
+          ...payload,
+          envYaml: {
+            yamlSource: valuesYaml.envVarInfo.yamlSource,
+            valuesYAML: valuesYaml.envVarInfo.valuesYAML
+          }
+        }
+      } else if (valuesYaml.envVarInfo.yamlSource === 'gitRepo') {
+        payload = {
+          ...payload,
+          envYaml: {
+            yamlSource: valuesYaml.envVarInfo.yamlSource,
+            gitRepoConfig: valuesYaml.envVarInfo.gitRepoConfig
+          }
+        }
+      }
+      console.log('payload: ', payload)
       return payload
     },
     addChartValuesYamlByEnv () {
@@ -130,13 +191,14 @@ export default {
       if (this.$refs.keyValueRef) valid.push(this.$refs.keyValueRef.validate())
       Promise.all(valid)
         .then(res => {
-          addChartValuesYamlByEnvAPI(
-            this.projectName,
-            this.activeEnv,
-            this.generatePayload()
-          ).then(res => {
-            this.$message.success(`保存成功`)
-          })
+          this.generatePayload() // todo: delete
+          // addChartValuesYamlByEnvAPI(
+          //   this.projectName,
+          //   this.activeEnv,
+          //   this.generatePayload()
+          // ).then(res => {
+          //   this.$message.success(`保存成功`)
+          // })
         })
         .catch(err => {
           console.log(err)
@@ -175,14 +237,17 @@ export default {
   padding: 0 20px;
   overflow: hidden;
 
+  /deep/.el-tabs__header.is-top {
+    margin: 0;
+  }
+
   h5 {
-    margin: 14px 0;
+    margin: 0 0 14px;
     color: #909399;
     font-size: 15px;
   }
 
   .desc {
-    margin-top: 20px;
     color: #909399;
     font-size: 14px;
   }
@@ -190,6 +255,16 @@ export default {
   .value-content {
     height: calc(~'100% - 180px');
     overflow: auto;
+
+    .value-yaml {
+      margin-top: -1px;
+      margin-bottom: 16px;
+
+      /deep/.el-collapse-item__content {
+        padding-bottom: 10px;
+        line-height: inherit;
+      }
+    }
   }
 
   .bottom {

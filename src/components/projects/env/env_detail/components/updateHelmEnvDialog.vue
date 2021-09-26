@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-dialog title="更新环境" :visible.sync="updateHelmEnvDialogVisible" width="60%" class="kr-container">
-      <ChartValues v-if="chartNames.length" class="chart-value" ref="chartValuesRef" :envNames="productInfo.env_name" :chartNames="chartNames"></ChartValues>
+      <HelmEnvTemplate v-if="chartNames.length" class="chart-value" ref="helmEnvTemplateRef" :envNames="productInfo.env_name" :chartNames="chartNames"></HelmEnvTemplate>
       <!-- <div class="policy">
         <div class="title">更新策略</div>
         <el-radio-group v-model="replacePolicy">
@@ -34,7 +34,7 @@
   </div>
 </template>
 <script>
-import ChartValues from '../common/updateHelmEnvChart.vue'
+import HelmEnvTemplate from './updateHelmEnvTemp.vue'
 import { getHelmEnvChartDiffAPI, updateHelmProductEnvAPI } from '@/api'
 const jsdiff = require('diff')
 export default {
@@ -59,7 +59,7 @@ export default {
       this.updateHelmEnvDialogVisible = true
     },
     async updateHelmEnv () {
-      const res = await this.$refs.chartValuesRef.validate().catch(err => {
+      const res = await this.$refs.helmEnvTemplateRef.validate().catch(err => {
         console.log(err)
       })
       if (!res) {
@@ -76,19 +76,21 @@ export default {
           const payload = {
             replacePolicy: this.replacePolicy,
             envNames: [this.productInfo.env_name],
-            chartValues: this.$refs.chartValuesRef.getAllChartNameInfo()
+            chartValues: this.$refs.helmEnvTemplateRef.getAllInfo()
           }
-          updateHelmProductEnvAPI(projectName, payload).then(
-            (response) => {
-              this.updateHelmEnvDialogVisible = false
-              this.updataHelmEnvLoading = false
-              this.fetchAllData()
-              this.$message({
-                message: '更新环境成功，请等待服务升级',
-                type: 'success'
-              })
-            }
-          )
+
+          console.log('payload:', payload)
+          // updateHelmProductEnvAPI(projectName, payload).then(
+          //   (response) => {
+          //     this.updateHelmEnvDialogVisible = false
+          //     this.updataHelmEnvLoading = false
+          //     this.fetchAllData()
+          //     this.$message({
+          //       message: '更新环境成功，请等待服务升级',
+          //       type: 'success'
+          //     })
+          //   }
+          // )
         })
         .catch(() => {
           this.$message({
@@ -135,7 +137,7 @@ export default {
     }
   },
   components: {
-    ChartValues
+    HelmEnvTemplate
   }
 }
 </script>

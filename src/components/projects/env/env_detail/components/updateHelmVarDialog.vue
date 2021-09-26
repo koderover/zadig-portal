@@ -1,7 +1,7 @@
 <template>
   <el-dialog title="更新环境变量" :visible.sync="updateHelmEnvVarDialogVisible" width="80%">
     <div v-loading="getHelmEnvVarLoading" class="kv-container">
-      <ChartValues v-if="updateHelmEnvVarDialogVisible" class="chart-value" ref="chartValuesRef" :envNames="envName" getEnvChart></ChartValues>
+      <HelmEnvTemplate v-if="updateHelmEnvVarDialogVisible" class="chart-value" ref="helmEnvTemplateRef" :envNames="envName" getEnvChart></HelmEnvTemplate>
     </div>
     <span slot="footer" class="dialog-footer">
       <el-button size="small" type="primary" :loading="updataHelmEnvVarLoading" @click="updateHelmEnvVar">更新</el-button>
@@ -10,7 +10,7 @@
   </el-dialog>
 </template>
 <script>
-import ChartValues from '../common/updateHelmEnvChart.vue'
+import HelmEnvTemplate from './updateHelmEnvTemp.vue'
 import { updateHelmEnvVarAPI } from '@/api'
 export default {
   name: 'updateHelmVarDialog',
@@ -21,7 +21,7 @@ export default {
     envName: String
   },
   components: {
-    ChartValues
+    HelmEnvTemplate
   },
   data () {
     return {
@@ -35,7 +35,7 @@ export default {
       this.updateHelmEnvVarDialogVisible = true
     },
     async updateHelmEnvVar () {
-      const res = await this.$refs.chartValuesRef.validate().catch(err => {
+      const res = await this.$refs.helmEnvTemplateRef.validate().catch(err => {
         console.log(err)
       })
       if (!res) {
@@ -43,22 +43,23 @@ export default {
       }
       const projectName = this.productInfo.product_name
       const payload = {
-        chartValues: this.$refs.chartValuesRef.getAllChartNameInfo()
+        chartValues: this.$refs.helmEnvTemplateRef.getAllInfo()
       }
-      this.updataHelmEnvVarLoading = true
-      updateHelmEnvVarAPI(projectName, this.productInfo.env_name, payload)
-        .then(response => {
-          this.updataHelmEnvVarLoading = false
-          this.updateHelmEnvVarDialogVisible = false
-          this.fetchAllData()
-          this.$message({
-            message: '更新环境变量成功，请等待服务升级',
-            type: 'success'
-          })
-        })
-        .catch(() => {
-          this.updataHelmEnvVarLoading = false
-        })
+      console.log('payload:', payload)
+      // this.updataHelmEnvVarLoading = true
+      // updateHelmEnvVarAPI(projectName, this.productInfo.env_name, payload)
+      //   .then(response => {
+      //     this.updataHelmEnvVarLoading = false
+      //     this.updateHelmEnvVarDialogVisible = false
+      //     this.fetchAllData()
+      //     this.$message({
+      //       message: '更新环境变量成功，请等待服务升级',
+      //       type: 'success'
+      //     })
+      //   })
+      //   .catch(() => {
+      //     this.updataHelmEnvVarLoading = false
+      //   })
     },
     cancelUpdateHelmEnvVar () {
       this.updateHelmEnvVarDialogVisible = false

@@ -230,7 +230,7 @@
               <span class="second-title">Chart (HELM 部署)</span>
               <span class="small-title"></span>
             </div>
-            <ChartValues class="chart-value" ref="chartValuesRef" :envNames="envNames" :chartNames="chartNames"></ChartValues>
+            <HelmEnvTemplate class="chart-value" ref="helmEnvTemplateRef" :envNames="envNames" :chartNames="chartNames"></HelmEnvTemplate>
           </el-card>
         </template>
       </div>
@@ -282,7 +282,7 @@ import bus from '@utils/event_bus'
 import { mapGetters } from 'vuex'
 import { uniq, cloneDeep } from 'lodash'
 import { serviceTypeMap } from '@utils/word_translate'
-import ChartValues from '../env_detail/common/updateHelmEnvChart.vue'
+import HelmEnvTemplate from '../env_detail/components/updateHelmEnvTemp.vue'
 
 const validateKey = (rule, value, callback) => {
   if (typeof value === 'undefined' || value === '') {
@@ -779,7 +779,7 @@ export default {
       })
     },
     async deployHelmEnv () {
-      const res = await this.$refs.chartValuesRef.validate().catch(err => {
+      const res = await this.$refs.helmEnvTemplateRef.validate().catch(err => {
         console.log(err)
       })
       if (!res) {
@@ -790,26 +790,28 @@ export default {
           const payload = {
             envName: this.projectConfig.env_name,
             clusterID: this.projectConfig.cluster_id,
-            chartValues: this.$refs.chartValuesRef.getAllChartNameInfo()
+            chartValues: this.$refs.helmEnvTemplateRef.getAllInfo()
           }
 
-          this.startDeployLoading = true
-          createHelmProductEnvAPI(this.projectConfig.product_name, payload).then(
-            res => {
-              const envName = payload.envName
-              this.startDeployLoading = false
-              this.$message({
-                message: '创建环境成功',
-                type: 'success'
-              })
-              this.$router.push(
-                `/v1/projects/detail/${this.projectName}/envs/detail?envName=${envName}`
-              )
-            },
-            () => {
-              this.startDeployLoading = false
-            }
-          )
+          console.log('payload:', payload)
+
+          // this.startDeployLoading = true
+          // createHelmProductEnvAPI(this.projectConfig.product_name, payload).then(
+          //   res => {
+          //     const envName = payload.envName
+          //     this.startDeployLoading = false
+          //     this.$message({
+          //       message: '创建环境成功',
+          //       type: 'success'
+          //     })
+          //     this.$router.push(
+          //       `/v1/projects/detail/${this.projectName}/envs/detail?envName=${envName}`
+          //     )
+          //   },
+          //   () => {
+          //     this.startDeployLoading = false
+          //   }
+          // )
         }
       })
     },
@@ -868,7 +870,7 @@ export default {
     })
   },
   components: {
-    ChartValues
+    HelmEnvTemplate
   }
 }
 </script>
@@ -998,7 +1000,7 @@ export default {
     .chart-value {
       width: 80%;
       min-width: 450px;
-      margin-left: 3%;
+      margin-left: 5px;
     }
   }
 

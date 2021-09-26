@@ -7,7 +7,7 @@
       <el-checkbox-group v-model="checkedEnvList">
         <el-checkbox v-for="(env, index) in envNameList" :key="index" :label="env.envName"></el-checkbox>
       </el-checkbox-group>
-      <ChartValues v-if="chartNames" class="chart-value" ref="chartValuesRef" :envNames="checkedEnvList" :chartNames="chartNames"></ChartValues>
+      <HelmEnvTemplate v-if="chartNames" class="chart-value" ref="helmEnvTemplateRef" :envNames="checkedEnvList" :chartNames="chartNames"></HelmEnvTemplate>
     </div>
     <span slot="footer" class="dialog-footer">
       <el-button size="small" :disabled="!checkedEnvList.length" type="primary" @click="autoUpgradeEnv">确 定</el-button>
@@ -16,7 +16,7 @@
   </el-dialog>
 </template>
 <script>
-import ChartValues from '@/components/projects/env/env_detail/common/updateHelmEnvChart.vue'
+import HelmEnvTemplate from '@/components/projects/env/env_detail/components/updateHelmEnvTemp.vue'
 import { updateHelmProductEnvAPI } from '@api'
 import { mapGetters } from 'vuex'
 
@@ -33,7 +33,7 @@ export default {
   },
   methods: {
     async autoUpgradeEnv () {
-      const res = await this.$refs.chartValuesRef.validate().catch(err => {
+      const res = await this.$refs.helmEnvTemplateRef.validate().catch(err => {
         console.log(err)
       })
       if (!res) {
@@ -47,16 +47,19 @@ export default {
         const payload = {
           envNames: this.checkedEnvList,
           replacePolicy: 'notUseEnvImage',
-          chartValues: this.$refs.chartValuesRef.getAllChartNameInfo()
+          chartValues: this.$refs.helmEnvTemplateRef.getAllInfo()
         }
-        const projectName = this.projectName
-        updateHelmProductEnvAPI(projectName, payload).then(res => {
-          this.$router.push(`/v1/projects/detail/${projectName}/envs`)
-          this.$message({
-            message: '更新环境成功',
-            type: 'success'
-          })
-        })
+
+        console.log('payload:', payload)
+
+        // const projectName = this.projectName
+        // updateHelmProductEnvAPI(projectName, payload).then(res => {
+        //   this.$router.push(`/v1/projects/detail/${projectName}/envs`)
+        //   this.$message({
+        //     message: '更新环境成功',
+        //     type: 'success'
+        //   })
+        // })
       })
     },
     skipUpdate () {
@@ -101,7 +104,7 @@ export default {
     this.getProducts()
   },
   components: {
-    ChartValues
+    HelmEnvTemplate
   }
 }
 </script>
