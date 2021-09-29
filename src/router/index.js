@@ -217,7 +217,7 @@ const routes = [
         }
       },
       {
-        path: 'chart',
+        path: 'projects/chart',
         component: () => import(/* webpackChunkName: "chart-template" */ '@/components/projects/chart_temp/index.vue'),
         meta: {
           title: '模板库'

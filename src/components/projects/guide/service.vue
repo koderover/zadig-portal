@@ -29,6 +29,7 @@
                          ref="serviceTree"
                          @onAddCodeSource="addCodeDrawer = true"
                          @onJumpToKind="jumpToKind"
+                         @onRefreshProjectInfo="checkProjectFeature"
                          @onRefreshService="getServices"
                          @onRefreshSharedService="getSharedServices"
                          @onSelectServiceChange="onSelectServiceChange"></serviceTree>

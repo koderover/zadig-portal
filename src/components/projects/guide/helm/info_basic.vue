@@ -101,9 +101,6 @@ export default {
   computed: {
     projectName () {
       return this.$route.params.project_name
-    },
-    isExp () {
-      return !!this.$route.query.exp
     }
   },
   created () {

@@ -1,12 +1,12 @@
 import * as types from '../mutations'
-import { listProductSSEAPI } from '../../api'
+import { getProductsAPI } from '../../api'
 
 const state = {
   productList: []
 }
 
 const getters = {
-  productList: state => {
+  productList: (state) => {
     return state.productList
   }
 }
@@ -17,18 +17,17 @@ const mutations = {
   }
 }
 
-let theSSEPromise
-
 const actions = {
-  getProductListSSE ({ commit, state }) {
-    if (theSSEPromise && theSSEPromise.isAlive()) {
-      return theSSEPromise
-    } else {
-      theSSEPromise = listProductSSEAPI().then(res => {
-        commit(types.SET_PRODUCT_LIST, res.data)
-      })
-      return theSSEPromise
-    }
+  async getProductList ({ commit, state, rootGetters }) {
+    return await getProductsAPI().then(
+      (res) => {
+        commit(types.SET_PRODUCT_LIST, res)
+      }
+    )
+  },
+  refreshProductList ({ commit, state, rootGetters, dispatch }) {
+    commit(types.SET_PRODUCT_LIST, [])
+    return dispatch('getProductList')
   }
 }
 

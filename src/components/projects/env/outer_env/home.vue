@@ -15,7 +15,8 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { uniqBy, orderBy } from 'lodash'
+import { orderBy } from 'lodash'
+import { getProjectWithEnvsAPI } from '@api'
 import bus from '@utils/event_bus'
 export default {
   data () {
@@ -27,42 +28,31 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'productList', 'getOnboardingTemplates'
+      'getOnboardingTemplates'
     ]),
-    filteredProducts () {
-      return uniqBy(orderBy(this.productList, ['product_name', 'is_prod']), 'product_name')
-    },
     isInProject () {
       return this.$route.path.includes('/projects/detail/')
     }
   },
   methods: {
     async getProducts () {
-      const availableProjectNames = []
-
-      await this.$store.dispatch('getProductListSSE').closeWhenDestroy(this)
-      for (const product of this.productList) {
-        availableProjectNames.push(product.product_name)
-      }
-      const routerList = this.filteredProducts.filter(product => {
-        return !this.getOnboardingTemplates.includes(product.product_name)
+      const projectsWithEnvs = await getProjectWithEnvsAPI()
+      const routerList = orderBy(projectsWithEnvs, ['name']).filter(product => {
+        return !this.getOnboardingTemplates.includes(product.name)
       }).map(element => {
-        return { name: element.product_name, url: `/v1/envs/detail/${element.product_name}?envName=${element.env_name}` }
+        return { name: element.name, url: `/v1/envs/detail/${element.name}?envName=${element.envs[0]}` }
       })
       bus.$emit('set-sub-sidebar-title', {
         title: '项目列表',
         routerList: routerList
       })
-      const availableProducts = this.productList.filter(item => {
-        return availableProjectNames.includes(item.product_name)
-      })
 
       this.loading = false
-      if (availableProducts.length === 0) {
+      if (projectsWithEnvs.length === 0) {
         this.emptyEnvs = true
         return
       }
-      this.firstJumpPath = `/v1/envs/detail/${availableProducts[0].product_name}?envName=${availableProducts[0].env_name}`
+      this.firstJumpPath = `/v1/envs/detail/${projectsWithEnvs[0].name}?envName=${projectsWithEnvs[0].envs[0]}`
       if (!this.$route.params.project_name) {
         this.$router.push(this.firstJumpPath)
       }

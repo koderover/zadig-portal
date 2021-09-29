@@ -472,7 +472,8 @@ export default {
       if (
         template.source === '' ||
         template.source === 'spock' ||
-        template.source === 'helm'
+        template.source === 'helm' ||
+        template.source === 'pm'
       ) {
         this.projectConfig.source = 'system'
       }
@@ -496,17 +497,21 @@ export default {
       this.loading = false
       this.projectConfig.revision = template.revision
       this.projectConfig.vars = template.vars
-      this.chartNames = template.chart_infos.map(chart => {
-        return {
-          serviceName: chart.service_name,
-          chartVersion: chart.chart_version,
-          type: 'common'
-        }
-      })
+      this.chartNames = template.chart_infos
+        ? template.chart_infos.map(chart => {
+          return {
+            serviceName: chart.service_name,
+            chartVersion: chart.chart_version,
+            type: 'common'
+          }
+        })
+        : []
+
       if (
         template.source === '' ||
         template.source === 'spock' ||
-        template.source === 'helm'
+        template.source === 'helm' ||
+        template.source === 'pm'
       ) {
         this.projectConfig.source = 'system'
       }

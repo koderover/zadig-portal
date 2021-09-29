@@ -1,6 +1,5 @@
 <template>
-  <component :is="currentComponent"
-             :projectInfo="projectInfo"></component>
+  <component :is="currentComponent"></component>
 </template>
 <script>
 import { getSingleProjectAPI } from '@/api'

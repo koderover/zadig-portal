@@ -123,6 +123,7 @@ export default {
         },
         hook_ctl: {
           enabled: false,
+          product_tmpl_name: null,
           items: []
         },
         schedule_enabled: false,
@@ -240,6 +241,7 @@ export default {
 
     savePipeline () {
       this.pipelineInfo.schedule_enabled = this.pipelineInfo.schedules.enabled
+      this.pipelineInfo.hook_ctl.product_tmpl_name = this.pipelineInfo.product_tmpl_name
       this.checkCurrentTab().then(() => {
         if (this.pipelineInfo.distribute_stage.enabled) {
           if (this.pipelineInfo.distribute_stage.releaseIds && this.pipelineInfo.distribute_stage.releaseIds.length > 0) {
@@ -291,6 +293,7 @@ export default {
         if (!this.pipelineInfo.hook_ctl) {
           this.$set(this.pipelineInfo, 'hook_ctl', {
             enabled: false,
+            product_tmpl_name: this.pipelineInfo.product_tmpl_name,
             items: []
           })
         };

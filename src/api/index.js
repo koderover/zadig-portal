@@ -235,9 +235,10 @@ export function listProductSSEAPI (params) {
   })
 }
 
-export function getProductsAPI () {
-  return http.get('/api/aslan/environment/environments')
+export function getProductsAPI (projectName = '', production = '') {
+  return http.get(`/api/aslan/environment/environments?projectName=${projectName}&production=${production}`)
 }
+
 export function getDeployEnvByPipelineNameAPI (pipelineName) {
   return http.get(`/api/aslan/workflow/v2/tasks/pipelines/${pipelineName}/products`)
 }
@@ -1006,6 +1007,10 @@ export function updateServiceAPI (product, service, type, env, data, envType = '
   })
 }
 
+export function getProjectWithEnvsAPI (ignoreNoEnvs = true, verbosity = 'brief') {
+  return http.get(`/api/aslan/project/projects?ignoreNoEnvs=${ignoreNoEnvs}&verbosity=${verbosity}`)
+}
+
 export function updateK8sEnvAPI (product_name, env_name, payload, envType = '', force = '') {
   return http.post(`/api/aslan/environment/environments/${product_name}?envName=${env_name}&envType=${envType}&force=${force}`, payload)
 }
@@ -1234,11 +1239,11 @@ export function updateHelmEnvVarAPI (productName, envName, payload) {
 }
 
 export function updateMatchRulesAPI (productName, payload) {
-  return http.put(`/api/aslan/project/products/${productName}/match-rules`, payload)
+  return http.put(`/api/aslan/project/products/${productName}/searching-rules`, payload)
 }
 
 export function getMatchRulesAPI (productName) {
-  return http.get(`/api/aslan/project/products/${productName}/match-rules`)
+  return http.get(`/api/aslan/project/products/${productName}/searching-rules`)
 }
 
 // exteranl

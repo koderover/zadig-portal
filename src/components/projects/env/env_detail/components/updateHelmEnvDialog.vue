@@ -115,10 +115,18 @@ export default {
       if (res) {
         const chartNames = []
         res.forEach(re => {
+          let type = 'common'
+          if (re.latest_version && re.current_version) {
+            type = 'update'
+          } else if (re.latest_version) {
+            type = 'create'
+          } else if (re.current_version) {
+            type = 'delete'
+          }
           chartNames.push({
             serviceName: re.service_name,
             chartVersion: re.latest_version,
-            type: 'common'
+            type
           })
         })
         this.chartNames = chartNames

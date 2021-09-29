@@ -50,7 +50,7 @@ export default {
   props: {
     recycleDay: Number,
     initPageInfo: Function,
-    getProductEnv: Function,
+    getEnvServices: Function,
     productInfo: Object
   },
   data () {
@@ -93,7 +93,7 @@ export default {
       recycleEnvAPI(product_name, env_name, recycle_day).then((res) => {
         this.$message.success('设置环境回收策略成功')
         this.initPageInfo()
-        this.getProductEnv()
+        this.getEnvServices()
         this.recycleEnvDialogVisible = false
       })
     }

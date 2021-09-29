@@ -16,7 +16,7 @@
                  :key="index">
           <template #title>
             <i class="el-icon-cloudy"></i>
-            {{`${env.envName}`}}
+            {{`${env.name}`}}
             <el-tag v-if="env.clusterType==='生产'"
                     effect="light"
                     size="mini"
@@ -203,7 +203,7 @@ export default {
       )
     },
     async getProducts () {
-      await this.$store.dispatch('getProductListSSE').closeWhenDestroy(this)
+      await this.$store.dispatch('getProductList')
     },
     fetchGroupsData (name, env_name = '') {
       return new Promise((resolve, reject) => {

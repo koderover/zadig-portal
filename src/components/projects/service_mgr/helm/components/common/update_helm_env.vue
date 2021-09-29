@@ -63,7 +63,7 @@ export default {
       this.updateHelmEnvDialogVisible = false
     },
     async getProducts () {
-      await this.$store.dispatch('getProductListSSE').closeWhenDestroy(this)
+      await this.$store.dispatch('getProductList')
     }
   },
   computed: {

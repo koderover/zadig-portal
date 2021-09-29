@@ -45,6 +45,7 @@
                            ref="serviceTree"
                            @onAddCodeSource="addCodeSource"
                            @onJumpToKind="jumpToKind"
+                           @onRefreshProjectInfo="checkProjectFeature"
                            @onRefreshService="getServices"
                            @onRefreshSharedService="getSharedServices"
                            @onSelectServiceChange="onSelectServiceChange"
@@ -114,14 +115,12 @@ import serviceTree from './common/service_tree.vue'
 import addCode from './common/add_code.vue'
 import { mapGetters } from 'vuex'
 import { sortBy } from 'lodash'
-import { getServiceTemplatesAPI, getServicesTemplateWithSharedAPI, serviceTemplateWithConfigAPI, autoUpgradeEnvAPI } from '@api'
+import { getSingleProjectAPI, getServiceTemplatesAPI, getServicesTemplateWithSharedAPI, serviceTemplateWithConfigAPI, autoUpgradeEnvAPI } from '@api'
 import { Multipane, MultipaneResizer } from 'vue-multipane'
 export default {
-  props: {
-    projectInfo: Object
-  },
   data () {
     return {
+      projectInfo: {},
       service: {},
       services: [],
       sharedServices: [],
@@ -213,7 +212,11 @@ export default {
       this.$refs.serviceEditor.jumpToWord(`kind: ${payload.kind}`)
     },
     async getProducts () {
-      await this.$store.dispatch('getProductListSSE').closeWhenDestroy(this)
+      await this.$store.dispatch('getProductList')
+    },
+    async checkProjectFeature () {
+      const projectName = this.projectName
+      this.projectInfo = await getSingleProjectAPI(projectName)
     },
     autoUpgradeEnv () {
       const payload = {
@@ -295,6 +298,7 @@ export default {
   },
   mounted () {
     this.getProducts()
+    this.checkProjectFeature()
     this.getServices()
     this.getSharedServices()
   },

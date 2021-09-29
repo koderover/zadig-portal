@@ -22,7 +22,7 @@
                             label="选择项目">
                 <el-select v-model="pipelineInfo.product_tmpl_name"
                            style="width: 80%;"
-                           @change="getProductEnv(pipelineInfo.product_tmpl_name)"
+                           @change="getEnvServices(pipelineInfo.product_tmpl_name)"
                            placeholder="请选择项目"
                            :disabled="$route.query.projectName || editMode"
                            filterable>
@@ -130,7 +130,7 @@ export default {
         callback(new Error(result))
       }
     },
-    getProductEnv (projectName) {
+    getEnvServices (projectName) {
       listProductAPI('', projectName).then(res => {
         this.productList = res
       })

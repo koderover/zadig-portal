@@ -201,11 +201,6 @@ export default {
               url: 'delivery/artifacts',
               icon: 'iconfont iconbaoguanli'
             }]
-          },
-          {
-            name: '模板库',
-            icon: 'iconfont iconicon-repertory',
-            url: 'chart'
           }]
         },
         {

@@ -718,7 +718,9 @@ export default {
           targets.push({
             name: element.target.service_module,
             service_name: element.target.service_name,
-            key: element.target.service_module + '/' + element.target.service_name
+            key: element.target.service_module + '/' + element.target.service_name,
+            product_tmpl_name: this.productTmlName
+
           })
         })
         return targets

@@ -1240,30 +1240,6 @@ export default {
       const orgId = this.currentOrganizationId
       this.$set(this.buildConfig, 'name', this.projectName + '-build-' + this.name)
       this.$set(this.jenkinsBuild, 'name', this.projectName + '-build-' + this.name)
-      if (this.isExp) {
-        getBuildConfigDetailAPI(
-          'voting-result-build',
-          this.buildConfigVersion,
-          this.projectName
-        ).then((response) => {
-          response.pre_build.installs.forEach((element) => {
-            element.id = element.name + element.version
-          })
-          this.buildConfig = response
-          if (this.buildConfig.source) {
-            this.source = this.buildConfig.source
-            if (this.source === 'jenkins') {
-              this.jenkinsBuild = response
-            }
-          }
-          if (this.buildConfig.post_build.docker_build) {
-            this.docker_enabled = true
-          }
-          if (this.buildConfig.post_build.file_archive) {
-            this.binary_enabled = true
-          }
-        })
-      }
       const response = await getServiceTargetsAPI(projectName).catch(error => console.log(error))
       if (response) {
         this.serviceTargets = response.map(element => {
@@ -1351,9 +1327,6 @@ export default {
     },
     serviceName () {
       return this.$route.query.service_name
-    },
-    isExp () {
-      return !!this.$route.query.exp
     },
     useWorkspaceCache: {
       get () {

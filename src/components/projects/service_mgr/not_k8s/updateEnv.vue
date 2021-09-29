@@ -41,9 +41,8 @@ export default {
     openDialog () {
       this.updateEnvDialogVisible = true
     },
-
     async getProducts () {
-      await this.$store.dispatch('getProductListSSE').closeWhenDestroy(this)
+      await this.$store.dispatch('getProductList')
     },
     autoUpgradeEnv () {
       const payload = {

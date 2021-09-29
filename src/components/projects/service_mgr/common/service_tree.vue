@@ -551,6 +551,7 @@ export default {
       updateEnvTemplateAPI(projectName, payload).then((res) => {
         this.$message.success('添加共享服务成功')
         this.getServiceGroup()
+        this.$emit('onRefreshProjectInfo')
         this.$emit('onRefreshService')
         this.$emit('onRefreshSharedService')
         this.$emit('update:showNext', true)
@@ -586,6 +587,7 @@ export default {
         payload.shared_services = payload.shared_services.filter(share => { return share.name !== data.service_name })
         updateEnvTemplateAPI(projectName, payload).then((res) => {
           this.getServiceGroup()
+          this.$emit('onRefreshProjectInfo')
           this.$emit('onRefreshSharedService')
           this.$emit('onRefreshService')
           this.$emit('update:showNext', true)
@@ -597,7 +599,7 @@ export default {
       })
     },
     async getProducts () {
-      await this.$store.dispatch('getProductListSSE').closeWhenDestroy(this)
+      await this.$store.dispatch('getProductList')
     },
     getServiceGroup () {
       this.serviceGroup = []

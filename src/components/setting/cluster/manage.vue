@@ -21,14 +21,6 @@
             </span>
           </div>
         </div>
-        <el-form>
-          <el-form-item label="Agent 部署方式">
-            <el-radio-group v-model="deployType">
-              <el-radio label="DaemonSet">DaemonSet</el-radio>
-              <el-radio label="Deployment">Deployment</el-radio>
-            </el-radio-group>
-          </el-form-item>
-        </el-form>
         <div slot="footer"
              class="dialog-footer">
           <el-button :plain="true"
@@ -301,7 +293,7 @@ export default {
         disconnected: 'warning'
       },
       allCluster: [],
-      deployType: 'DaemonSet',
+      deployType: 'Deployment',
       cluster: {
         name: '',
         provider: null,

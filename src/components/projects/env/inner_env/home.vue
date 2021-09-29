@@ -23,7 +23,7 @@ export default {
   },
   methods: {
     async getProducts () {
-      await this.$store.dispatch('getProductListSSE').closeWhenDestroy(this)
+      await this.$store.dispatch('getProductList')
 
       const availableProducts = this.currentProjectProductList
 

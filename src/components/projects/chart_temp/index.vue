@@ -14,7 +14,7 @@ export default {
       routerList: [
         {
           name: 'Chart 模板',
-          url: `/v1/chart/charts`,
+          url: `/v1/projects/chart/charts`,
           icon: 'iconfont iconhelmrepo'
         }
       ]

@@ -19,6 +19,13 @@
                 <i class="el-icon-s-fold"></i>
                 <span class="add-filter-value-title">列表模式</span>
               </button>
+              <button type="button"
+                      @click="$router.push(`/v1/projects/chart/charts`)"
+                      style="margin-left: 10px; border-radius: 20px;"
+                      class="display-btn">
+                <i class="iconfont iconicon-repertory" style="font-size: 13px;"></i>
+                <span class="add-filter-value-title">模板库</span>
+              </button>
             </div>
           </div>
         </div>
@@ -269,7 +276,7 @@ export default {
     this.exitGuideModal()
   },
   mounted () {
-    this.$store.dispatch('getProductListSSE').closeWhenDestroy(this)
+    this.$store.dispatch('getProductList')
     this.$store.dispatch('getWorkflowList')
     this.getProjects()
     bus.$emit('show-sidebar', true)
