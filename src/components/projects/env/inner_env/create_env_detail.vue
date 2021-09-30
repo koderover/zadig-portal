@@ -232,7 +232,7 @@
               <span class="second-title">Chart (HELM 部署)</span>
               <span class="small-title"></span>
             </div>
-            <ChartValues class="chart-value" ref="chartValuesRef" :envNames="envNames" :chartNames="chartNames"></ChartValues>
+            <HelmEnvTemplate class="chart-value" ref="helmEnvTemplateRef" :envNames="envNames" :chartNames="chartNames"></HelmEnvTemplate>
           </el-card>
         </template>
       </div>
@@ -284,7 +284,7 @@ import bus from '@utils/event_bus'
 import { mapGetters } from 'vuex'
 import { uniq, cloneDeep } from 'lodash'
 import { serviceTypeMap } from '@utils/word_translate'
-import ChartValues from '../env_detail/common/updateHelmEnvChart.vue'
+import HelmEnvTemplate from '../env_detail/components/updateHelmEnvTemp.vue'
 
 const validateKey = (rule, value, callback) => {
   if (typeof value === 'undefined' || value === '') {
@@ -798,7 +798,7 @@ export default {
       })
     },
     async deployHelmEnv () {
-      const res = await this.$refs.chartValuesRef.validate().catch(err => {
+      const res = await this.$refs.helmEnvTemplateRef.validate().catch(err => {
         console.log(err)
       })
       if (!res) {
@@ -806,13 +806,14 @@ export default {
       }
       this.$refs['create-env-ref'].validate(valid => {
         if (valid) {
+          const valueInfo = this.$refs.helmEnvTemplateRef.getAllInfo()
           const payload = {
             envName: this.projectConfig.env_name,
             clusterID: this.projectConfig.cluster_id,
-            chartValues: this.$refs.chartValuesRef.getAllChartNameInfo(),
-            namespace: this.projectConfig.defaultNamespace
+            namespace: this.projectConfig.defaultNamespace,
+            chartValues: valueInfo.chartInfo,
+            defaultValues: valueInfo.envInfo
           }
-
           this.startDeployLoading = true
           createHelmProductEnvAPI(this.projectConfig.product_name, payload).then(
             res => {
@@ -888,7 +889,7 @@ export default {
     })
   },
   components: {
-    ChartValues
+    HelmEnvTemplate
   }
 }
 </script>
@@ -1018,7 +1019,7 @@ export default {
     .chart-value {
       width: 80%;
       min-width: 450px;
-      margin-left: 3%;
+      margin-left: 5px;
     }
   }
 

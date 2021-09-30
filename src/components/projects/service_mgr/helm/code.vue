@@ -571,6 +571,7 @@ export default {
 
   .center {
     width: 500px;
+    min-width: 200px;
     height: 100%;
 
     .header {
@@ -598,7 +599,7 @@ export default {
   .right {
     position: static;
     z-index: auto;
-    width: 100px;
+    min-width: 200px;
     background-color: #fff;
   }
 }

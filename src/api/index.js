@@ -1215,7 +1215,7 @@ export function createTemplateServiceAPI (productName, payload) {
 
 // helm env and service
 export function addChartValuesYamlByEnvAPI (productName, envName, payload) {
-  return http.put(`/api/aslan/environment/rendersets/renderchart?productName=${productName}&envName=${envName}`, payload)
+  return http.put(`/api/aslan/environment/rendersets/renderset?productName=${productName}&envName=${envName}`, payload)
 }
 
 export function getChartValuesYamlAPI (productName, envName, serviceName = []) {
@@ -1224,6 +1224,10 @@ export function getChartValuesYamlAPI (productName, envName, serviceName = []) {
 
 export function getAllChartValuesYamlAPI (productName, envName, serviceName = []) {
   return http.get(`/api/aslan/environment/environments/estimated-renderchart?productName=${productName}&envName=${envName}&serviceName=${serviceName.join(',')}`)
+}
+
+export function getEnvDefaultVariableAPI (productName, envName) {
+  return http.get(`/api/aslan/environment/rendersets/default-values?productName=${productName}&envName=${envName}`)
 }
 
 export function createHelmProductEnvAPI (productName, payload) {
@@ -1235,7 +1239,7 @@ export function updateHelmProductEnvAPI (productName, payload) {
 }
 
 export function updateHelmEnvVarAPI (productName, envName, payload) {
-  return http.put(`/api/aslan/environment/environments/${productName}/renderchart?envName=${envName}`, payload)
+  return http.put(`/api/aslan/environment/environments/${productName}/renderset?envName=${envName}`, payload)
 }
 
 export function updateMatchRulesAPI (productName, payload) {
