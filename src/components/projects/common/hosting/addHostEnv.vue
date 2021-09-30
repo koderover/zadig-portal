@@ -32,7 +32,7 @@
           </el-select>
         </el-form-item>
       </el-form>
-      <div class="transfer-title">选择</div>
+      <div class="transfer-title">选择服务</div>
       <el-transfer
         filter-placeholder="请输入服务名称"
         v-model="selectService"

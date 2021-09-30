@@ -632,6 +632,10 @@ export default {
       webhookSwap.repo.events = webhookSwap.events
       webhookSwap.repo.name = webhookSwap.name
       webhookSwap.repo.description = webhookSwap.description
+      webhookSwap.targets.map(item => {
+        item.product_name = this.productTmlName
+        return item
+      })
       this.$set(this.webhook.items, index, {
         main_repo: webhookSwap.repo,
         auto_cancel: webhookSwap.auto_cancel,
@@ -644,6 +648,7 @@ export default {
           targets: webhookSwap.targets
         }
       })
+
       this.webhookSwap = {
         name: '',
         description: '',
@@ -718,8 +723,7 @@ export default {
           targets.push({
             name: element.target.service_module,
             service_name: element.target.service_name,
-            key: element.target.service_module + '/' + element.target.service_name,
-            product_tmpl_name: this.productTmlName
+            key: element.target.service_module + '/' + element.target.service_name
 
           })
         })

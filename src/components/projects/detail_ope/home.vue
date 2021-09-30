@@ -19,13 +19,13 @@
                 <i class="el-icon-s-fold"></i>
                 <span class="add-filter-value-title">列表模式</span>
               </button>
-              <button type="button"
+              <!-- <button type="button"
                       @click="$router.push(`/v1/projects/chart/charts`)"
                       style="margin-left: 10px; border-radius: 20px;"
                       class="display-btn">
                 <i class="iconfont iconicon-repertory" style="font-size: 13px;"></i>
                 <span class="add-filter-value-title">模板库</span>
-              </button>
+              </button> -->
             </div>
           </div>
         </div>

@@ -4,7 +4,7 @@
       <span>服务配置来源</span>
       <el-radio v-model="tabName" label="git">Git 仓库</el-radio>
       <el-radio v-model="tabName" label="chart" disabled>Chart 仓库</el-radio>
-      <el-radio v-model="tabName" label="template">模板库</el-radio>
+      <el-radio v-model="tabName" label="template" disabled>模板库</el-radio>
     </div>
 
     <GitRepo
