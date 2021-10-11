@@ -78,38 +78,40 @@
                 </span>
               </div>
               <div v-if="notification.type===3">
-                <h3>
+                <h3 class="noti-title" @click="notification.hiddenShow = !notification.hiddenShow">
                   <span class="status"
                         style="margin-right: 10px;">{{notification.content.title}}</span>
+                  <i class="el-icon-arrow-right" :class="{ 'noti-rotate': !notification.hiddenShow }"></i>
                 </h3>
-                <div class="announcement-content">
-                  <p>{{notification.content.content}}{{"("+notification.content.req_id+")"}}</p>
-                </div>
-                <div class="event-extra">
-                  <span class="is-read">
-                    {{notification.is_read?'已读':'未读'}}
+                <div :class="{ 'noti-hidden': notification.hiddenShow }">
+                  <div class="announcement-content">
+                    <p>{{notification.content.content}}{{"("+notification.content.req_id+")"}}</p>
+                  </div>
+                  <div class="event-extra">
+                    <span class="is-read">
+                      {{notification.is_read?'已读':'未读'}}
+                    </span>
+                    <span class="time">{{$utils.convertTimestamp(notification.create_time)}}</span>
+                  </div>
+                  <span @click="notificationOperation('mark_as_read', notification, index)"
+                        class="operation  read">
+                    <el-tooltip class="item"
+                                effect="dark"
+                                content="设为已读"
+                                placement="top">
+                      <i class="el-icon-check"></i>
+                    </el-tooltip>
                   </span>
-                  <span class="time">{{$utils.convertTimestamp(notification.create_time)}}</span>
+                  <span @click="notificationOperation('delete', notification, index)"
+                        class="operation delete">
+                    <el-tooltip class="item"
+                                effect="dark"
+                                content="删除该通知"
+                                placement="top">
+                      <i class="el-icon-delete"></i>
+                    </el-tooltip>
+                  </span>
                 </div>
-                <span @click="notificationOperation('mark_as_read', notification, index)"
-                      class="operation  read">
-                  <el-tooltip class="item"
-                              effect="dark"
-                              content="设为已读"
-                              placement="top">
-                    <i class="el-icon-check"></i>
-                  </el-tooltip>
-                </span>
-                <span @click="notificationOperation('delete', notification, index)"
-                      class="operation delete">
-                  <el-tooltip class="item"
-                              effect="dark"
-                              content="删除该通知"
-                              placement="top">
-                    <i class="el-icon-delete"></i>
-                  </el-tooltip>
-                </span>
-
               </div>
             </li>
           </ul>
@@ -142,12 +144,14 @@ export default {
   methods: {
     getNotifications () {
       getNotificationAPI().then((res) => {
-        this.notifications = res
         this.unreadMsgs = []
-        this.notifications.forEach(element => {
+        this.notifications = res.map(element => {
+          element.hiddenShow = true
           if (!element.is_read) {
             this.unreadMsgs.push(element)
+            element.hiddenShow = false
           }
+          return element
         })
       })
     },
@@ -205,6 +209,22 @@ export default {
 
 .notification {
   display: inline-block;
+
+  .noti-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+
+    .noti-rotate {
+      transform: rotate(90deg);
+    }
+  }
+
+  .noti-hidden {
+    height: 0;
+    overflow: hidden;
+  }
 }
 
 .notify-container {
