@@ -11,19 +11,20 @@
         <el-select v-model="importRepoInfoUse.yamlSource" size="small" class="height-40">
           <el-option label="Git 仓库" value="gitRepo"></el-option>
           <el-option label="手动输入" value="freeEdit"></el-option>
-          <!-- <el-option label="使用默认" value="default"></el-option> -->
         </el-select>
       </template>
       <template v-if="importRepoInfoUse.yamlSource !== 'default'">
         <div class="desc-title">{{ importRepoInfoUse.yamlSource === 'gitRepo' ? '仓库信息' : '文件内容' }}</div>
-        <Resize v-if="importRepoInfoUse.yamlSource === 'freeEdit'" class="mirror" :resize="setResize.direction" :height="setResize.height">
-          <codemirror v-model="importRepoInfoUse.valuesYAML"></codemirror>
+        <Resize
+          v-if="importRepoInfoUse.yamlSource === 'freeEdit'"
+          class="mirror"
+          :resize="setResize.direction"
+          :height="setResize.height"
+          @sizeChange="$refs.codemirror.refresh()"
+        >
+          <codemirror ref="codemirror" v-model="importRepoInfoUse.valuesYAML"></codemirror>
         </Resize>
-        <ValueRepo
-          v-if="importRepoInfoUse.yamlSource === 'gitRepo'"
-          ref="valueRepo"
-          :valueRepoInfo.sync="importRepoInfoUse.gitRepoConfig"
-        ></ValueRepo>
+        <ValueRepo v-if="importRepoInfoUse.yamlSource === 'gitRepo'" ref="valueRepo" :valueRepoInfo="importRepoInfoUse.gitRepoConfig"></ValueRepo>
       </template>
     </div>
   </div>
@@ -33,6 +34,7 @@
 import Resize from '@/components/common/resize'
 import Codemirror from '../codemirror.vue'
 import ValueRepo from './value_repo.vue'
+import { cloneDeep } from 'lodash'
 
 const valueInfo = {
   yamlSource: '', // gitRepo or freeEdit or default(不上传)
@@ -59,7 +61,7 @@ export default {
       type: Object,
       default: () => {
         return {
-          height: '300px',
+          height: '260px',
           direction: 'none'
         }
       }
@@ -69,7 +71,7 @@ export default {
   computed: {
     setResize () {
       return {
-        height: '300px',
+        height: '260px',
         direction: 'none',
         ...this.resize
       }
@@ -78,7 +80,7 @@ export default {
       get () {
         let gitRepoConfig = {}
         if (!this.importRepoInfo.gitRepoConfig) {
-          gitRepoConfig = { gitRepoConfig: valueInfo.gitRepoConfig }
+          gitRepoConfig = { gitRepoConfig: cloneDeep(valueInfo.gitRepoConfig) }
         }
         return Object.assign(this.importRepoInfo, gitRepoConfig)
       },
@@ -104,9 +106,7 @@ export default {
     resetValueRepoInfo () {
       this.$nextTick(() => {
         if (this.importRepoInfoUse.yamlSource === 'gitRepo') {
-          this.$refs.valueRepo.resetSource(
-            this.importRepoInfoUse.gitRepoConfig
-          )
+          this.$refs.valueRepo.resetSource(this.importRepoInfoUse.gitRepoConfig)
         }
       })
     }

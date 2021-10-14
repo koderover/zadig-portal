@@ -420,6 +420,9 @@ export default {
         }
       },
       immediate: true
+    },
+    gitName () {
+      this.$refs.sourceForm && this.$refs.sourceForm.clearValidate()
     }
   },
   mounted () {

@@ -116,17 +116,8 @@ export default {
     }
 
     .content {
-      .tip {
-        margin-top: 30px;
-        vertical-align: text-top;
-
-        .el-switch__label {
-          color: #606266;
-
-          &.is-active {
-            color: #409eff;
-          }
-        }
+      .chart-value {
+        margin-top: 12px;
       }
     }
   }

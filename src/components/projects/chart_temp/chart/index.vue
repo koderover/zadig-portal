@@ -25,7 +25,7 @@
         <Codemirror v-if="currentTab" v-model="yaml" :cmOption="{ readOnly: true }" class="mirror"></Codemirror>
       </div>
       <multipane-resizer></multipane-resizer>
-      <ModuleUse class="pane right" :style="{flexGrow: 1, width: '100px'}"></ModuleUse>
+      <ModuleUse class="pane right" :style="{flexGrow: 1, minWidth: '200px'}"></ModuleUse>
     </multipane>
   </div>
 </template>

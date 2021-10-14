@@ -80,7 +80,6 @@
 </template>
 <script>
 import RepoMixin from '../mixin/import_repo'
-import { cloneDeep } from 'lodash'
 
 export default {
   props: {
@@ -94,17 +93,17 @@ export default {
     }
   },
   watch: {
-    source: {
-      handler (newV) {
-        this.$emit('update:valueRepoInfo', cloneDeep(newV))
-      },
-      deep: true
-    },
     valuesPaths: {
       handler (newV) {
         this.source.valuesPaths = newV.map(val => val.path)
       },
       deep: true
+    },
+    valueRepoInfo: {
+      handler () {
+        this.initData()
+      },
+      immediate: true
     }
   },
   methods: {
@@ -135,16 +134,16 @@ export default {
         this.showTip = false
         return Promise.resolve()
       }
+    },
+    initData () {
+      this.source = this.valueRepoInfo
+      this.valuesPaths = this.source.valuesPaths.map(val => {
+        return {
+          path: val,
+          yaml: ''
+        }
+      })
     }
-  },
-  created () {
-    this.source = cloneDeep(this.valueRepoInfo)
-    this.valuesPaths = this.source.valuesPaths.map(val => {
-      return {
-        path: val,
-        yaml: ''
-      }
-    })
   }
 }
 </script>
