@@ -57,6 +57,17 @@
                           class="copy-btn el-icon-copy-document">
                     </span>
                   </div>
+                  <span class="title">本地访问：</span>
+                  <div v-for="(crossNs,indexCross) in allEndpoints"
+                       :key="indexCross+'cross'">
+                    <span
+                          class="addr">{{ `${crossNs.service_name}.${namespace}.svc.cluster.local:${crossNs.service_port}` }}</span>
+                    <span v-clipboard:copy="`${crossNs.service_name}.${namespace}.svc.cluster.local:${crossNs.service_port}`"
+                          v-clipboard:success="copyCommandSuccess"
+                          v-clipboard:error="copyCommandError"
+                          class="copy-btn el-icon-copy-document">
+                    </span>
+                  </div>
                   <span slot="reference"><i class="show-more el-icon-more"></i></span>
                 </el-popover>
               </div>
