@@ -98,7 +98,7 @@
                              width="240">
               <template slot-scope="scope">
                 <router-link
-                             :to="`/v1/projects/detail/${scope.row.productName}/builds/detail/${scope.row.name}/${scope.row.version}`">
+                             :to="`/v1/projects/detail/${scope.row.productName}/builds/detail/${scope.row.name}`">
                   <el-button type="primary"
                              size="mini"
                              plain>编辑</el-button>

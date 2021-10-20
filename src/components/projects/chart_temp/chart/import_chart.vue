@@ -107,8 +107,17 @@ export default {
     value: {
       handler (val) {
         if (val && this.chartCurrentService) {
-          this.tempData.name = this.chartCurrentService.name
+          const current = this.chartCurrentService
+          this.tempData = {
+            name: current.name,
+            codeHostID: current.codehost_id,
+            owner: current.repo_owner,
+            repo: current.repo_name,
+            branch: current.branch_name,
+            path: current.load_path
+          }
           this.isUpdate = true
+          this.disabled = false
         }
         if (!val) {
           this.resetField()

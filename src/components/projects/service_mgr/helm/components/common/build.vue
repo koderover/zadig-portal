@@ -982,9 +982,6 @@ export default {
         this.$store.dispatch('queryServiceModule', params)
       }, 3000)
     },
-    clearSelectVersion (index) {
-      this.buildConfig.pre_build.installs[index].version = ''
-    },
     addFirstCacheDir () {
       if (!this.buildConfig.caches || this.buildConfig.caches.length === 0) {
         this.$set(this.buildConfig, 'caches', [])
@@ -1255,7 +1252,6 @@ export default {
       if (this.isEdit) {
         getBuildConfigDetailAPI(
           this.buildName,
-          this.buildConfigVersion,
           this.projectName
         ).then((response) => {
           response.pre_build.installs.forEach((element) => {
@@ -1320,9 +1316,6 @@ export default {
     },
     buildAdd () {
       return this.$route.query.build_add ? this.$route.query.build_add : false
-    },
-    buildConfigVersion () {
-      return 'stable'
     },
     currentOrganizationId () {
       return this.$store.state.login.userinfo.organization.id

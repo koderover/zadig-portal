@@ -617,7 +617,6 @@ export default {
       }],
       jenkinsJobList: [],
       jenkinsBuild: {
-        version: 'stable',
         name: '',
         desc: '',
         targets: [],
@@ -632,7 +631,6 @@ export default {
 
       },
       buildConfig: {
-        version: 'stable',
         name: '',
         desc: '',
         repos: [],
@@ -724,9 +722,6 @@ export default {
     }
   },
   methods: {
-    clearSelectVersion (index) {
-      this.buildConfig.pre_build.installs[index].version = ''
-    },
     addFirstCacheDir () {
       if (!this.buildConfig.caches || this.buildConfig.caches.length === 0) {
         this.$set(this.buildConfig, 'caches', [])
@@ -947,7 +942,7 @@ export default {
       const projectName = this.projectName
       const orgId = this.currentOrganizationId
       if (!this.isCreate) {
-        getBuildConfigDetailAPI(this.buildConfigName, this.buildConfigVersion, this.projectName).then((response) => {
+        getBuildConfigDetailAPI(this.buildConfigName, this.projectName).then((response) => {
           response.pre_build.installs.forEach(element => {
             element.id = element.name + element.version
           })
@@ -1004,9 +999,6 @@ export default {
   computed: {
     buildConfigName () {
       return this.$route.params.build_name
-    },
-    buildConfigVersion () {
-      return this.$route.params.version
     },
     currentOrganizationId () {
       return this.$store.state.login.userinfo.organization.id

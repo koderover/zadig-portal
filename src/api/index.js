@@ -378,8 +378,8 @@ export function saveBuildConfigTargetsAPI (projectName = '', payload) {
   return http.post(`/api/aslan/build/build/targets?productName=${projectName}`, payload)
 }
 
-export function getBuildConfigDetailAPI (name, version, projectName = '') {
-  return http.get(`/api/aslan/build/build/${name}/${version}?productName=${projectName}`)
+export function getBuildConfigDetailAPI (name, projectName = '') {
+  return http.get(`/api/aslan/build/build/${name}?productName=${projectName}`)
 }
 
 export function getRepoFilesAPI ({ codehostId = '', repoOwner = '', repoName = '', branchName = '', path = '', type = '', repoLink = '', remoteName = 'origin' }) {
@@ -1211,6 +1211,10 @@ export function deleteChartTemplateAPI (name) {
 
 export function createTemplateServiceAPI (productName, payload) {
   return http.post(`/api/aslan/service/helm/services?productName=${productName}`, payload)
+}
+
+export function createTemplateMultiServiceAPI (productName, payload) {
+  return http.post(`/api/aslan/service/helm/bulk/services?productName=${productName}`, payload)
 }
 
 // helm env and service

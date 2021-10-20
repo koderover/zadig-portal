@@ -11,6 +11,10 @@
           <h1 class="project-contexts-modal__content-title">{{isEdit?'修改项目信息':'开始新建项目'}}</h1>
           <div class="project-contexts-modal__content-container">
             <div class="project-settings__inputs-container">
+              <el-tabs style="width: 100%;"  v-if="isEdit"  v-model="activeName">
+                <el-tab-pane label="基本信息" name="base"></el-tab-pane>
+                <el-tab-pane label="高级配置" name="advance"></el-tab-pane>
+              </el-tabs>
               <el-form :model="projectForm"
                        :rules="rules"
                        label-position="top"
@@ -18,12 +22,14 @@
                        label-width="100px"
                        class="demo-projectForm">
                 <el-form-item label="项目名称"
+                              v-show="activeName !=='advance'"
                               prop="project_name">
                   <el-input @keyup.native="()=>projectForm.project_name=projectForm.project_name.trim()"
                             v-model="projectForm.project_name"></el-input>
                 </el-form-item>
 
                 <el-form-item label="项目主键"
+                              v-show="activeName !=='advance'"
                               prop="product_name">
                   <span slot="label">项目主键
                     <el-tooltip effect="dark"
@@ -43,11 +49,37 @@
                 </el-form-item>
 
                 <el-form-item v-if="isEdit"
+                              v-show="activeName==='advance'"
                               label="服务部署超时（分钟）"
                               prop="timeout">
                   <el-input v-model.number="projectForm.timeout"></el-input>
                 </el-form-item>
+                <el-form-item v-if="isEdit"
+                              v-show="activeName==='advance'"
+                              label="自定义交付物名称">
+                      <span slot="label">自定义交付物名称
+                        <el-tooltip effect="dark"
+                                  placement="top">
+                          <div slot="content">
+                            镜像和 TAR 包规则可以通过变量和常量组装生成：<br/>
+                              <span class="tooltip-key" v-html="'{{.TIMESTAMP}}'"></span>      时间戳 <br/>
+                              <span class="tooltip-key" v-html="'{{.TASK_ID}}'"></span>        工作流任务 ID<br/>
+                              <span class="tooltip-key" v-html="'{{.REPO_BRANCH}}'"></span>    代码分支名称<br/>
+                              <span class="tooltip-key" v-html="'{{.REPO_PR}}'"></span>        代码 PR ID<br/>
+                              <span class="tooltip-key" v-html="'{{.REPO_TAG}}'"></span>       代码 TAG<br/>
+                              <span class="tooltip-key" v-html="'{{.REPO_COMMIT_ID}}'"></span> 代码 Commit ID<br/>
+                              <span class="tooltip-key" v-html="'{{.PROJECT}}'"></span>        项目名称<br/>
+                              <span class="tooltip-key" v-html="'{{.SERVICE}}'"></span>      服务名称<br/>
+                              <span class="tooltip-key" v-html="'{{.ENV_NAME}}'">${ENV_NAME}</span>       环境名称<br/>
+                              注意：常量字符只能是大小写字母、数字、中划线、下划线和点，即 [a-zA-Z0-9_.-]，首个字符不能是&nbsp;.&nbsp;或&nbsp;-。不能超过 127 个字符
+                            </div>
+                          <i class="el-icon-question"></i>
+                        </el-tooltip>
+                      </span>
+                      <CusDeliverable v-show="activeName==='advance'" :customImageRule="projectForm.custom_image_rule" :customTarRule="projectForm.custom_tar_rule" ref="cusDeliverable" v-if="isEdit" />
+                </el-form-item>
                 <el-form-item label="描述信息"
+                              v-show="activeName !=='advance'"
                               prop="desc">
                   <el-input type="textarea"
                             :rows="2"
@@ -57,6 +89,7 @@
 
                 </el-form-item>
                 <el-form-item v-if="!isEdit"
+                              v-show="activeName !=='advance'"
                               label="项目特点"
                               prop="desc">
                   <el-row :gutter="5">
@@ -125,6 +158,7 @@
                   </el-row>
                 </el-form-item>
                 <el-row v-if="isEdit"
+                        v-show="activeName !=='advance'"
                         :gutter="5">
                   <el-col :span="24">
                     <el-form-item label="项目管理员"
@@ -146,7 +180,6 @@
                     </el-form-item>
                   </el-col>
                 </el-row>
-
               </el-form>
             </div>
 
@@ -165,8 +198,11 @@
   </div>
 </template>
 <script>
+
 import { usersAPI, createProjectAPI, getSingleProjectAPI, updateSingleProjectAPI } from '@api'
 import { mapGetters } from 'vuex'
+import CusDeliverable from './components/cusDeliverable.vue'
+
 const pinyin = require('pinyin')
 const validateProductName = (rule, value, callback) => {
   if (typeof value === 'undefined' || value === '') {
@@ -192,8 +228,12 @@ const validateDeployTimeout = (rule, value, callback) => {
   }
 }
 export default {
+  components: {
+    CusDeliverable
+  },
   data () {
     return {
+      activeName: 'base',
       dialogVisible: true,
       users: [],
       loading: false,
@@ -310,6 +350,9 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           if (this.isEdit) {
+            this.$refs.cusDeliverable.saveConfig()
+            this.projectForm.custom_image_rule = this.$refs.cusDeliverable.custom_image_rule
+            this.projectForm.custom_tar_rule = this.$refs.cusDeliverable.custom_tar_rule
             this.updateSingleProject(this.projectForm.product_name, this.projectForm)
           } else {
             this.projectForm.timeout = 10
@@ -375,6 +418,11 @@ export default {
 </script>
 
 <style lang="less" >
+.tooltip-key {
+  display: inline-block;
+  width: 130px;
+}
+
 .create-project {
   .icon {
     cursor: pointer;

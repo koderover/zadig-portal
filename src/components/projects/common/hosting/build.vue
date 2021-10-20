@@ -853,7 +853,6 @@ export default {
       }],
       jenkinsJobList: [],
       jenkinsBuild: {
-        version: 'stable',
         name: '',
         desc: '',
         targets: [],
@@ -869,7 +868,6 @@ export default {
       },
       buildConfig: {
         timeout: 60,
-        version: 'stable',
         name: '',
         desc: '',
         repos: [],
@@ -897,10 +895,6 @@ export default {
       allApps: [],
       serviceTargets: [],
       allCodeHosts: [],
-      syncConfig: {
-        name: this.buildConfigName,
-        version: ''
-      },
       showBuildAdvancedSetting: {},
       createRules: {
         name: [
@@ -970,9 +964,6 @@ export default {
       return services.filter(element => {
         return (!(flattenDeep(existServices).includes(element.service_name)))
       })
-    },
-    clearSelectVersion (index) {
-      this.buildConfig.pre_build.installs[index].version = ''
     },
     addFirstCacheDir () {
       if (!this.buildConfig.caches || this.buildConfig.caches.length === 0) {
@@ -1242,7 +1233,6 @@ export default {
       if (this.isEdit) {
         getBuildConfigDetailAPI(
           this.buildName,
-          this.buildConfigVersion,
           this.projectName
         ).then((response) => {
           response.pre_build.installs.forEach((element) => {
@@ -1307,9 +1297,6 @@ export default {
     },
     buildAdd () {
       return this.$route.query.build_add ? this.$route.query.build_add : false
-    },
-    buildConfigVersion () {
-      return 'stable'
     },
     currentOrganizationId () {
       return this.$store.state.login.userinfo.organization.id
