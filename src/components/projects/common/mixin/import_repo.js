@@ -4,7 +4,6 @@ import {
   getRepoOwnerByIdAPI,
   getBranchInfoByIdAPI
 } from '@api'
-import { cloneDeep } from 'lodash'
 const sourceRules = {
   codehostID: [{
     required: true,
@@ -103,14 +102,12 @@ export default {
       return this.$refs.repoForm.validate()
     },
     resetSource (val = null) {
-      this.source = val
-        ? cloneDeep(val)
-        : {
-          codehostID: null,
-          owner: '',
-          repo: '',
-          branch: ''
-        }
+      this.source = val || {
+        codehostID: null,
+        owner: '',
+        repo: '',
+        branch: ''
+      }
       this.$nextTick(() => {
         this.$refs.repoForm.clearValidate()
       })

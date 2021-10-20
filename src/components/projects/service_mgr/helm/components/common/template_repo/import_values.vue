@@ -41,7 +41,7 @@ import Resize from '@/components/common/resize'
 import Codemirror from '@/components/projects/common/codemirror.vue'
 import ValueRepo from '@/components/projects/common/import_values/value_repo.vue'
 import Repertory from './repertory.vue'
-import { uniq } from 'lodash'
+import { uniq, cloneDeep } from 'lodash'
 
 const valueInfo = {
   yamlSource: '', // gitRepo or freeEdit
@@ -80,7 +80,7 @@ export default {
       get () {
         let gitRepoConfig = {}
         if (!this.importRepoInfo.gitRepoConfig) {
-          gitRepoConfig = { gitRepoConfig: valueInfo.gitRepoConfig }
+          gitRepoConfig = { gitRepoConfig: cloneDeep(valueInfo.gitRepoConfig) }
         }
         return Object.assign(this.importRepoInfo, gitRepoConfig)
       },
