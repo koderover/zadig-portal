@@ -231,13 +231,13 @@ export default {
         if (res.failedServices.length) {
           let message = ``
           res.failedServices.forEach(fail => {
-            message += `<div>${fail.path}: ${fail.error}</div>`
+            message += `<div style="margin-bottom: 10px;"><span style="color: #e6a23c;">${fail.path}</span>: ${fail.error}</div>`
           })
-          this.$message.error({
+          this.$notify.error({
             dangerouslyUseHTMLString: true,
             message,
-            duration: 0,
-            showClose: true
+            title: '批量创建失败服务列表',
+            duration: 0
           })
         }
       }
