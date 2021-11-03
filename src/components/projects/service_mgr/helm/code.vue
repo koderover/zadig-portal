@@ -3,25 +3,40 @@
     <multipane class="custom-resizer" :class="{'limit-height': !isCreate}" layout="vertical">
       <div class="left">
         <div class="title">
+          <el-radio-group size="mini" v-model="mode">
+            <el-tooltip effect="dark" content="服务管理" placement="top">
+              <el-radio-button label="edit">
+                <i class="iconfont iconiconlog"></i>
+              </el-radio-button>
+            </el-tooltip>
+            <el-tooltip effect="dark" content="服务编排" placement="top">
+              <el-radio-button label="arrange">
+                <i class="iconfont iconfuwu"></i>
+              </el-radio-button>
+            </el-tooltip>
+          </el-radio-group>
           <el-button @click="openRepoModal()" size="mini" icon="el-icon-plus" plain circle></el-button>
         </div>
-        <Folder
-          class="folder"
-          ref="folder"
-          :changeModalStatus="changeModalStatus"
-          :loadData="loadData"
-          :saveFileName="saveFileName"
-          :saveNewFile="saveNewFile"
-          :saveNewFolder="saveNewFolder"
-          :nodeData="filteredNodeData"
-          :expandKey="expandKey"
-          :changeExpandFileList="changeExpandFileList"
-          :deleteServer="deleteServer"
-          :openRepoModal="openRepoModal"
-        />
-        <div class="bottom">
-          <el-input v-model="searchService" placeholder="搜索服务" suffix-icon="el-icon-search" size="small"></el-input>
+        <div class="left-tree" v-show="mode === 'edit'">
+          <Folder
+            ref="folder"
+            class="folder"
+            :changeModalStatus="changeModalStatus"
+            :loadData="loadData"
+            :saveFileName="saveFileName"
+            :saveNewFile="saveNewFile"
+            :saveNewFolder="saveNewFolder"
+            :nodeData="filteredNodeData"
+            :expandKey="expandKey"
+            :changeExpandFileList="changeExpandFileList"
+            :deleteServer="deleteServer"
+            :openRepoModal="openRepoModal"
+          />
+          <div class="bottom">
+            <el-input v-model="searchService" placeholder="搜索服务" suffix-icon="el-icon-search" size="small"></el-input>
+          </div>
         </div>
+        <order class="left-tree" v-show="mode === 'arrange'"></order>
       </div>
       <multipane-resizer class="resizer1"></multipane-resizer>
       <div class="center">
@@ -72,6 +87,7 @@
 </template>
 <script>
 import Folder from './components/editor/folder'
+import Order from './components/editor/order'
 import PageNav from './components/editor/page_nav'
 import CodeMirror from './components/editor/code_mirror'
 import Repo from './components/common/repo'
@@ -101,7 +117,7 @@ const newFolderNode = {
   type: 'folder'
 }
 export default {
-  name: 'vscode',
+  name: 'service_helm',
   props: {
     isCreate: {
       default: false,
@@ -110,6 +126,7 @@ export default {
   },
   components: {
     Folder,
+    Order,
     PageNav,
     CodeMirror,
     Multipane,
@@ -139,7 +156,8 @@ export default {
         left: 0,
         top: 0
       },
-      searchService: ''
+      searchService: '',
+      mode: 'edit'
     }
   },
   methods: {
@@ -399,6 +417,9 @@ export default {
         return node.service_name.includes(this.searchService)
       })
     }
+  },
+  mounted () {
+    this.$store.dispatch('queryService', { projectName: this.projectName })
   }
 }
 </script>
@@ -424,21 +445,23 @@ export default {
     border-right: 1px solid #ebedef;
 
     .title {
+      display: flex;
       flex: 0 0 auto;
+      align-items: center;
+      justify-content: space-between;
       height: 50px;
-      padding-right: 5px;
-      line-height: 50px;
-      text-align: right;
-      border-bottom: 1px solid rgb(230, 230, 230);
-
-      i {
-        font-size: 25px;
-      }
+      padding: 0 10px;
     }
 
-    .folder {
+    .left-tree {
       flex: 1 1 auto;
-      margin-top: 10px;
+      max-height: calc(~'100% - 50px');
+      overflow: auto;
+
+      .folder {
+        height: calc(~'100% - 40px');
+        overflow: auto;
+      }
     }
 
     .bottom {
