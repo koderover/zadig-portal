@@ -2,7 +2,8 @@
   <div class="chart-aside">
     <div class="aside-bar">
       <div class="bar-title" :class="{selected:selected === 'var' }" @click="selected = 'var'">变量</div>
-      <div class="bar-title" :class="{selected:selected === 'quote' }" @click="selected = 'quote'">反向引用</div>
+      <!--the reference list of helm chart not works in v1.6.0. please cancel the annotation when implement it-->
+      <!--<div class="bar-title" :class="{selected:selected === 'quote' }" @click="selected = 'quote'">引用列表</div>-->
     </div>
     <div class="aside-content">
       <ModuleUse v-if="selected === 'quote'"></ModuleUse>

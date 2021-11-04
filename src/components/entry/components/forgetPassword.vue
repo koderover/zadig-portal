@@ -1,67 +1,42 @@
 <template>
   <div>
-    <div v-show="currentStep === 1">
-      <div class="title">找回密码</div>
-      <div class="des">验证码将会发送至您的注册邮箱</div>
+    <div v-if="currentStep === 'account'">
+      <h1 class="title">找回密码</h1>
+      <h2 class="subtitle">请输入用户名</h2>
       <el-form :model="retrieveForm" :rules="retrieveRules" ref="retrieveForm">
-        <el-form-item prop="email">
-          <el-input v-model="retrieveForm.email" placeholder="邮箱"> </el-input>
+        <el-form-item prop="account">
+          <el-input v-model="retrieveForm.account" placeholder="用户名"></el-input>
         </el-form-item>
       </el-form>
-      <el-button
-        type="submit"
-        class="btn-md btn-theme btn-block login-btn"
-        @click="nextStep"
-      >
-        下一步
-      </el-button>
+      <el-button type="submit" class="btn-md btn-theme btn-block login-btn" @click="nextStep">下一步</el-button>
     </div>
-    <div v-show="currentStep === 2">
-      <div class="title">设置新密码</div>
-      <div class="des">新密码应不小于 8 位字符</div>
+    <div v-else-if="currentStep === 'sendmail'">
+      <h2 class="title">找回密码</h2>
+      <p class="subtitle">密码重置链接已经发送至你的注册邮箱</p>
+      <p class="content">{{mail}}</p>
+    </div>
+    <div v-else-if="currentStep === 'setpass'">
+      <h1 class="title">设置新密码</h1>
+      <h2 class="subtitle">请输入新密码</h2>
       <el-form :model="form" ref="form" :rules="rules">
         <el-form-item prop="password">
-          <el-input
-            type="password"
-            v-model="form.password"
-            placeholder="新密码"
-            show-password
-          >
-          </el-input>
+          <el-input type="password" v-model="form.password" placeholder="新密码" show-password></el-input>
         </el-form-item>
         <el-form-item prop="checkPass">
-          <el-input
-            type="password"
-            v-model="form.checkPass"
-            placeholder="再次输入新密码"
-            show-password
-            :minlength="8"
-          ></el-input>
-        </el-form-item>
-        <el-form-item prop="captcha">
-          <el-input
-            v-model="form.captcha"
-            placeholder="请输入邮箱验证码"
-            :minlength="8"
-          ></el-input>
+          <el-input type="password" v-model="form.checkPass" placeholder="再次输入新密码" show-password :minlength="8"></el-input>
         </el-form-item>
       </el-form>
-      <el-button
-        type="submit"
-        @click="submit"
-        class="btn-md btn-theme btn-block login-btn"
-      >
-        重置密码
-      </el-button>
+      <el-button type="submit" @click="submit" class="btn-md btn-theme btn-block login-btn">重置密码</el-button>
     </div>
   </div>
 </template>
 <script>
-import { retrievePassword, changePassword } from '@api'
+import { retrievePasswordAPI, changePasswordAPI } from '@api'
 export default {
   name: 'forgetpassword',
   props: {
-    openLogin: Function
+    openLogin: Function,
+    retrieveToken: String
   },
   data () {
     const validatePass = (rule, value, callback) => {
@@ -88,47 +63,42 @@ export default {
       }
     }
     return {
+      mail: '',
       form: {
         password: null,
-        checkPass: null,
-        captcha: null,
-        email: null
+        checkPass: null
       },
       retrieveForm: {
-        email: null
+        account: ''
       },
-      currentStep: 1,
+      currentStep: 'account',
       retrieveRules: {
-        email: [{ required: true, message: '请输入邮箱', trigger: 'blur' }]
+        account: [{ required: true, message: '请输入用户名', trigger: 'blur' }]
       },
       rules: {
         password: [{ validator: validatePass, trigger: 'change' }],
-        checkPass: [{ validator: validateConfirmedPass, trigger: 'change' }],
-        captcha: [{ required: true, message: '请输入邮箱验证码', trigger: 'blur' }]
+        checkPass: [{ validator: validateConfirmedPass, trigger: 'change' }]
       }
     }
   },
   methods: {
     nextStep () {
-      this.$refs.retrieveForm.validate(async (valid) => {
+      this.$refs.retrieveForm.validate(async valid => {
         if (valid) {
-          const res = await retrievePassword(this.retrieveForm).catch((error) =>
+          const res = await retrievePasswordAPI(this.retrieveForm.account).catch((error) =>
             console.log(error)
           )
           if (res) {
-            this.currentStep = 2
-            if (res.resultCode === 10018) {
-              this.$message.error('验证码未过期,请查看邮件获取')
-            }
+            this.currentStep = 'sendmail'
+            this.mail = res.email
           }
         }
       })
     },
     async submit () {
-      this.$refs.form.validate(async (valid) => {
+      this.$refs.form.validate(async valid => {
         if (valid) {
-          this.form.email = this.retrieveForm.email
-          const res = await changePassword(this.form).catch((error) =>
+          const res = await changePasswordAPI({ password: this.form.password, token: this.retrieveToken }).catch(error =>
             console.log(error)
           )
           if (res) {
@@ -138,10 +108,22 @@ export default {
         }
       })
     }
+  },
+  watch: {
+    retrieveToken (new_val, old_val) {
+      if (new_val) {
+        this.currentStep = 'setpass'
+      }
+    }
   }
 }
 </script>
 <style lang="less" scoped>
+h1,
+h2 {
+  margin: 0;
+}
+
 .title {
   color: #303133;
   font-weight: 600;
@@ -149,9 +131,18 @@ export default {
   text-align: left;
 }
 
-.des {
-  margin: 20px 0;
-  color: #717171;
+.subtitle {
+  margin: 10px 0 25px;
+  color: #8590a6;
+  font-weight: 400;
+  font-size: 15px;
+  text-align: left;
+}
+
+.content {
+  color: #606266;
+  font-weight: 500;
+  font-size: 17px;
   text-align: left;
 }
 

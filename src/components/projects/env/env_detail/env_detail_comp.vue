@@ -319,7 +319,7 @@
             <el-table-column align="left"
                              label="状态"
                              width="130px">
-              <template slot="header">状态{{`(${runningContainerService}/${containerServiceList.length})`}}
+              <template slot="header" slot-scope="{}">状态{{`(${runningContainerService}/${containerServiceList.length})`}}
                 <el-tooltip effect="dark"
                             placement="top">
                   <div slot="content">实际正常的服务/预期的正常服务数量</div>

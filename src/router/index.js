@@ -85,7 +85,7 @@ const routes = [
         children: [
           {
             path: '',
-            redirect: 'charts'
+            redirect: 'k8s-yamls'
           },
           {
             path: 'charts',

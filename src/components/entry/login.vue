@@ -3,7 +3,7 @@
     <div class="container-fluid">
       <div class="row">
         <div class="col-lg-7 col-md-12 col-pad-0 form-section">
-          <div class="login-inner-form"  v-show="isLogin">
+          <div class="login-inner-form"  v-show="!forgotPassword">
             <div class="details">
               <header>
                 <span class="name">Zadig</span>
@@ -40,12 +40,12 @@
               </section>
               <div class="bottom">
                   <a  href="/login">第三方登录</a>
-                  <a  @click="isLogin=false">找回密码</a>
+                  <a  @click="forgotPassword = true">找回密码</a>
               </div>
             </div>
           </div>
-          <div class="login-inner-form" v-show="!isLogin">
-            <ForgetPassword :openLogin="()=> isLogin=true" />
+          <div class="login-inner-form" v-show="forgotPassword">
+            <ForgetPassword :openLogin="()=> forgotPassword=false"  :retrieveToken="retrieveToken"/>
           </div>
         </div>
         <div class="col-lg-5 col-md-12 col-pad-0 bg-img none-992">
@@ -84,7 +84,8 @@ export default {
   },
   data () {
     return {
-      isLogin: true,
+      forgotPassword: false,
+      retrieveToken: '',
       loading: false,
       loginForm: {
         account: '',
@@ -153,6 +154,11 @@ export default {
   },
   async mounted () {
     const token = this.$route.query.token
+    const retrieveToken = this.$route.query.idToken
+    if (retrieveToken) {
+      this.retrieveToken = retrieveToken
+      this.forgotPassword = true
+    }
     if (token) {
       const res = await this.$store.dispatch('OTHERLOGIN', token).catch(error => console.log(error))
       if (res) {

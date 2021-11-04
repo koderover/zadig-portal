@@ -1,174 +1,167 @@
 <template>
   <div class="trigger">
     <!-- start of edit webhook dialog -->
-    <el-dialog width="40%"
-               :title="webhookEditMode?'修改触发器配置':'添加触发器'"
-               :visible.sync="showWebhookDialog"
-               :close-on-click-modal="false"
-               @close="closeWebhookDialog"
-               custom-class="add-trigger-dialog"
-               center>
-      <el-form :model="webhookSwap"
-               ref="triggerForm"
-               label-position="left"
-               label-width="80px">
-        <el-form-item label="名称"
-                      prop="name"
-                      class="bottom-22"
-                      :rules="nameRules">
-          <el-input size="small"
-                    autofocus
-                    ref="webhookNamedRef"
-                    v-model="webhookSwap.name"
-                    placeholder="请输入名称"></el-input>
+    <el-dialog
+      width="40%"
+      :title="webhookEditMode?'修改触发器配置':'添加触发器'"
+      :visible.sync="showWebhookDialog"
+      :close-on-click-modal="false"
+      @close="closeWebhookDialog"
+      custom-class="add-trigger-dialog"
+      center
+    >
+      <el-form :model="webhookSwap" ref="triggerForm" label-position="left" label-width="80px" :rules="rules">
+        <el-form-item label="名称" prop="name" class="bottom-22">
+          <el-input size="small" autofocus ref="webhookNamedRef" v-model="webhookSwap.name" placeholder="请输入名称"></el-input>
         </el-form-item>
         <el-form-item label="描述">
-          <el-input size="small"
-                    type="textarea"
-                    v-model="webhookSwap.description"
-                    placeholder="请输入描述"></el-input>
+          <el-input size="small" type="textarea" v-model="webhookSwap.description" placeholder="请输入描述"></el-input>
         </el-form-item>
-        <el-form-item label="代码库">
-          <el-select style="width: 100%;"
-                     v-model="webhookSwap.repo"
-                     size="small"
-                     @change="repoChange(webhookSwap.repo)"
-                     filterable
-                     clearable
-                     value-key="key"
-                     placeholder="请选择">
-            <el-option v-for="(repo,index) in webhookRepos"
-                       :key="index"
-                       :label="repo.repo_owner+'/'+repo.repo_name"
-                       :value="repo">
-            </el-option>
+        <el-form-item label="代码库" prop="repo" :rules="[
+          { trigger: ['blur', 'change'], validator: validateRepo }
+        ]">
+          <el-select
+            style="width: 100%;"
+            v-model="webhookSwap.repo"
+            size="small"
+            @change="repoChange(webhookSwap.repo)"
+            filterable
+            clearable
+            value-key="key"
+            placeholder="请选择"
+          >
+            <el-option v-for="(repo,index) in webhookRepos" :key="index" :label="repo.repo_owner+'/'+repo.repo_name" :value="repo"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="目标分支">
-          <el-select style="width: 100%;"
-                     v-model="webhookSwap.repo.branch"
-                     size="small"
-                     filterable
-                     clearable
-                     placeholder="请选择">
-            <el-option v-for="(branch,index) in webhookBranches[webhookSwap.repo.repo_name]"
-                       :key="index"
-                       :label="branch.name"
-                       :value="branch.name">
-            </el-option>
+        <el-form-item
+          v-if="checkGitRepo"
+          label="目标分支"
+          prop="repo.branch"
+          :rules="[
+          { required: true, message: webhookSwap.repo.is_regular ? '请输入正则表达式配置' : '请选择目标分支', trigger: ['blur', 'change'] }
+        ]"
+        >
+          <el-input style="width: 100%;" v-if="webhookSwap.repo.is_regular"  v-model="webhookSwap.repo.branch" placeholder="请输入正则表达式配置" size="small"></el-input>
+          <el-select
+            v-else
+            style="width: 100%;"
+            v-model="webhookSwap.repo.branch"
+            size="small"
+            filterable
+            clearable
+            placeholder="请选择分支"
+          >
+            <el-option
+              v-for="(branch,index) in webhookBranches[webhookSwap.repo.repo_name]"
+              :key="index"
+              :label="branch.name"
+              :value="branch.name"
+            ></el-option>
+          </el-select>
+          <el-switch v-model="webhookSwap.repo.is_regular" active-text="正则表达式配置" @change="webhookSwap.repo.branch = '';matchedBranchNames=null;"></el-switch>
+          <div v-show="webhookSwap.repo.is_regular">
+            <span v-show="matchedBranchNames">当前正则匹配到的分支：{{matchedBranchNames && matchedBranchNames.length === 0 ? '无': ''}}</span>
+            <span style="display: inline-block; padding-right: 10px;" v-for="branch in matchedBranchNames" :key="branch">{{ branch }}</span>
+          </div>
+        </el-form-item>
+        <el-form-item
+          v-else
+          label="目标分支"
+          prop="repo.branch"
+          :rules="[
+          { required: true, message: '请选择目标分支', trigger: ['blur', 'change'] }
+        ]"
+        >
+          <el-select
+            style="width: 100%;"
+            v-model="webhookSwap.repo.branch"
+            size="small"
+            filterable
+            clearable
+            placeholder="请选择分支"
+          >
+            <el-option
+              v-for="(branch,index) in webhookBranches[webhookSwap.repo.repo_name]"
+              :key="index"
+              :label="branch.name"
+              :value="branch.name"
+            ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="部署环境">
-          <el-select style="width: 100%;"
-                     v-model="webhookSwap.namespace"
-                     multiple
-                     filterable
-                     @change="changeNamespace"
-                     size="small"
-                     placeholder="请选择">
-            <el-option v-for="pro of matchedProducts"
-                       :key="`${pro.product_name} / ${pro.env_name}`"
-                       :label="`${pro.product_name} / ${pro.env_name}（${pro.is_prod?'生产':'测试'}）`"
-                       :value="`${pro.env_name}`">
-              <span>{{`${pro.product_name} / ${pro.env_name}`}}
-                <el-tag v-if="pro.is_prod"
-                        type="danger"
-                        size="mini"
-                        effect="dark">
-                  生产
-                </el-tag>
+        <el-form-item label="部署环境" prop="namespace">
+          <el-select
+            style="width: 100%;"
+            v-model="webhookSwap.namespace"
+            multiple
+            filterable
+            @change="changeNamespace"
+            size="small"
+            placeholder="请选择"
+          >
+            <el-option
+              v-for="pro of matchedProducts"
+              :key="`${pro.product_name} / ${pro.env_name}`"
+              :label="`${pro.product_name} / ${pro.env_name}（${pro.is_prod?'生产':'测试'}）`"
+              :value="`${pro.env_name}`"
+            >
+              <span>
+                {{`${pro.product_name} / ${pro.env_name}`}}
+                <el-tag v-if="pro.is_prod" type="danger" size="mini" effect="dark">生产</el-tag>
               </span>
             </el-option>
           </el-select>
-          <el-button @click="showEnvUpdatePolicy = !showEnvUpdatePolicy"
-                     class="env-open-button"
-                     size="mini"
-                     plain>
+          <el-button @click="showEnvUpdatePolicy = !showEnvUpdatePolicy" class="env-open-button" size="mini" plain>
             环境更新策略
             <i class="el-icon-arrow-left"></i>
           </el-button>
         </el-form-item>
-        <div class="env-update-list"
-             v-show="showEnvUpdatePolicy">
+        <div class="env-update-list" v-show="showEnvUpdatePolicy">
           <p>环境更新策略</p>
           <el-radio-group v-model="webhookSwap.env_update_policy">
-            <el-tooltip content="目前一个触发任务仅支持更新单个环境，部署环境指定单个环境时可选"
-                        placement="right">
-              <el-radio label="all"
-                        :disabled="!(webhookSwap.namespace.length===1)">
-                更新指定环境
-              </el-radio>
+            <el-tooltip content="目前一个触发任务仅支持更新单个环境，部署环境指定单个环境时可选" placement="right">
+              <el-radio label="all" :disabled="!(webhookSwap.namespace.length===1)">更新指定环境</el-radio>
             </el-tooltip>
-            <el-tooltip content="动态选择一套“没有工作流任务正在更新”的环境进行验证"
-                        placement="right">
-              <el-radio label="single">
-                动态选择空闲环境更新
-              </el-radio>
+            <el-tooltip content="动态选择一套“没有工作流任务正在更新”的环境进行验证" placement="right">
+              <el-radio label="single">动态选择空闲环境更新</el-radio>
             </el-tooltip>
-            <el-tooltip v-if="isK8sEnv && webhookSwap.repo.source==='gitlab'"
-                        content="基于基准环境版本生成一套临时测试环境做 PR 级验证"
-                        placement="right">
-              <el-radio label="base"
-                        :disabled="!(webhookSwap.namespace.length===1 && webhookSwap.repo.source==='gitlab')">
-                设置指定环境为基准环境
-              </el-radio>
+            <el-tooltip v-if="isK8sEnv && webhookSwap.repo.source==='gitlab'" content="基于基准环境版本生成一套临时测试环境做 PR 级验证" placement="right">
+              <el-radio label="base" :disabled="!(webhookSwap.namespace.length===1 && webhookSwap.repo.source==='gitlab')">设置指定环境为基准环境</el-radio>
             </el-tooltip>
           </el-radio-group>
         </div>
-        <el-form-item v-if="webhookSwap.env_update_policy === 'base' && webhookSwap.repo.source==='gitlab' && showEnvUpdatePolicy"
-                      label="销毁策略">
-          <el-select style="width: 100%;"
-                     v-model="webhookSwap.env_recycle_policy"
-                     size="small"
-                     placeholder="请选择销毁策略">
-            <el-option label="工作流成功之后销毁"
-                       value="success">
-            </el-option>
-            <el-option label="每次销毁"
-                       value="always">
-            </el-option>
-            <el-option label="每次保留"
-                       value="never">
-            </el-option>
+        <el-form-item
+          v-if="webhookSwap.env_update_policy === 'base' && webhookSwap.repo.source==='gitlab' && showEnvUpdatePolicy"
+          label="销毁策略"
+        >
+          <el-select style="width: 100%;" v-model="webhookSwap.env_recycle_policy" size="small" placeholder="请选择销毁策略">
+            <el-option label="工作流成功之后销毁" value="success"></el-option>
+            <el-option label="每次销毁" value="always"></el-option>
+            <el-option label="每次保留" value="never"></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="部署服务">
-          <el-select style="width: 100%;"
-                     v-model="webhookSwap.targets"
-                     multiple
-                     filterable
-                     value-key="key"
-                     size="small"
-                     placeholder="请选择">
-            <el-option v-for="(target,index) in webhookTargets"
-                       :key="index"
-                       :label="`${target.name}(${target.service_name})`"
-                       :value="target">
-            </el-option>
+        <el-form-item label="部署服务" prop="targets">
+          <el-select style="width: 100%;" v-model="webhookSwap.targets" multiple filterable value-key="key" size="small" placeholder="请选择">
+            <el-option
+              v-for="(target,index) in webhookTargets"
+              :key="index"
+              :label="`${target.name}(${target.service_name})`"
+              :value="target"
+            ></el-option>
           </el-select>
         </el-form-item>
-        <el-form-item v-if="webhookSwap.repo.source==='gerrit'"
-                      label="触发事件">
+        <el-form-item v-if="webhookSwap.repo.source==='gerrit'" label="触发事件" prop="events">
           <el-checkbox-group v-model="webhookSwap.events">
-            <el-checkbox style="display: block;"
-                         label="change-merged"></el-checkbox>
-            <el-checkbox style="display: block;"
-                         label="patchset-created">
+            <el-checkbox style="display: block;" label="change-merged"></el-checkbox>
+            <el-checkbox style="display: block;" label="patchset-created">
               <template v-if="webhookSwap.events.includes('patchset-created')">
                 <span>patchset-created</span>
                 <span style="color: #606266;">评分标签</span>
-                <el-input size="mini"
-                          style="width: 250px;"
-                          v-model="webhookSwap.repo.label"
-                          placeholder="Code-Review"></el-input>
+                <el-input size="mini" style="width: 250px;" v-model="webhookSwap.repo.label" placeholder="Code-Review"></el-input>
               </template>
             </el-checkbox>
-
           </el-checkbox-group>
-
         </el-form-item>
-        <el-form-item v-else-if="webhookSwap.repo.source!=='gerrit'"
-                      label="触发事件">
+        <el-form-item v-else-if="webhookSwap.repo.source!=='gerrit'" label="触发事件" prop="events">
           <el-checkbox-group v-model="webhookSwap.events">
             <el-checkbox label="push"></el-checkbox>
             <el-checkbox label="pull_request"></el-checkbox>
@@ -177,45 +170,33 @@
         <el-form-item label="触发策略">
           <el-checkbox v-model="webhookSwap.auto_cancel">
             <span>自动取消</span>
-            <el-tooltip effect="dark"
-                        content="如果您希望只构建最新的提交，则使用这个选项会自动取消队列中的任务"
-                        placement="top">
+            <el-tooltip effect="dark" content="如果您希望只构建最新的提交，则使用这个选项会自动取消队列中的任务" placement="top">
               <i class="el-icon-question"></i>
             </el-tooltip>
           </el-checkbox>
-          <el-checkbox v-if="webhookSwap.repo.source==='gerrit'"
-                       v-model="webhookSwap.check_patch_set_change">
+          <el-checkbox v-if="webhookSwap.repo.source==='gerrit'" v-model="webhookSwap.check_patch_set_change">
             <span>代码无变化时不触发工作流</span>
-            <el-tooltip effect="dark"
-                        content="例外情况说明：当目标代码仓配置为 Gerrit 的情况下，受限于其 API 的能力，当单行代码有变化时也不被触发"
-                        placement="top">
+            <el-tooltip effect="dark" content="例外情况说明：当目标代码仓配置为 Gerrit 的情况下，受限于其 API 的能力，当单行代码有变化时也不被触发" placement="top">
               <i class="el-icon-question"></i>
             </el-tooltip>
           </el-checkbox>
         </el-form-item>
-        <el-form-item v-if="webhookSwap.repo.source!=='gerrit' && webhookSwap.repo.source!=='codehub'"
-                      label="文件目录">
-          <el-input :autosize="{ minRows: 4, maxRows: 10}"
-                    type="textarea"
-                    v-model="webhookSwap.match_folders"
-                    placeholder="输入目录时，多个目录请用回车换行分隔"></el-input>
+        <el-form-item v-if="webhookSwap.repo.source!=='gerrit' && webhookSwap.repo.source!=='codehub'" label="文件目录" prop="match_folders">
+          <el-input
+            :autosize="{ minRows: 4, maxRows: 10}"
+            type="textarea"
+            v-model="webhookSwap.match_folders"
+            placeholder="输入目录时，多个目录请用回车换行分隔"
+          ></el-input>
         </el-form-item>
-        <ul v-if="webhookSwap.repo.source!=='gerrit' && webhookSwap.repo.source!=='codehub'"
-            style="padding-left: 80px;">
-          <li> "/" 表示代码库中的所有文件</li>
-          <li> 用 "!" 符号开头可以排除相应的文件</li>
+        <ul v-if="webhookSwap.repo.source!=='gerrit' && webhookSwap.repo.source!=='codehub'" style="padding-left: 80px;">
+          <li>"/" 表示代码库中的所有文件</li>
+          <li>用 "!" 符号开头可以排除相应的文件</li>
         </ul>
       </el-form>
-      <div slot="footer"
-           class="dialog-footer">
-        <el-button size="small"
-                   round
-                   @click="webhookAddMode?webhookAddMode=false:webhookEditMode=false">取 消
-        </el-button>
-        <el-button size="small"
-                   round
-                   type="primary"
-                   @click="validateForm(webhookAddMode?'addWebhook':'saveWebhook')">确定</el-button>
+      <div slot="footer" class="dialog-footer">
+        <el-button size="small" round @click="webhookAddMode?webhookAddMode=false:webhookEditMode=false">取 消</el-button>
+        <el-button size="small" round type="primary" @click="validateForm(webhookAddMode?'addWebhook':'saveWebhook')">确定</el-button>
       </div>
     </el-dialog>
     <!--end of edit webhook dialog -->
@@ -224,38 +205,36 @@
       <div class="content dashed-container">
         <div>
           <span class="title">定时器</span>
-          <el-switch v-model="schedules.enabled">
-          </el-switch>
+          <el-switch v-model="schedules.enabled"></el-switch>
         </div>
         <div class="trigger dashed-container">
-          <el-button v-if="schedules.enabled"
-                     @click="addTimerBtn"
-                     type="text">添加配置</el-button>
-          <div class="add-border"
-               v-if="schedules.enabled">
-            <test-timer ref="timer"
-                        timerType="project"
-                        dialogWidth="65%"
-                        dialogLeft
-                        whichSave="outside"
-                        :projectName="productTmlName"
-                        :schedules="schedules">
+          <el-button v-if="schedules.enabled" @click="addTimerBtn" type="text">添加配置</el-button>
+          <div class="add-border" v-if="schedules.enabled">
+            <test-timer
+              ref="timer"
+              timerType="project"
+              dialogWidth="65%"
+              dialogLeft
+              whichSave="outside"
+              :projectName="productTmlName"
+              :schedules="schedules"
+            >
               <!-- 添加参数 确定是产品工作流 -->
               <template v-slot:content="{ orgsObject, indexWork }">
                 <div class="underline"></div>
                 <div class="pipeline-header">工作流参数</div>
-                <workflow-args :key="indexWork*(testInfos.length+1)"
-                               :workflowName="workflowToRun.name"
-                               :workflowMeta="workflowToRun"
-                               :targetProduct="workflowToRun.product_tmpl_name"
-                               :forcedUserInput="orgsObject || {}"
-                               :testInfos="testInfos"
-                               whichSave="outside"
-                               ref="pipelineConfig"></workflow-args>
+                <workflow-args
+                  :key="indexWork*(testInfos.length+1)"
+                  :workflowName="workflowToRun.name"
+                  :workflowMeta="workflowToRun"
+                  :targetProduct="workflowToRun.product_tmpl_name"
+                  :forcedUserInput="orgsObject || {}"
+                  :testInfos="testInfos"
+                  whichSave="outside"
+                  ref="pipelineConfig"
+                ></workflow-args>
                 <div class="timer-dialog-footer">
-                  <el-button @click="addTimerSchedule"
-                             size="small"
-                             type="primary">确定</el-button>
+                  <el-button @click="addTimerSchedule" size="small" type="primary">确定</el-button>
                 </div>
               </template>
             </test-timer>
@@ -264,22 +243,18 @@
       </div>
       <div class="content dashed-container webhook-container">
         <div>
-          <span class="title"> Webhook
-            <a href="https://docs.koderover.com/zadig/project/workflow/#git-webhook"
-               target="_blank"
-               rel="noopener noreferrer"> <i class="el-icon-question help-link"></i></a>
+          <span class="title">
+            Webhook
+            <a href="https://docs.koderover.com/zadig/project/workflow/#git-webhook" target="_blank" rel="noopener noreferrer">
+              <i class="el-icon-question help-link"></i>
+            </a>
           </span>
-          <el-switch v-model="webhook.enabled">
-          </el-switch>
+          <el-switch v-model="webhook.enabled"></el-switch>
         </div>
         <div class="trigger-container">
-          <div v-if="webhook.enabled"
-               class="trigger-list">
-            <el-button @click="addWebhookBtn"
-                       type="text">添加配置</el-button>
-            <el-table class="add-border"
-                      :data="webhook.items"
-                      style="width: 100%;">
+          <div v-if="webhook.enabled" class="trigger-list">
+            <el-button @click="addWebhookBtn" type="text">添加配置</el-button>
+            <el-table class="add-border" :data="webhook.items" style="width: 100%;">
               <el-table-column label="名称">
                 <template slot-scope="scope">
                   <span>{{ scope.row.main_repo.name?scope.row.main_repo.name:'' }}</span>
@@ -318,22 +293,15 @@
               <el-table-column label="文件目录">
                 <template slot-scope="scope">
                   <span
-                        v-if="scope.row.main_repo.source!=='gerrit' && scope.row.main_repo.source!=='codehub'">{{ scope.row.main_repo.match_folders.join() }}</span>
-                  <span v-else> N/A </span>
+                    v-if="scope.row.main_repo.source!=='gerrit' && scope.row.main_repo.source!=='codehub'"
+                  >{{ scope.row.main_repo.match_folders.join() }}</span>
+                  <span v-else>N/A</span>
                 </template>
               </el-table-column>
               <el-table-column label="操作">
                 <template slot-scope="scope">
-                  <el-button @click.native.prevent="editWebhook(scope.$index)"
-                             type="text"
-                             size="small">
-                    编辑
-                  </el-button>
-                  <el-button @click.native.prevent="deleteWebhook(scope.$index)"
-                             type="text"
-                             size="small">
-                    移除
-                  </el-button>
+                  <el-button @click.native.prevent="editWebhook(scope.$index)" type="text" size="small">编辑</el-button>
+                  <el-button @click.native.prevent="deleteWebhook(scope.$index)" type="text" size="small">移除</el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -347,17 +315,68 @@
 <script type="text/javascript">
 import bus from '@utils/event_bus'
 import workflowArgs from '../container/workflow_args.vue'
-import { listProductAPI, getBranchInfoByIdAPI, singleTestAPI, getAllBranchInfoAPI } from '@api'
-import { uniqBy, get } from 'lodash'
+import {
+  listProductAPI,
+  getBranchInfoByIdAPI,
+  singleTestAPI,
+  getAllBranchInfoAPI,
+  checkRegularAPI
+} from '@api'
+import { uniqBy, get, debounce } from 'lodash'
 export default {
   data () {
     const validateName = (rule, value, callback) => {
       if (!/^[a-zA-Z0-9]([a-zA-Z0-9_\-\.]*[a-zA-Z0-9])?$/.test(value)) {
-        callback(new Error("触发器名称仅支持数字字符、'-'、'_'、'.' 且开始结束只能是数字字符"))
+        callback(
+          new Error(
+            "触发器名称仅支持数字字符、'-'、'_'、'.' 且开始结束只能是数字字符"
+          )
+        )
       } else {
         callback()
       }
     }
+
+    this.validateRepo = (rule, value, callback) => {
+      if (Object.keys(value).length === 0) {
+        callback(new Error('请选择代码库'))
+      } else {
+        callback()
+      }
+    }
+
+    this.rules = {
+      name: [{ type: 'string', trigger: 'change', validator: validateName }],
+      namespace: [
+        {
+          required: true,
+          message: '请选择部署环境',
+          trigger: ['blur', 'change']
+        }
+      ],
+      targets: [
+        {
+          required: true,
+          message: '请选择部署服务',
+          trigger: ['blur', 'change']
+        }
+      ],
+      events: [
+        {
+          required: true,
+          message: '请选择触发事件',
+          trigger: ['blur', 'change']
+        }
+      ],
+      match_folders: [
+        {
+          required: true,
+          message: '请输入文件目录',
+          trigger: ['blur', 'change']
+        }
+      ]
+    }
+
     return {
       testInfos: [],
       gotScheduleRepo: false,
@@ -381,9 +400,7 @@ export default {
       webhookAddMode: false,
       showEnvUpdatePolicy: false,
       firstShowPolicy: false,
-      nameRules: [
-        { type: 'string', trigger: 'change', validator: validateName }
-      ]
+      matchedBranchNames: null
     }
   },
   props: {
@@ -413,6 +430,18 @@ export default {
     }
   },
   methods: {
+    checkRegular: debounce(({ value, that }) => {
+      if (!that.webhookBranches[that.webhookSwap.repo.repo_name]) {
+        return
+      }
+      const payload = {
+        regular: value,
+        branches: that.webhookBranches[that.webhookSwap.repo.repo_name].map(branch => branch.name) || []
+      }
+      checkRegularAPI(payload).then(res => {
+        that.matchedBranchNames = res || []
+      })
+    }, 500),
     validateForm (fn) {
       this.$refs.triggerForm.validate(valid => {
         if (valid) {
@@ -421,7 +450,10 @@ export default {
       })
     },
     getTestReposForQuery (testInfos) {
-      const testRepos = testInfos.length > 0 ? this.$utils.flattenArray(testInfos.map(t => t.builds)) : []
+      const testRepos =
+        testInfos.length > 0
+          ? this.$utils.flattenArray(testInfos.map(t => t.builds))
+          : []
       let testReposForQuery = {}
       const testReposDeduped = this.$utils.deduplicateArray(
         testRepos,
@@ -434,99 +466,148 @@ export default {
         codehost_id: re.codehost_id
       }))
       return new Promise((resolve, reject) => {
-        getAllBranchInfoAPI({ infos: testReposForQuery }).then(res => {
-          // make these repo info more friendly
-          for (const repo of res) {
-            repo.prs.forEach(element => {
-              element.pr = element.id
-            })
-            repo.branchPRsMap = this.$utils.arrayToMapOfArrays(repo.prs, 'targetBranch')
-            repo.branchNames = repo.branches.map(b => b.name)
-          }
-          // and make a map
-          const repoInfoMap = this.$utils.arrayToMap(res, re => `${re.repo_owner}/${re.repo}`)
-          // prepare build/test repo for view
-          // see watcher for allRepos
-          for (const repo of testRepos) {
-            this.$set(repo, '_id_', `${repo.repo_owner}/${repo.repo_name}`)
-            const repoInfo = repoInfoMap[repo._id_]
-            this.$set(repo, 'branchNames', repoInfo && repoInfo.branchNames)
-            this.$set(repo, 'branchPRsMap', repoInfo && repoInfo.branchPRsMap)
-            this.$set(repo, 'tags', repoInfo && repoInfo.tags)
-            this.$set(repo, 'prNumberPropName', 'pr')
-            this.$set(repo, 'releaseMethod', 'branch')
-            // make sure branch/pr/tag is reactive
-            this.$set(repo, 'branch', repo.branch || '')
-            this.$set(repo, repo.prNumberPropName, repo[repo.prNumberPropName] || undefined)
-            this.$set(repo, 'tag', repo.tag || '')
-          }
-          resolve(testInfos)
-        }).catch(err => {
-          console.log('Get test repo error', err)
-          reject(testInfos)
-        })
+        getAllBranchInfoAPI({ infos: testReposForQuery })
+          .then(res => {
+            // make these repo info more friendly
+            for (const repo of res) {
+              repo.prs.forEach(element => {
+                element.pr = element.id
+              })
+              repo.branchPRsMap = this.$utils.arrayToMapOfArrays(
+                repo.prs,
+                'targetBranch'
+              )
+              repo.branchNames = repo.branches.map(b => b.name)
+            }
+            // and make a map
+            const repoInfoMap = this.$utils.arrayToMap(
+              res,
+              re => `${re.repo_owner}/${re.repo}`
+            )
+            // prepare build/test repo for view
+            // see watcher for allRepos
+            for (const repo of testRepos) {
+              this.$set(repo, '_id_', `${repo.repo_owner}/${repo.repo_name}`)
+              const repoInfo = repoInfoMap[repo._id_]
+              this.$set(repo, 'branchNames', repoInfo && repoInfo.branchNames)
+              this.$set(repo, 'branchPRsMap', repoInfo && repoInfo.branchPRsMap)
+              this.$set(repo, 'tags', repoInfo && repoInfo.tags)
+              this.$set(repo, 'prNumberPropName', 'pr')
+              this.$set(repo, 'releaseMethod', 'branch')
+              // make sure branch/pr/tag is reactive
+              this.$set(repo, 'branch', repo.branch || '')
+              this.$set(
+                repo,
+                repo.prNumberPropName,
+                repo[repo.prNumberPropName] || undefined
+              )
+              this.$set(repo, 'tag', repo.tag || '')
+            }
+            resolve(testInfos)
+          })
+          .catch(err => {
+            console.log('Get test repo error', err)
+            reject(testInfos)
+          })
       })
     },
     getTestReposForSchedules () {
       const allPromise = []
-      this.schedules.items.forEach((item) => {
-        allPromise.push(this.getTestReposForQuery(item.workflow_args.tests || []))
+      this.schedules.items.forEach(item => {
+        allPromise.push(
+          this.getTestReposForQuery(item.workflow_args.tests || [])
+        )
       })
       Promise.all(allPromise).then(() => {
-        const params = (this.workflowToRun.test_stage && this.workflowToRun.test_stage.tests && this.workflowToRun.test_stage.tests.map(t => { return t.test_name })) || []
+        const params =
+          (this.workflowToRun.test_stage &&
+            this.workflowToRun.test_stage.tests &&
+            this.workflowToRun.test_stage.tests.map(t => {
+              return t.test_name
+            })) ||
+          []
         this.getTestInfos(params)
       })
     },
     getTestInfos (test_names = []) {
       const allPro = []
-      test_names.forEach((test_name) => {
-        allPro.push(new Promise((resolve, reject) => {
-          singleTestAPI(test_name, this.product_name).then((res) => {
-            const test = {}
-            test.namespace = this.workflowToRun.env_name
-            test.test_module_name = test_name
-            test.envs = res.pre_test.envs
-            test.builds = res.repos
-            resolve(test)
-          }).catch((err) => {
-            reject(err)
+      test_names.forEach(test_name => {
+        allPro.push(
+          new Promise((resolve, reject) => {
+            singleTestAPI(test_name, this.product_name)
+              .then(res => {
+                const test = {}
+                test.namespace = this.workflowToRun.env_name
+                test.test_module_name = test_name
+                test.envs = res.pre_test.envs
+                test.builds = res.repos
+                resolve(test)
+              })
+              .catch(err => {
+                reject(err)
+              })
           })
-        }))
+        )
       })
-      Promise.all(allPro).then(this.getTestReposForQuery).then((res) => {
-        this.testInfos = res
-        this.schedules.items.forEach((item) => {
-          const savedTests = []
-          const savedTestNames = []
-          item.workflow_args.tests && item.workflow_args.tests.forEach((test) => {
-            const test_names = get(this.workflowToRun, 'test_stage.tests', []).map(t => { return t.test_name })
-            if (test_names.includes(test.test_module_name)) {
-              savedTests.push(test)
-              savedTestNames.push(test.test_module_name)
-            }
+      Promise.all(allPro)
+        .then(this.getTestReposForQuery)
+        .then(res => {
+          this.testInfos = res
+          this.schedules.items.forEach(item => {
+            const savedTests = []
+            const savedTestNames = []
+            item.workflow_args.tests &&
+              item.workflow_args.tests.forEach(test => {
+                const test_names = get(
+                  this.workflowToRun,
+                  'test_stage.tests',
+                  []
+                ).map(t => {
+                  return t.test_name
+                })
+                if (test_names.includes(test.test_module_name)) {
+                  savedTests.push(test)
+                  savedTestNames.push(test.test_module_name)
+                }
+              })
+            this.testInfos.forEach(info => {
+              if (!savedTestNames.includes(info.test_module_name)) {
+                savedTests.push(info)
+              }
+            })
+            item.workflow_args.tests = this.workflowToRun.test_stage.enabled
+              ? savedTests
+              : []
           })
-          this.testInfos.forEach((info) => {
-            if (!savedTestNames.includes(info.test_module_name)) {
-              savedTests.push(info)
-            }
-          })
-          item.workflow_args.tests = this.workflowToRun.test_stage.enabled ? savedTests : []
         })
-      }).catch((err) => {
-        console.log('ERROR:  ', err)
-      })
+        .catch(err => {
+          console.log('ERROR:  ', err)
+        })
     },
     deleteTestBuildData () {
       const repoKeysToDelete = [
-        '_id_', 'branchNames', 'branchPRsMap', 'tags', 'isGithub', 'prNumberPropName', 'id',
-        'releaseMethod', 'showBranch', 'showTag', 'showSwitch', 'showPR', 'pr', 'branch'
+        '_id_',
+        'branchNames',
+        'branchPRsMap',
+        'tags',
+        'isGithub',
+        'prNumberPropName',
+        'id',
+        'releaseMethod',
+        'showBranch',
+        'showTag',
+        'showSwitch',
+        'showPR',
+        'pr',
+        'branch'
       ]
-      this.testInfos.forEach((test) => {
-        test.builds && test.builds.forEach(build => {
-          for (const key of repoKeysToDelete) {
-            delete build[key]
-          }
-        })
+      this.testInfos.forEach(test => {
+        test.builds &&
+          test.builds.forEach(build => {
+            for (const key of repoKeysToDelete) {
+              delete build[key]
+            }
+          })
       })
     },
     addTimerBtn () {
@@ -550,15 +631,33 @@ export default {
       this.showEnvUpdatePolicy = true
       this.currenteditWebhookIndex = index
       const webhookSwap = this.$utils.cloneObj(this.webhook.items[index])
-      if (webhookSwap.main_repo.codehost_id && webhookSwap.main_repo.repo_owner && webhookSwap.main_repo.repo_name) {
-        this.getBranchInfoById(webhookSwap.main_repo.codehost_id, webhookSwap.main_repo.repo_owner, webhookSwap.main_repo.repo_name)
+      if (
+        webhookSwap.main_repo.codehost_id &&
+        webhookSwap.main_repo.repo_owner &&
+        webhookSwap.main_repo.repo_name
+      ) {
+        this.getBranchInfoById(
+          webhookSwap.main_repo.codehost_id,
+          webhookSwap.main_repo.repo_owner,
+          webhookSwap.main_repo.repo_name
+        )
       }
       this.webhookSwap = {
         name: webhookSwap.main_repo.name,
         description: webhookSwap.main_repo.description,
-        repo: Object.assign({ key: `${webhookSwap.main_repo.repo_owner}/${webhookSwap.main_repo.repo_name}` }, webhookSwap.main_repo),
+        repo: Object.assign(
+          {
+            key: `${webhookSwap.main_repo.repo_owner}/${webhookSwap.main_repo.repo_name}`,
+            is_regular: false
+          },
+          webhookSwap.main_repo
+        ),
         namespace: webhookSwap.workflow_args.namespace.split(','),
-        env_update_policy: webhookSwap.workflow_args.env_update_policy ? webhookSwap.workflow_args.env_update_policy : (webhookSwap.workflow_args.base_namespace ? 'base' : 'all'),
+        env_update_policy: webhookSwap.workflow_args.env_update_policy
+          ? webhookSwap.workflow_args.env_update_policy
+          : webhookSwap.workflow_args.base_namespace
+            ? 'base'
+            : 'all',
         base_namespace: webhookSwap.workflow_args.base_namespace,
         env_recycle_policy: webhookSwap.workflow_args.env_recycle_policy,
         events: webhookSwap.main_repo.events,
@@ -589,6 +688,7 @@ export default {
       this.webhookAddMode = true
       this.$nextTick(() => {
         this.$refs.webhookNamedRef.focus()
+        this.$refs.triggerForm.clearValidate()
       })
     },
     addWebhook () {
@@ -607,7 +707,10 @@ export default {
         check_patch_set_change: webhookSwap.check_patch_set_change,
         workflow_args: {
           namespace: webhookSwap.namespace.toString(),
-          base_namespace: webhookSwap.env_update_policy === 'base' ? webhookSwap.namespace.toString() : '',
+          base_namespace:
+            webhookSwap.env_update_policy === 'base'
+              ? webhookSwap.namespace.toString()
+              : '',
           env_update_policy: webhookSwap.env_update_policy,
           env_recycle_policy: webhookSwap.env_recycle_policy,
           targets: webhookSwap.targets
@@ -646,7 +749,10 @@ export default {
         check_patch_set_change: webhookSwap.check_patch_set_change,
         workflow_args: {
           namespace: webhookSwap.namespace.toString(),
-          base_namespace: webhookSwap.env_update_policy === 'base' ? webhookSwap.namespace.toString() : '',
+          base_namespace:
+            webhookSwap.env_update_policy === 'base'
+              ? webhookSwap.namespace.toString()
+              : '',
           env_update_policy: webhookSwap.env_update_policy,
           env_recycle_policy: webhookSwap.env_recycle_policy,
           targets: webhookSwap.targets
@@ -688,22 +794,32 @@ export default {
       })
     },
     getBranchInfoById (id, repo_owner, repo_name) {
-      getBranchInfoByIdAPI(id, repo_owner, repo_name).then((res) => {
+      getBranchInfoByIdAPI(id, repo_owner, repo_name).then(res => {
         this.$set(this.webhookBranches, repo_name, res)
       })
     },
     repoChange (currentRepo) {
       this.webhookSwap.events = []
-      this.getBranchInfoById(currentRepo.codehost_id, currentRepo.repo_owner, currentRepo.repo_name)
+      this.getBranchInfoById(
+        currentRepo.codehost_id,
+        currentRepo.repo_owner,
+        currentRepo.repo_name
+      )
     }
   },
   computed: {
     showWebhookDialog: {
       get: function () {
-        return this.webhookAddMode ? this.webhookAddMode : this.webhookEditMode
+        const flag = this.webhookAddMode ? this.webhookAddMode : this.webhookEditMode
+        if (!flag) {
+          this.matchedBranchNames = null
+        }
+        return flag
       },
       set: function (newValue) {
-        this.webhookAddMode ? this.webhookAddMode = newValue : this.webhookEditMode = newValue
+        this.webhookAddMode
+          ? (this.webhookAddMode = newValue)
+          : (this.webhookEditMode = newValue)
       }
     },
     webhookRepos: {
@@ -715,6 +831,7 @@ export default {
         repos = uniqBy(repos, value => value.repo_owner + '/' + value.repo_name)
         repos.forEach(repo => {
           repo.key = `${repo.repo_owner}/${repo.repo_name}`
+          this.$set(repo, 'is_regular', false)
         })
         return repos
       }
@@ -726,8 +843,8 @@ export default {
           targets.push({
             name: element.target.service_module,
             service_name: element.target.service_name,
-            key: element.target.service_module + '/' + element.target.service_name
-
+            key:
+              element.target.service_module + '/' + element.target.service_name
           })
         })
         return targets
@@ -737,7 +854,15 @@ export default {
       return this.products.filter(p => p.product_name === this.productTmlName)
     },
     isK8sEnv () {
-      return this.presets && this.presets[0] && this.presets[0].deploy && this.presets[0].deploy[0].type === 'k8s'
+      return (
+        this.presets &&
+        this.presets[0] &&
+        this.presets[0].deploy &&
+        this.presets[0].deploy[0].type === 'k8s'
+      )
+    },
+    checkGitRepo () {
+      return this.webhookSwap.repo && ['gitlab', 'github'].includes(this.webhookSwap.repo.source)
     }
   },
   watch: {
@@ -746,7 +871,9 @@ export default {
     },
     'workflowToRun.test_stage.tests' (newVal) {
       if (this.workflowToRun.test_stage.enabled) {
-        const test_names = newVal.map(t => { return t.test_name })
+        const test_names = newVal.map(t => {
+          return t.test_name
+        })
         this.getTestInfos(test_names)
       }
     },
@@ -757,6 +884,15 @@ export default {
       if (newVal && !this.gotScheduleRepo) {
         this.getTestReposForSchedules()
         this.gotScheduleRepo = true
+      }
+    },
+    'webhookSwap.repo.branch': {
+      handler (value) {
+        if (!value) {
+          this.matchedBranchNames = null
+        } else if (this.checkGitRepo && this.webhookSwap.repo.is_regular) {
+          this.checkRegular({ value, that: this })
+        }
       }
     }
   },

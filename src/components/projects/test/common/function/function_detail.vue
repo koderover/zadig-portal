@@ -608,6 +608,13 @@ export default {
       this.test.pre_test.installs.splice(index, 1)
     },
     addTrigger () {
+      this.test.repos.forEach(repo => {
+        this.allCodeHosts.forEach(codehost => {
+          if (repo.codehost_id === codehost.id) {
+            repo.source = codehost.type
+          }
+        })
+      })
       this.$refs.trigger.addWebhookBtn()
     },
     addTimer () {

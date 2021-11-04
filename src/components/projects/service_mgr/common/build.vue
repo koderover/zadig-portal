@@ -901,6 +901,14 @@ export default {
           })
         })
         formName = 'addConfigForm'
+        if (payload.post_build && payload.post_build.docker_build && payload.post_build.docker_build.source) {
+          const docker_build = payload.post_build.docker_build
+          if (docker_build.source === 'template' && docker_build.docker_file) {
+            docker_build.docker_file = ''
+          } else if (docker_build.source === 'local' && docker_build.template_id) {
+            docker_build.template_id = ''
+          }
+        }
       } else {
         if (!this.jenkinsBuild.jenkins_build.jenkins_build_params.find(item => item.name === 'IMAGE')) {
           this.$message.error('Jenkins Build Parameters 中必须存在“IMAGE”变量，作为构建镜像的名称，Jenkins 成功构建镜像后，部署阶段会使用该镜像更新服务')
@@ -949,6 +957,14 @@ export default {
             }
           })
         })
+        if (payload.post_build && payload.post_build.docker_build && payload.post_build.docker_build.source) {
+          const docker_build = payload.post_build.docker_build
+          if (docker_build.source === 'template' && docker_build.docker_file) {
+            docker_build.docker_file = ''
+          } else if (docker_build.source === 'local' && docker_build.template_id) {
+            docker_build.template_id = ''
+          }
+        }
       } else {
         if (!this.jenkinsBuild.jenkins_build.jenkins_build_params.find(item => item.name === 'IMAGE')) {
           this.$message.error('Jenkins Build Parameters 中必须存在“IMAGE”变量，作为构建镜像的名称，Jenkins 成功构建镜像后，部署阶段会使用该镜像更新服务')

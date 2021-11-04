@@ -55,7 +55,7 @@ import 'codemirror/addon/dialog/dialog.js'
 import 'codemirror/addon/dialog/dialog.css'
 import 'codemirror/addon/search/searchcursor.js'
 import 'codemirror/addon/search/search.js'
-import { validateKubernetesAPI, createKubernetesTemplateAPI, updateKubernetesTemplateAPI, updateKubernetesTemplateVariablesAPI } from '@api'
+import { praseKubernetesTemplateAPI, createKubernetesTemplateAPI, updateKubernetesTemplateAPI } from '@api'
 
 export default {
   props: {
@@ -71,7 +71,7 @@ export default {
       type: Boolean,
       required: true
     },
-    variables: {
+    inputVariables: {
       required: false,
       type: Array,
       default: () => []
@@ -109,21 +109,18 @@ export default {
       const fileName = this.fileContent.name
       const fileId = this.fileContent.id
       const content = this.fileContent.content
-      const variable = this.variables
+      const variable = this.inputVariables
       const status = this.fileStatus
       const payload = {
         name: fileName,
-        content: content
-      }
-      const varPayload = {
-        variables: variable
+        content: content,
+        variable: variable
       }
       if (status === 'added') {
         const res = await updateKubernetesTemplateAPI(
           fileId, payload
         )
-        const varRes = await updateKubernetesTemplateVariablesAPI(fileId, varPayload)
-        if (res && varRes) {
+        if (res) {
           this.$emit('onUpdateFile', { name: fileName, status: 'added', payload })
           this.$message({
             type: 'success',
@@ -148,23 +145,18 @@ export default {
       this.errors = []
       this.fileContent.content = newCode
       if (this.fileContent.content) {
-        // this.validateFile(newCode)
+        this.praseKubernetesTemplate(newCode)
         if (this.fileContent.status === 'named') {
           this.stagedFile[this.fileContent.name] = newCode
         }
       }
     }, 500),
-    validateFile (code) {
+    praseKubernetesTemplate (code) {
       const payload = {
         content: code
       }
-      validateKubernetesAPI(payload).then((res) => {
-        this.errors = []
-        if (res && res.error) {
-          this.errors.push(res.error)
-        } else if (res && res.error === '') {
-          this.errors = []
-        }
+      praseKubernetesTemplateAPI(payload).then((res) => {
+        this.$emit('update:parseVariables', res)
       })
     },
     editorFocus () {
@@ -185,7 +177,7 @@ export default {
       return this.fileContent.status
     },
     disabledSave () {
-      return this.errors.length > 0 || !this.fileContentChange || this.variables.length === 0
+      return this.errors.length > 0 || !this.fileContentChange || this.inputVariables.length === 0
     }
   },
   mounted () {

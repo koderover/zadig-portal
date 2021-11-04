@@ -896,6 +896,14 @@ export default {
           payload.pre_build.image_from = image.image_from
           payload.pre_build.build_os = image.value
         }
+        if (payload.post_build && payload.post_build.docker_build && payload.post_build.docker_build.source) {
+          const docker_build = payload.post_build.docker_build
+          if (docker_build.source === 'template' && docker_build.docker_file) {
+            docker_build.docker_file = ''
+          } else if (docker_build.source === 'local' && docker_build.template_id) {
+            docker_build.template_id = ''
+          }
+        }
       } else {
         formName = 'jenkinsForm'
         payload = this.$utils.cloneObj(this.jenkinsBuild)
@@ -945,6 +953,14 @@ export default {
           const image = this.systems.find((item) => { return item.value === payload.pre_build.build_os })
           payload.pre_build.image_id = image.id
           payload.pre_build.image_from = image.image_from
+        }
+        if (payload.post_build && payload.post_build.docker_build && payload.post_build.docker_build.source) {
+          const docker_build = payload.post_build.docker_build
+          if (docker_build.source === 'template' && docker_build.docker_file) {
+            docker_build.docker_file = ''
+          } else if (docker_build.source === 'local' && docker_build.template_id) {
+            docker_build.template_id = ''
+          }
         }
       } else {
         payload = this.$utils.cloneObj(this.jenkinsBuild)

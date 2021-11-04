@@ -156,7 +156,7 @@ export default {
         const projectName = this.projectName
         const w1 = 'workflow-qa'
         const w2 = 'workflow-dev'
-        const w3 = 'workflow-ops'
+        const w3 = 'ops-workflow'
         const currentWorkflows = this.$store.getters.workflowList.filter(element => {
           return (element.name.includes(w1) && element.product_tmpl_name === this.projectName) || (element.name.includes(w2) && element.product_tmpl_name === this.projectName) || (element.name.includes(w3) && element.product_tmpl_name === this.projectName)
         })

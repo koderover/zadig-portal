@@ -7,11 +7,16 @@
                :close-on-click-modal="false"
                custom-class="add-trigger-dialog"
                center>
-      <el-form :model="webhook"
+      <el-form ref="triggerForm"
+               :model="webhookSwap"
                label-position="left"
-               label-width="90px">
-        <el-form-item label="代码库">
+               label-width="90px"
+               :rules="rules">
+        <el-form-item label="代码库" prop="repo" :rules="[
+          { trigger: ['blur', 'change'], validator: validateRepo }
+        ]">
           <el-select v-model="webhookSwap.repo"
+                     style="width: 100%;"
                      size="small"
                      @change="repoChange(webhookSwap.repo)"
                      filterable
@@ -25,8 +30,38 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="目标分支">
-          <el-select v-model="webhookSwap.repo.branch"
+        <el-form-item label="目标分支" prop="repo.branch"
+          v-if="checkGitRepo"
+          :rules="[
+          { required: true, message: webhookSwap.repo.is_regular ? '请输入正则表达式配置' : '请选择目标分支', trigger: ['blur', 'change'] }
+        ]">
+          <el-input style="width: 100%;" v-if="webhookSwap.repo.is_regular"  v-model="webhookSwap.repo.branch" placeholder="请输入正则表达式配置" size="small"></el-input>
+          <el-select v-else
+                     style="width: 100%;"
+                     v-model="webhookSwap.repo.branch"
+                     size="small"
+                     filterable
+                     clearable
+                     placeholder="请选择">
+            <el-option v-for="(branch,index) in webhookBranches[webhookSwap.repo.repo_name]"
+                       :key="index"
+                       :label="branch.name"
+                       :value="branch.name">
+            </el-option>
+          </el-select>
+          <el-switch v-model="webhookSwap.repo.is_regular" active-text="正则表达式配置" @change="webhookSwap.repo.branch = '';matchedBranchNames=null;"></el-switch>
+          <div v-show="webhookSwap.repo.is_regular">
+            <span v-show="matchedBranchNames">当前正则匹配到的分支：{{matchedBranchNames && matchedBranchNames.length === 0 ? '无': ''}}</span>
+            <span style="display: inline-block; padding-right: 10px;" v-for="branch in matchedBranchNames" :key="branch">{{ branch }}</span>
+          </div>
+        </el-form-item>
+        <el-form-item label="目标分支" prop="repo.branch"
+          v-else
+          :rules="[
+          { required: true, message: '请选择目标分支', trigger: ['blur', 'change'] }
+        ]">
+          <el-select style="width: 100%;"
+                     v-model="webhookSwap.repo.branch"
                      size="small"
                      filterable
                      clearable
@@ -39,7 +74,8 @@
           </el-select>
         </el-form-item>
         <el-form-item v-if="webhookSwap.repo.source==='gerrit'"
-                      label="触发事件">
+                      label="触发事件"
+                      prop="events">
           <el-checkbox-group v-model="webhookSwap.events">
             <el-checkbox style="display: block;"
                          label="change-merged"></el-checkbox>
@@ -59,7 +95,8 @@
 
         </el-form-item>
         <el-form-item v-else-if="webhookSwap.repo.source!=='gerrit'"
-                      label="触发事件">
+                      label="触发事件"
+                      prop="events">
           <el-checkbox-group v-model="webhookSwap.events">
             <el-checkbox label="push"></el-checkbox>
             <el-checkbox label="pull_request"></el-checkbox>
@@ -77,7 +114,8 @@
           <el-checkbox v-model="webhookSwap.auto_cancel"></el-checkbox>
         </el-form-item>
         <el-form-item v-if="webhookSwap.repo.source!=='gerrit'"
-                      label="文件目录">
+                      label="文件目录"
+                      prop="match_folders">
           <el-input :autosize="{ minRows: 4, maxRows: 10}"
                     type="textarea"
                     v-model="webhookSwap.match_folders"
@@ -158,9 +196,33 @@
 </template>
 
 <script type="text/javascript">
-import { getBranchInfoByIdAPI } from '@api'
+import { getBranchInfoByIdAPI, checkRegularAPI } from '@api'
+import { debounce } from 'lodash'
 export default {
   data () {
+    this.validateRepo = (rule, value, callback) => {
+      if (Object.keys(value).length === 0) {
+        callback(new Error('请选择代码库'))
+      } else {
+        callback()
+      }
+    }
+    this.rules = {
+      events: [
+        {
+          required: true,
+          message: '请选择触发事件',
+          trigger: ['blur', 'change']
+        }
+      ],
+      match_folders: [
+        {
+          required: true,
+          message: '请输入文件目录',
+          trigger: ['blur', 'change']
+        }
+      ]
+    }
     return {
       showTriggerParamsDialog: false,
       webhookBranches: {},
@@ -172,7 +234,8 @@ export default {
       },
       currenteditWebhookIndex: null,
       webhookEditMode: false,
-      webhookAddMode: false
+      webhookAddMode: false,
+      matchedBranchNames: null
     }
   },
   props: {
@@ -199,6 +262,18 @@ export default {
     }
   },
   methods: {
+    checkRegular: debounce(({ value, that }) => {
+      if (!that.webhookBranches[that.webhookSwap.repo.repo_name]) {
+        return
+      }
+      const payload = {
+        regular: value,
+        branches: that.webhookBranches[that.webhookSwap.repo.repo_name].map(branch => branch.name) || []
+      }
+      checkRegularAPI(payload).then(res => {
+        that.matchedBranchNames = res || []
+      })
+    }, 500),
     editWebhook (index) {
       this.webhookEditMode = true
       this.currenteditWebhookIndex = index
@@ -220,8 +295,15 @@ export default {
         events: [],
         match_folders: '/\n!.md'
       }
+      this.$nextTick(() => {
+        this.$refs.triggerForm.clearValidate()
+      })
     },
-    addWebhook () {
+    async addWebhook () {
+      const res = await this.$refs.triggerForm.validate().catch(err => console.log(err))
+      if (!res) {
+        return
+      }
       const webhookSwap = this.$utils.cloneObj(this.webhookSwap)
       webhookSwap.repo.match_folders = webhookSwap.match_folders.split('\n')
       webhookSwap.repo.events = webhookSwap.events
@@ -241,7 +323,11 @@ export default {
       }
       this.webhookAddMode = false
     },
-    saveWebhook () {
+    async saveWebhook () {
+      const res = await this.$refs.triggerForm.validate().catch(err => console.log(err))
+      if (!res) {
+        return
+      }
       const index = this.currenteditWebhookIndex
       const webhookSwap = this.$utils.cloneObj(this.webhookSwap)
       webhookSwap.repo.match_folders = webhookSwap.match_folders.split('\n')
@@ -281,7 +367,11 @@ export default {
   computed: {
     showWebhookDialog: {
       get: function () {
-        return this.webhookAddMode ? this.webhookAddMode : this.webhookEditMode
+        const flag = this.webhookAddMode ? this.webhookAddMode : this.webhookEditMode
+        if (!flag) {
+          this.matchedBranchNames = null
+        }
+        return flag
       },
       set: function (newValue) {
         this.webhookAddMode ? this.webhookAddMode = newValue : this.webhookEditMode = newValue
@@ -289,11 +379,26 @@ export default {
     },
     webhookRepos: {
       get: function () {
+        this.avaliableRepos.forEach(repo => {
+          this.$set(repo, 'is_regular', false)
+        })
         return this.avaliableRepos
       }
+    },
+    checkGitRepo () {
+      return this.webhookSwap.repo && ['gitlab', 'github'].includes(this.webhookSwap.repo.source)
     }
   },
-  components: {
+  watch: {
+    'webhookSwap.repo.branch': {
+      handler (value) {
+        if (!value) {
+          this.matchedBranchNames = null
+        } else if (this.checkGitRepo && this.webhookSwap.repo.is_regular) {
+          this.checkRegular({ value, that: this })
+        }
+      }
+    }
   }
 }
 </script>

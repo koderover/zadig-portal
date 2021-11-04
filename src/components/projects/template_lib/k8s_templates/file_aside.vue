@@ -75,7 +75,7 @@
                 </el-tooltip>
               </h4>
               <div class="kv-container">
-                <el-table :data="fileContent.variable"
+                <el-table :data="inputVariables"
                           style="width: 100%;">
                   <el-table-column label="Key">
                     <template slot-scope="scope">
@@ -103,10 +103,12 @@
 </template>
 <script>
 import { getKubernetesTemplateBuildReferenceAPI } from '@api'
+import { unionBy } from 'lodash'
 export default {
   data () {
     return {
-      referenceList: []
+      referenceList: [],
+      inputVariables: []
     }
   },
   methods: {
@@ -138,6 +140,10 @@ export default {
       required: true,
       type: Object
     },
+    parseVariables: {
+      required: true,
+      type: Array
+    },
     systemVariables: {
       required: true,
       type: Array
@@ -153,13 +159,22 @@ export default {
       },
       immediate: false
     },
-    'fileContent.variable': {
+    parseVariables: {
       handler (val, old_val) {
         if (val) {
-          this.$emit('update:variables', val)
+          const union = unionBy(this.fileContent.variable, val, 'key')
+          this.inputVariables = union.filter((item) => {
+            const findIndex = val.findIndex((vitem) => vitem.key === item.key)
+            return (findIndex >= 0)
+          })
         }
       },
       immediate: false
+    },
+    inputVariables: {
+      handler (val, old_val) {
+        this.$emit('update:inputVariables', val)
+      }
     }
 
   }

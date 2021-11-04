@@ -324,6 +324,7 @@ export default {
           })
         }
       }
+      this.$emit('update:showNext', true)
       this.$emit('onRefreshService')
     }
   },

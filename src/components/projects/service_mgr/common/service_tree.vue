@@ -402,7 +402,7 @@
 
 <script>
 import gitfileTree from '@/components/common/gitfile_tree.vue'
-import { deleteServiceTemplateAPI, autoUpgradeEnvAPI, getSingleProjectAPI, updateEnvTemplateAPI, getCodeSourceAPI, getRepoOwnerByIdAPI, getRepoNameByIdAPI, getBranchInfoByIdAPI, loadRepoServiceAPI, validPreloadService, getCodeSourceByAdminAPI } from '@api'
+import { deleteServiceTemplateAPI, autoUpgradeEnvAPI, getSingleProjectAPI, updateEnvTemplateAPI, getCodeSourceAPI, getRepoOwnerByIdAPI, getRepoNameByIdAPI, getBranchInfoByIdAPI, loadRepoServiceAPI, validPreloadService, getCodeSourceByAdminAPI, updateServicesOrchestrationAPI } from '@api'
 import { mapGetters } from 'vuex'
 export default {
   props: {
@@ -724,8 +724,6 @@ export default {
     },
     handleDrop (draggingNode, dropNode, dropType, ev) {
       const services = []
-      const payload = this.$utils.cloneObj(this.projectInfo)
-      const projectName = this.projectName
       this.serviceGroup.forEach((order, orderIndex) => {
         if (order.children.length > 0) {
           const serviceStringArray = order.children.map(service => {
@@ -734,8 +732,7 @@ export default {
           services.push(serviceStringArray)
         };
       })
-      payload.services = services
-      updateEnvTemplateAPI(projectName, payload)
+      updateServicesOrchestrationAPI(this.projectName, { services })
     },
     async createService (cmd) {
       if (this.yamlChange) {

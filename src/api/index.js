@@ -3,7 +3,7 @@ import qs from 'qs'
 import store from 'storejs'
 import Element from 'element-ui'
 import errorMap from '@/utilities/errorMap'
-const specialAPIs = ['/api/directory/userss/search', '/api/aslan/system/operation', '/api/aslan/delivery/artifacts', '/api/aslan/environment/kube/workloads']
+const specialAPIs = ['/api/aslan/system/operation', '/api/aslan/delivery/artifacts', '/api/aslan/environment/kube/workloads']
 const ignoreErrReq = '/api/aslan/services/validateUpdate/'
 const reqExps = [/api\/aslan\/environment\/environments\/[a-z-A-Z-0-9]+\/workloads/, /api\/aslan\/environment\/environments\/[a-z-A-Z-0-9]+\/groups/]
 const analyticsReq = 'https://api.koderover.com/api/operation/upload'
@@ -50,11 +50,17 @@ http.interceptors.request.use((config) => {
   if (source && config.method === 'get') {
     config.cancelToken = source.token
   }
+  // Optimize analyticsReq.
   if (config.url === analyticsReq) {
     analyticsReqSource.cancelRequest()
     analyticsReqSource.initSource()
     config.cancelToken = analyticsReqSource.sourceToken
   }
+  // Set token for forgot password.
+  if (config.url === '/reset' && config.data.token) {
+    config.headers.Authorization = 'Bearer ' + config.data.token
+  }
+  // Set Authorization Header.
   if (store.get('userInfo') && store.get('userInfo') !== 'undefined' && config.url !== analyticsReq) {
     config.headers.Authorization = 'Bearer ' + store.get('userInfo').token
   }
@@ -115,14 +121,6 @@ http.interceptors.response.use(
       // The request was made and the server responded with a status code
       // that falls out of the range of 2xx
       console.log(error.response)
-      // Checking installation status
-      if (error.response.data.resultCode === 10009) {
-        router.push('/setup/license?installed=true')
-        return Promise.reject(error)
-      } else if (error.response.data.resultCode === 10012) {
-        router.push('/setup/license')
-        return Promise.reject(error)
-      }
       if (document.title !== '登录' && document.title !== '系统初始化') {
         // unauthorized 401
         if (error.response.status === 401) {
@@ -138,8 +136,6 @@ http.interceptors.response.use(
         } else if (error.response.data.code !== 6168) {
           displayError(error)
         }
-      } else if (error.response.config.url !== '/api/directory/user/detail') {
-        displayError(error)
       }
     } else {
       // Something happened in setting up the request that triggered an Error
@@ -331,6 +327,10 @@ export function getHelmChartService (projectName) {
   return http.get(`/api/aslan/service/helm/${projectName}?projectName=${projectName}`)
 }
 
+export function updateServicesOrchestrationAPI (projectName, payload) {
+  return http.patch(`/api/aslan/project/products/${projectName}`, payload)
+}
+
 export function getHelmChartServiceFilePath (projectName, serviceName, path) {
   return http.get(`/api/aslan/service/helm/${projectName}/${serviceName}/filePath?dir=${path}&projectName=${projectName}`)
 }
@@ -500,6 +500,10 @@ export function deleteWorkflowAPI (projectName, name) {
   return http.delete(`/api/aslan/workflow/workflow/${name}?projectName=${projectName}`)
 }
 
+export function checkRegularAPI (payload) { // {regular: '', branches: []}
+  return http.post(`/api/aslan/code/codehost/branches/regular/check`, payload)
+}
+
 export function copyWorkflowAPI (projectName, oldName, newName) {
   return http.put(`/api/aslan/workflow/workflow/old/${oldName}/new/${newName}?projectName=${projectName}`)
 }
@@ -616,12 +620,20 @@ export function addUserAPI (payload) {
   return http.post(`/api/v1/users`, payload)
 }
 
-export function editUserRoleAPI (payload) {
-  return http.put('/api/directory/roleUser', payload)
+export function getSystemRoleBindingsAPI () {
+  return http.get(`/api/v1/system-rolebindings`)
 }
 
-export function deleteUserAPI (user_id) {
-  return http.delete(`/api/directory/user/${user_id}`)
+export function addSystemRoleBindingsAPI (payload) {
+  return http.post(`/api/v1/system-rolebindings`, payload)
+}
+
+export function deleteSystemRoleBindingsAPI (name) {
+  return http.delete(`/api/v1/system-rolebindings/${name}`)
+}
+
+export function deleteUserAPI (uid) {
+  return http.delete(`/api/v1/users/${uid}`)
 }
 
 // ----- Syetem Setting-Integration -----
@@ -1154,12 +1166,13 @@ export function productHostingNamespaceAPI (clusterId) {
   return http.get(`/api/aslan/environment/kube/available_namespaces?clusterId=${clusterId}`)
 }
 
-// 重置密码
-export function retrievePassword (payload) {
-  return http.post('/api/directory/retrievePassword', payload)
+// Forgot password
+export function retrievePasswordAPI (account) {
+  return http.get(`/retrieve?account=${account}`)
 }
-export function changePassword (payload) {
-  return http.put('/api/directory/changePassword', payload)
+
+export function changePasswordAPI (payload) {
+  return http.post('/reset', payload)
 }
 
 // Template Helm
@@ -1246,8 +1259,8 @@ export function updateKubernetesTemplateAPI (id, payload) {
   return http.put(`/api/aslan/template/yaml/${id}`, payload)
 }
 
-export function validateKubernetesAPI (payload) {
-  return http.post(`/api/aslan/template/yaml/validation`, payload)
+export function praseKubernetesTemplateAPI (payload) {
+  return http.post(`/api/aslan/template/yaml/getVariables`, payload)
 }
 
 export function getKubernetesAPI (id) {
@@ -1268,10 +1281,6 @@ export function loadServiceFromKubernetesTemplateAPI (payload) {
 
 export function reloadServiceFromKubernetesTemplateAPI (payload) {
   return http.post(`/api/aslan/service/template/reload`, payload)
-}
-
-export function updateKubernetesTemplateVariablesAPI (id, payload) {
-  return http.put(`/api/aslan/template/yaml/${id}/variables`, payload)
 }
 
 // helm env and service
@@ -1404,19 +1413,6 @@ export function queryRoleBindingsAPI (projectName) { // 查询项目中的角色
 
 export function queryUserBindings (uid, projectName = '') { // 查询用户所有绑定的角色 传projectName是项目绑定，不传是系统绑定
   return http.get(`/api/v1/userbindings?uid=${uid}&projectName=${projectName}`)
-}
-// role system
-
-export function getSystemRoleBindingsAPI () {
-  return http.get(`/api/v1/system-rolebindings`)
-}
-
-export function addSystemRoleBindingsAPI (payload) {
-  return http.post(`/api/v1/system-rolebindings`, payload)
-}
-
-export function deleteSystemRoleBindingsAPI (name) {
-  return http.delete(`/api/v1/system-rolebindings/${name}`)
 }
 
 export function getArtifactFileAPI (payload, id) {

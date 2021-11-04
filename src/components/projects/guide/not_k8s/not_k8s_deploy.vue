@@ -89,7 +89,7 @@
                     测试工作流：{{projectName}}-workflow-qa，应用按需升级，用于自动化测试和业务验收
                   </div>
                   <div class="integration-details">
-                    运维工作流：{{projectName}}-workflow-ops，业务按需发布，用于版本升级和业务上线
+                    运维工作流：{{projectName}}-ops-workflow，业务按需发布，用于版本升级和业务上线
                   </div>
                 </div>
               </div>
