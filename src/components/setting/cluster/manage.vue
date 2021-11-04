@@ -13,7 +13,7 @@
         <div class="highlighter-rouge">
           <div class="highlight">
             <span class="code-line">
-              {{`$ kubectl apply -f "${$utils.getOrigin()}/api/aslan/cluster/agent/${accessCluster.id}/agent.yaml${deployType==='Deployment'?'?type=deploy':''}"`}}
+              {{`$ kubectl apply -f "${$utils.getOrigin()}/api/aslan/cluster/agent/${accessCluster.id}/agent.yaml?k8s-version=$(kubectl version --short | grep -i Server | awk '{print $NF}' | tr -d '\n')${deployType==='Deployment'?'&type=deploy':''}"`}}
               <span v-clipboard:copy="getYamlUrl()"
                     v-clipboard:success="copyCommandSuccess"
                     v-clipboard:error="copyCommandError"
@@ -360,7 +360,7 @@ export default {
       }
     },
     getYamlUrl () {
-      return `kubectl apply -f "${this.$utils.getOrigin()}/api/aslan/cluster/agent/${this.accessCluster.id}/agent.yaml${this.deployType === 'Deployment' ? '?type=deploy' : ''}"`
+      return `kubectl apply -f "${this.$utils.getOrigin()}/api/aslan/cluster/agent/${this.accessCluster.id}/agent.yaml?k8s-version=$(kubectl version --short | grep -i Server | awk '{print $NF}' | tr -d '\n')${this.deployType === 'Deployment' ? '&type=deploy' : ''}"`
     },
     clusterOperation (operate, current_cluster) {
       if (operate === 'add') {
