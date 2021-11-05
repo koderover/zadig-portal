@@ -106,7 +106,7 @@
         <el-table-column label="操作" width="280">
           <template slot-scope="scope">
             <el-button @click="editUserRole(scope.row)" type="primary" size="mini" plain>更改角色</el-button>
-            <el-button v-if="scope.row.identity_type === 'system'" @click="deleteUser(scope.row)" type="danger" size="mini" plain>删除</el-button>
+            <el-button @click="deleteUser(scope.row)" type="danger" size="mini" plain>删除</el-button>
           </template>
         </el-table-column>
       </el-table>
