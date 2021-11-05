@@ -184,7 +184,6 @@ import {
   getSingleProjectAPI,
   updateSingleProjectAPI
 } from '@api'
-import { mapGetters } from 'vuex'
 import CusDeliverable from './components/cusDeliverable.vue'
 
 const pinyin = require('pinyin')
