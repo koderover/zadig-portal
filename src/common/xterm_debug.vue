@@ -37,7 +37,7 @@ export default {
     initTerm () {
       let wsLink = false
       const hostname = this.getLogWSUrl()
-      const token = 'Bearer ' + store.get('userInfo').token
+      const token = store.get('userInfo').token
       const url = `/api/podexec/${this.productName}/${this.namespace}/${this.podName}/${this.containerName}/podExec?projectName=${this.productName}&clusterId=${this.clusterId}&token=${token}`
       this.ws = new WebSocket(hostname + url)
 
