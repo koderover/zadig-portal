@@ -74,7 +74,7 @@
                   </div>
                   <div class="card-text">
                     <h4 class="project-name">
-                      {{project.project_name?project.project_name:project.name}}&nbsp;<i v-if="!project.public" class="icon iconfont iconjurassic_enable"></i>
+                      {{project.project_name?project.project_name:project.name}}&nbsp;<i v-if="!project.public" class="icon iconfont iconprivate"></i>
                     </h4>
                   </div>
                   <div class="info">
