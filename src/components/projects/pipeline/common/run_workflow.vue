@@ -369,8 +369,8 @@ export default {
           }
           const maybeNew = res.targets[i]
           maybeNew.picked = this.haveForcedInput && (`${maybeNew.service_name}/${maybeNew.name}` in this.forcedInputTargetMap)
-          // 只有一个服务时默认选中
-          if (res.targets.length === 1) {
+          // 只有一个服务且存在构建时默认选中
+          if (res.targets.length === 1 && res.targets[0].has_build) {
             maybeNew.picked = true
           }
         }

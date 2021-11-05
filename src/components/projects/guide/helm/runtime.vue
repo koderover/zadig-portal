@@ -29,7 +29,7 @@
               </span>
             </el-tab-pane>
             <el-tab-pane name="addNew" v-if="canHandle">
-              <span slot="label" @click="handleTabsEdit('', 'add')">新建服务</span>
+              <span slot="label" @click="handleTabsEdit('', 'add')">新建环境</span>
             </el-tab-pane>
           </el-tabs>
           <HelmEnvTemplate
