@@ -3,6 +3,7 @@ import qs from 'qs'
 import store from 'storejs'
 import Element from 'element-ui'
 import errorMap from '@/utilities/errorMap'
+import Store from '../store'
 const specialAPIs = ['/api/aslan/system/operation', '/api/aslan/delivery/artifacts', '/api/aslan/environment/kube/workloads']
 const ignoreErrReq = '/api/aslan/services/validateUpdate/'
 const reqExps = [/api\/aslan\/environment\/environments\/[a-z-A-Z-0-9]+\/workloads/, /api\/aslan\/environment\/environments\/[a-z-A-Z-0-9]+\/groups/]
@@ -126,6 +127,7 @@ http.interceptors.response.use(
         if (error.response.status === 401) {
           const redirectPath = window.location.pathname + window.location.search
           Element.Message.error('登录信息失效, 请返回重新登录')
+          Store.dispatch('LOGINOUT')
           window.location.href = `/signin?redirect=${redirectPath}`
         } else if (error.response.status === 403) {
           Element.Message.error('暂无权限')
