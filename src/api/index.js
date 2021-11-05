@@ -57,7 +57,7 @@ http.interceptors.request.use((config) => {
     config.cancelToken = analyticsReqSource.sourceToken
   }
   // Set token for forgot password.
-  if (config.url === '/reset' && config.data.token) {
+  if (config.url === '/api/v1/reset' && config.data.token) {
     config.headers.Authorization = 'Bearer ' + config.data.token
   }
   // Set Authorization Header.

@@ -39,7 +39,7 @@
                 </el-button>
               </section>
               <div class="bottom">
-                  <a  href="/login">第三方登录</a>
+                  <a  href="/api/v1/login">第三方登录</a>
                   <a  @click="forgotPassword = true">找回密码</a>
               </div>
             </div>
