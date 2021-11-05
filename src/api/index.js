@@ -1081,7 +1081,7 @@ export function autoUpgradeEnvAPI (projectName, payload, force = '') {
 
 // Login
 export function userLoginAPI (payload) {
-  return http.post(`/login`, payload)
+  return http.post(`/api/v1/login`, payload)
 }
 
 // Profile
@@ -1168,11 +1168,11 @@ export function productHostingNamespaceAPI (clusterId) {
 
 // Forgot password
 export function retrievePasswordAPI (account) {
-  return http.get(`/retrieve?account=${account}`)
+  return http.get(`/api/v1/retrieve?account=${account}`)
 }
 
 export function changePasswordAPI (payload) {
-  return http.post('/reset', payload)
+  return http.post('/api/v1/reset', payload)
 }
 
 // Template Helm

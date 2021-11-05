@@ -18,15 +18,7 @@ module.exports = {
         pathRewrite: {
           '^/api': '/api',
         },
-      },
-      '/login': {
-          target: backEndAddr,
-          changeOrigin: true,
-          ws: true,
-          pathRewrite: {
-            '^/login': '/login',
-          }
-        }
+      }
     },
 
     // Various Dev Server settings
