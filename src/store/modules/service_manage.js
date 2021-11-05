@@ -49,6 +49,10 @@ export default {
       })
       state.chartNames = chartNames
     },
+    [Mutation.RESET_CHART_NAMES] (state, services) {
+      state.chartNames = []
+      state.updateEnv = false
+    },
     [Mutation.UPDATE_ENV_BUTTON] (state, payload) {
       state.updateEnv = payload
     },
