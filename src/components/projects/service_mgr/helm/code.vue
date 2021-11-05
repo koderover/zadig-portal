@@ -420,6 +420,9 @@ export default {
   },
   mounted () {
     this.$store.dispatch('queryService', { projectName: this.projectName })
+  },
+  beforeDestroy () {
+    this.$store.commit('RESET_CHART_NAMES')
   }
 }
 </script>
