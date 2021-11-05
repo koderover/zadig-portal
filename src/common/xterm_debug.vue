@@ -15,6 +15,7 @@
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import 'xterm/css/xterm.css'
+import store from 'storejs'
 export default {
   name: 'Exec',
   data () {
@@ -36,7 +37,8 @@ export default {
     initTerm () {
       let wsLink = false
       const hostname = this.getLogWSUrl()
-      const url = `/api/podexec/${this.productName}/${this.namespace}/${this.podName}/${this.containerName}/podExec?projectName=${this.productName}&clusterId=${this.clusterId}`
+      const token = 'Bearer ' + store.get('userInfo').token
+      const url = `/api/podexec/${this.productName}/${this.namespace}/${this.podName}/${this.containerName}/podExec?projectName=${this.productName}&clusterId=${this.clusterId}&token=${token}`
       this.ws = new WebSocket(hostname + url)
 
       this.$nextTick(() => {
