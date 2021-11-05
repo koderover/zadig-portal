@@ -1,5 +1,22 @@
 <template>
     <div class="build-config-container">
+      <el-drawer title="Dockerfile 模板预览"
+                :visible.sync="showDockerfile"
+                append-to-body
+                direction="rtl">
+        <Codemirror v-model="dockerfileTemplate.content" :cmOption="{
+          tabSize: 2,
+          readOnly: true,
+          theme: 'neo',
+          mode: 'text/x-dockerfile',
+          lineNumbers: false,
+          line: true,
+          showGutter: false,
+          displayIndentGuides: false,
+          showPrintMargin: false,
+          collapseIdentical: true
+        }" class="mirror"></Codemirror>
+      </el-drawer>
       <div class="jenkins" v-show="source === 'jenkins'">
         <div class="section">
           <el-form ref="jenkinsForm"
@@ -561,48 +578,75 @@
             ref="docker_build"
             class="docker label-at-left"
           >
-            <div class="dashed-container">
-              <span class="title"
-                >镜像构建
-                <el-button
-                  type="text"
-                  @click="removeDocker"
-                  icon="el-icon-delete"
-                ></el-button>
-              </span>
-              <el-form-item label="镜像构建目录：" prop="work_dir">
-                <el-input
-                  v-model="buildConfig.post_build.docker_build.work_dir"
-                  size="mini"
-                >
-                  <template slot="prepend">$WORKSPACE/</template>
-                </el-input>
-              </el-form-item>
-              <el-form-item
-                label="Dockerfile 文件的完整路径："
-                prop="docker_file"
-              >
-                <el-input
-                  v-model="buildConfig.post_build.docker_build.docker_file"
-                  size="mini"
-                >
-                  <template slot="prepend">$WORKSPACE/</template>
-                </el-input>
-              </el-form-item>
-              <el-form-item label="镜像构建参数：">
-                <el-tooltip
-                  effect="dark"
-                  content="支持所有 Docker Build 参数"
-                  placement="top-start"
-                >
-                  <el-input
-                    v-model="buildConfig.post_build.docker_build.build_args"
-                    size="mini"
-                    placeholder="--build-arg key=value"
-                  ></el-input>
-                </el-tooltip>
-              </el-form-item>
+          <div class="dashed-container">
+            <span class="title">镜像构建
+              <el-button type="text"
+                         @click="removeDocker"
+                         icon="el-icon-delete"></el-button>
+            </span>
+            <div v-if="allRegistry.length === 0"
+                 class="registry-alert">
+              <el-alert title="私有镜像仓库未集成，请前往系统设置 -> Registry 管理  进行集成。"
+                        type="warning">
+              </el-alert>
             </div>
+            <el-form-item label="镜像构建目录："
+                          prop="work_dir">
+              <el-input v-model="buildConfig.post_build.docker_build.work_dir"
+                        size="small">
+                <template slot="prepend">$WORKSPACE/</template>
+              </el-input>
+            </el-form-item>
+            <el-form-item label="Dockerfile 来源："
+                          prop="source">
+              <el-select size="small" style="width: 100%;" v-model="buildConfig.post_build.docker_build.source" placeholder="请选择">
+                <el-option
+                  label="代码仓库"
+                  value="local">
+                </el-option>
+                <el-option
+                  label="模板库"
+                  value="template">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item v-if="buildConfig.post_build.docker_build.source === 'local'" label="Dockerfile 文件的完整路径："
+                          prop="docker_file">
+              <el-input v-model="buildConfig.post_build.docker_build.docker_file"
+                        size="small">
+                <template slot="prepend">$WORKSPACE/</template>
+              </el-input>
+            </el-form-item>
+            <el-form-item v-if="buildConfig.post_build.docker_build.source === 'template'"  label="选择模板："
+                          prop="template_name">
+              <el-select style="width: 95%;" size="small" filterable @change="getDockerfileTemplate" v-model="buildConfig.post_build.docker_build.template_id" placeholder="请选择">
+                <el-option v-for="(template,index) in dockerfileTemplates"
+                  :key="index"
+                  :label="template.name"
+                  :value="template.id">
+                </el-option>
+              </el-select>
+              <template >
+              <el-button :disabled="!buildConfig.post_build.docker_build.template_id" style="margin-left: 5px;" type="text" @click="showDockerfile = true"> 预览</el-button>
+              <div v-if="dockerfileTemplate.variable && dockerfileTemplate.variable.length > 0" class="dockerfile-args-container">
+                <span>ARG</span>
+                <span v-for="(item,index) in dockerfileTemplate.variable" :key="index">
+                  <span v-if="item.value">{{`${item.key}=${item.value} `}}</span>
+                  <span v-else>{{`${item.key} `}}</span>
+                </span>
+              </div>
+              </template>
+            </el-form-item>
+            <el-form-item label="镜像构建参数：">
+              <el-tooltip effect="dark"
+                          content="支持所有 Docker Build 参数"
+                          placement="top-start">
+                <el-input v-model="buildConfig.post_build.docker_build.build_args"
+                          size="small"
+                          placeholder="--build-arg key=value"></el-input>
+              </el-tooltip>
+            </el-form-item>
+          </div>
             <div class="divider"></div>
           </el-form>
           <el-form
@@ -814,15 +858,19 @@
 import {
   getBuildConfigDetailAPI,
   getAllAppsAPI,
+  getDockerfileTemplatesAPI,
+  getDockerfileAPI,
   getImgListAPI,
   getCodeSourceAPI,
   createBuildConfigAPI,
   updateBuildConfigAPI,
   getServiceTargetsAPI,
+  getRegistryWhenBuildAPI,
   queryJenkinsJob, queryJenkinsParams
 } from '@api'
 import Editor from 'vue2-ace-bind'
 import Resize from '@/components/common/resize.vue'
+import Codemirror from '@/components/projects/common/codemirror.vue'
 const validateBuildConfigName = (rule, value, callback) => {
   if (value === '') {
     callback(new Error('请输入构建名称'))
@@ -867,6 +915,7 @@ export default {
         }
 
       },
+      dockerfileTemplate: {},
       buildConfig: {
         timeout: 60,
         name: '',
@@ -892,8 +941,10 @@ export default {
       docker_enabled: false,
       binary_enabled: false,
       post_script_enabled: false,
+      showDockerfile: false,
       paramsBuildDialogVisible: false,
       allApps: [],
+      allRegistry: [],
       serviceTargets: [],
       allCodeHosts: [],
       showBuildAdvancedSetting: {},
@@ -1219,6 +1270,14 @@ export default {
         this.jenkinsBuild.jenkins_build.jenkins_build_params = res
       }
     },
+    async getDockerfileTemplate (id) {
+      const res = await getDockerfileAPI(id).catch(err => {
+        console.log(err)
+      })
+      if (res) {
+        this.dockerfileTemplate = res
+      }
+    },
     async loadPage () {
       const projectName = this.projectName
       const orgId = this.currentOrganizationId
@@ -1258,6 +1317,9 @@ export default {
 
           if (this.buildConfig.post_build.docker_build) {
             this.docker_enabled = true
+            if (this.buildConfig.post_build.docker_build.template_id) {
+              this.getDockerfileTemplate(this.buildConfig.post_build.docker_build.template_id)
+            }
           }
           if (this.buildConfig.post_build.file_archive) {
             this.binary_enabled = true
@@ -1281,6 +1343,9 @@ export default {
           }
         })
       })
+      getDockerfileTemplatesAPI().then((res) => {
+        this.dockerfileTemplates = res.dockerfile_template
+      })
       getCodeSourceAPI(orgId).then((response) => {
         this.allCodeHosts = response
       })
@@ -1289,6 +1354,9 @@ export default {
         if (!this.isEdit) {
           this.buildConfig.pre_build.image_id = this.systems[0].id
         }
+      })
+      getRegistryWhenBuildAPI().then((res) => {
+        this.allRegistry = res
       })
     }
   },
@@ -1332,7 +1400,8 @@ export default {
   },
   components: {
     Editor,
-    Resize
+    Resize,
+    Codemirror
   }
 }
 </script>
