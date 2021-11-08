@@ -133,6 +133,7 @@
 import {
   addUserAPI,
   usersAPI,
+  deleteUserAPI,
   getSystemRoleBindingsAPI,
   addSystemRoleBindingsAPI
 } from '@api'
@@ -195,7 +196,7 @@ export default {
         name: [
           {
             type: 'string',
-            required: true,
+            required: false,
             message: '请输入昵称',
             trigger: 'blur'
           }
@@ -277,7 +278,8 @@ export default {
             )
           })
         })
-        .catch(() => {
+        .catch((error) => {
+          console.log(error)
           this.$message({
             type: 'info',
             message: '已取消删除'
