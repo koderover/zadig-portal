@@ -3,7 +3,7 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 
 const path = require('path');
-const backEndAddr = 'http://test.nga-qa.8slan.com';
+const backEndAddr = '';
 
 module.exports = {
   dev: {
