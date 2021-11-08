@@ -240,7 +240,7 @@ export default {
     openBuildLog (buildType) {
       let url = `/api/aslan/logs/sse/workflow/build/${this.pipelineName}/${this.taskID}/999999/${this.serviceName}?subTask=${buildType}`
       if (this.serviceType === 'pm') {
-        url = `/api/aslan/logs/sse/workflow/build/${this.pipelineName}/${this.taskID}/999999/${this.serviceName}?subTask=buildv2&envName=${this.envName}&productName=${this.projectName}`
+        url = `/api/aslan/logs/sse/workflow/build/${this.pipelineName}/${this.taskID}/999999/${this.serviceName}?subTask=buildv2&envName=${this.envName}&projectName=${this.projectName}`
       }
       if (typeof window.msgServer === 'undefined') {
         window.msgServer = {}

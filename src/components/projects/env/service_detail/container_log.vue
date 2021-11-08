@@ -96,7 +96,7 @@ export default {
             ? '&envName=' + this.$route.query.envName
             : ''
           this.$sse(
-            `/api/aslan/logs/sse/pods/${pod_name}/containers/${container_name}?tails=1000&productName=${this.productName}` +
+            `/api/aslan/logs/sse/pods/${pod_name}/containers/${container_name}?tails=1000&projectName=${this.productName}` +
               ownerQ
           )
             .then(sse => {

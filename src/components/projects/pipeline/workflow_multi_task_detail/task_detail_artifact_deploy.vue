@@ -146,7 +146,7 @@ export default {
       el.overflow = 'auto'
     },
     openArtifactDeployLog (buildType) {
-      const url = `/api/aslan/logs/sse/workflow/build/${this.workflowName}/${this.taskID}/999999/${this.serviceName}?subTask=artifact_deploy&envName=${this.envName}&productName=${this.projectName}`
+      const url = `/api/aslan/logs/sse/workflow/build/${this.workflowName}/${this.taskID}/999999/${this.serviceName}?subTask=artifact_deploy&envName=${this.envName}&projectName=${this.projectName}`
       if (typeof window.msgServer === 'undefined') {
         window.msgServer = {}
         window.msgServer[this.serviceName] = {}
