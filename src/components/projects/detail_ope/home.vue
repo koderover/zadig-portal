@@ -74,7 +74,10 @@
                   </div>
                   <div class="card-text">
                     <h4 class="project-name">
-                      {{project.project_name?project.project_name:project.name}}&nbsp;<i v-if="!project.public" class="icon iconfont iconprivate"></i>
+                      {{project.project_name?project.project_name:project.name}}&nbsp;
+                      <el-tooltip v-if="!project.public" effect="dark" content="私有项目" placement="top">
+                        <i  class="icon iconfont iconprivate"></i>
+                      </el-tooltip>
                     </h4>
                   </div>
                   <div class="info">
@@ -139,6 +142,9 @@
             <router-link :to="`/v1/projects/detail/${scope.row.name}`"
                          class="project-name">
               {{scope.row.project_name?scope.row.project_name:scope.row.name }}
+              <el-tooltip v-if="!scope.row.public" effect="dark" content="私有项目" placement="top">
+                <i class="icon iconfont iconprivate"></i>
+              </el-tooltip>
             </router-link>
           </template>
         </el-table-column>
@@ -275,24 +281,6 @@ export default {
 </script>
 
 <style lang="less" >
-.show-guide-class {
-  min-width: 200px !important;
-
-  span {
-    padding: 3px;
-    color: #303133;
-    font-size: 14px;
-  }
-
-  .introjs-donebutton {
-    color: #333;
-
-    &:focus {
-      border: 2px solid #1989fa;
-    }
-  }
-}
-
 .project-home-container {
   position: relative;
   flex: 1;
@@ -409,6 +397,10 @@ export default {
         font-weight: 400;
         font-size: 16px;
         text-align: left;
+
+        .iconprivate::before {
+          color: #c8c9cc;
+        }
       }
 
       .operation {
@@ -555,12 +547,10 @@ export default {
                 font-size: 20px;
                 text-overflow: ellipsis;
                 cursor: pointer;
-              }
 
-              .project-desc {
-                display: inline-block;
-                margin-top: 12px;
-                font-size: 14px;
+                .iconprivate::before {
+                  color: #c8c9cc;
+                }
               }
             }
 
@@ -569,15 +559,6 @@ export default {
             }
 
             .info {
-              .project-name {
-                margin: 0;
-                padding: 0;
-                color: #1989fa;
-                font-size: 18px;
-                text-overflow: ellipsis;
-                cursor: pointer;
-              }
-
               .project-desc {
                 display: inline-block;
                 margin-top: 12px;
@@ -587,16 +568,6 @@ export default {
           }
         }
       }
-    }
-  }
-
-  .projects-grid,
-  .projects-list {
-    .show-tag {
-      color: #1989fa;
-      font-size: 12px;
-      white-space: nowrap;
-      vertical-align: top;
     }
   }
 }

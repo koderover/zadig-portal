@@ -34,9 +34,9 @@
                   </span>
                   <el-input :disabled="!showProductName" v-model="projectForm.product_name"></el-input>
                 </el-form-item>
-                <el-form-item label="项目管理员" v-if="!isEdit" prop="user_ids">
+                <el-form-item label="项目管理员" v-if="!isEdit" prop="admins">
                   <el-select
-                    v-model="projectForm.user_ids"
+                    v-model="projectForm.admins"
                     style="width: 100%;"
                     filterable
                     multiple
@@ -225,7 +225,7 @@ export default {
       projectForm: {
         project_name: '',
         product_name: '',
-        user_ids: [],
+        admins: [],
         timeout: null,
         desc: '',
         enabled: true,
@@ -243,7 +243,7 @@ export default {
         product_name: [
           { required: true, trigger: 'change', validator: validateProductName }
         ],
-        user_ids: [
+        admins: [
           {
             type: 'array',
             required: true,
@@ -365,7 +365,6 @@ export default {
             )
           } else {
             this.projectForm.timeout = 10
-            this.projectForm.user_ids.push(this.currentUserId)
             if (
               this.projectForm.product_feature.basic_facility === 'cloud_host'
             ) {
