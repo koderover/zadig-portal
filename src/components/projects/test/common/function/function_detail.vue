@@ -294,6 +294,7 @@
               $LINKED_ENV &nbsp; 被测命名空间<br />
               $ENV_NAME &nbsp;&nbsp;&nbsp;&nbsp; 被测环境名称<br />
               $TEST_URL &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 测试任务的 URL<br>
+              $SERVICES &nbsp;&nbsp; 工作流任务更新的服务数组<br>
               $CI
               &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
               值恒等于 true，表示当前环境是 CI/CD 环境<br />
