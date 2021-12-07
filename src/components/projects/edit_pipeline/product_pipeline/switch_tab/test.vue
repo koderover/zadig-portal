@@ -37,9 +37,11 @@
             </template>
           </el-table-column>
           <el-table-column label="操作"
-                           width="100px">
-            <template slot-scope="scope">
-              <el-button @click="removeTest(scope.$index)"
+                           width="200px"
+                           align="center">
+            <template slot-scope="{ row, $index}">
+              <el-button type="text" @click="settingConfig(row.name)">高级设置</el-button>
+              <el-button @click="removeTest($index)"
                          type="danger"
                          icon="el-icon-delete"
                          size="mini">删除</el-button>
@@ -64,19 +66,47 @@
 
       </template>
     </el-card>
+    <el-dialog
+      title="高级设置"
+      :visible.sync="configDialogVisible"
+      width="500px">
+      <el-form :model="currentConfig" label-width="180px">
+        <el-form-item label="使用构建步骤代码信息">
+          <el-switch v-model="currentConfig.dependent_build_enabled"></el-switch>
+        </el-form-item>
+        <el-form-item label="选择构建" v-show="currentConfig.dependent_build_enabled">
+           <el-select v-model="currentConfig.dependent_build_name" placeholder="可选择构建" size="small">
+              <el-option
+                v-for="build in buildInfos"
+                :key="build"
+                :label="build"
+                :value="build">
+              </el-option>
+            </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer">
+        <el-button @click="updateConfig('cancel')" size="small">取 消</el-button>
+        <el-button type="primary" @click="updateConfig('sure')" size="small">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script type="text/javascript">
 import bus from '@utils/event_bus'
-import { testDetailAPI } from '@api'
+import { testDetailAPI, getBuildConfigsAPI } from '@api'
 
 export default {
   data () {
     return {
       testList: [],
       testToAdd: '',
-      unConfiguredTest: []
+      unConfiguredTest: [],
+      buildInfos: [],
+      currentConfig: {},
+      configDialogVisible: false,
+      testStageMap: {}
     }
   },
   computed: {
@@ -92,7 +122,16 @@ export default {
       }
     },
     testNames () {
-      return (this.test_stage && this.test_stage.tests && this.test_stage.tests.map(t => { return t.test_name })) || []
+      if (this.test_stage && this.test_stage.tests && this.test_stage.tests.length) {
+        this.test_stage.tests.forEach(test => {
+          this.$set(test, 'dependent_build_enabled', test.dependent_build_enabled || false)
+          this.$set(test, 'dependent_build_name', test.dependent_build_name || '')
+          this.$set(this.testStageMap, test.test_name, test)
+        })
+        return this.test_stage.tests.map(t => { return t.test_name })
+      }
+      this.testStageMap = {}
+      return []
     },
     // NOTE: testConfigs 只用于显示，要修改，修改 testNames
     testConfigs () {
@@ -126,7 +165,9 @@ export default {
             }
             testsHad.push({
               test_name: t.test_name,
-              envs: resTests[t.test_name].envs || []
+              envs: resTests[t.test_name].envs || [],
+              dependent_build_enabled: t.dependent_build_enabled || false,
+              dependent_build_name: t.dependent_build_name || ''
             })
           })
           this.test_stage.tests = testsHad
@@ -142,6 +183,11 @@ export default {
       if (!this.test_stage.tests) {
         this.$set(this.test_stage, 'tests', [])
       }
+
+      this.buildInfos = []
+      getBuildConfigsAPI(newVal).then(res => {
+        this.buildInfos = res.map(re => re.name)
+      })
     },
     testNames (newVal, oldVal) {
       this.unConfiguredTest = this.testList.filter(item => { return !newVal.includes(item.name) })
@@ -169,13 +215,28 @@ export default {
         }
         this.test_stage.tests.push({
           test_name: this.testToAdd,
-          envs: this.testMap[this.testToAdd].envs
+          envs: this.testMap[this.testToAdd].envs,
+          dependent_build_enabled: false,
+          dependent_build_name: ''
         })
         this.testToAdd = ''
       }
     },
     removeTest (index) {
       this.test_stage.tests.splice(index, 1)
+    },
+    settingConfig (name) {
+      this.configDialogVisible = true
+      this.currentConfig = { ...this.testStageMap[name] }
+    },
+    updateConfig (flag) {
+      if (flag === 'sure') {
+        const test = this.testStageMap[this.currentConfig.test_name]
+        test.dependent_build_enabled = this.currentConfig.dependent_build_enabled
+        test.dependent_build_name = this.currentConfig.dependent_build_name
+      }
+      this.currentConfig = {}
+      this.configDialogVisible = false
     }
   },
   created () {
