@@ -111,7 +111,7 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
-
+console.log('VERSION:', process.env.VERSION)
 function mountApp () {
   new Vue({
     router,
