@@ -108,7 +108,7 @@ export default {
         console.log(error)
       )
       if (res) {
-        this.members = res
+        this.members = res.concat(res).concat(res).concat(res).concat(res).concat(res).concat(res).concat(res).concat(res).concat(res).concat(res).concat(res).concat(res).concat(res)
       }
     },
     async getRole () {
