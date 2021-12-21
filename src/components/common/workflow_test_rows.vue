@@ -72,13 +72,13 @@
                     </el-tooltip>
                   </el-select>
                   <el-tooltip v-else
-                              content="PR 不存在，支持手动输入 PR 号"
+                              content="pull request 不存在，支持手动输入 pull request 序号"
                               placement="top"
                               popper-class="gray-popper">
                     <el-input v-model.number="build[build.prNumberPropName]"
                               class="short-input"
                               size="small"
-                              placeholder="请填写 PR 号"></el-input>
+                              placeholder="请填写 pull request 序号"></el-input>
                   </el-tooltip>
                   <el-tooltip v-if="build.errorMsg"
                               class="item"

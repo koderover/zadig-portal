@@ -124,7 +124,7 @@
             <el-tooltip content="动态选择一套“没有工作流任务正在更新”的环境进行验证" placement="right">
               <el-radio label="single">动态选择空闲环境更新</el-radio>
             </el-tooltip>
-            <el-tooltip v-if="isK8sEnv && webhookSwap.repo.source==='gitlab'" content="基于基准环境版本生成一套临时测试环境做 PR 级验证" placement="right">
+            <el-tooltip v-if="isK8sEnv && webhookSwap.repo.source==='gitlab'" content="基于基准环境版本生成一套临时测试环境做 pull request 级验证" placement="right">
               <el-radio label="base" :disabled="!(webhookSwap.namespace.length===1 && webhookSwap.repo.source==='gitlab')">设置指定环境为基准环境</el-radio>
             </el-tooltip>
           </el-radio-group>

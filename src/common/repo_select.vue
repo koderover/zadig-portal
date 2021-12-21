@@ -194,7 +194,7 @@
                 <label class="el-form-item__label">主库
                   <el-tooltip class="item"
                               effect="dark"
-                              content="设置为主库后，构建出的镜像 Tag 以及 Tar 包的名称与该库的分支或 PR 信息有关"
+                              content="设置为主库后，构建出的镜像 Tag 以及 Tar 包的名称与该库的分支或 pull request 信息有关"
                               placement="top">
                     <i class="el-icon-question"></i>
                   </el-tooltip>

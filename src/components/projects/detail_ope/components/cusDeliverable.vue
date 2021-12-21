@@ -34,7 +34,7 @@ export default {
       dialogVisible: false,
       customerImage: {
         pr: {
-          label: 'PR 生成镜像规则',
+          label: 'pull request 生成镜像规则',
           service: defaultValue,
           value: placeholder[0],
           placeholder: placeholder[0]
@@ -46,7 +46,7 @@ export default {
           placeholder: placeholder[1]
         },
         prBranch: {
-          label: 'PR + BRANCH 生成镜像规则',
+          label: 'pull request + BRANCH 生成镜像规则',
           service: defaultValue,
           value: placeholder[2],
           placeholder: placeholder[2]
@@ -60,7 +60,7 @@ export default {
       },
       tar: {
         pr: {
-          label: 'PR 生成 TAR 包规则',
+          label: 'pull request 生成 TAR 包规则',
           value: defaultValue + '-' + placeholder[0],
           placeholder: defaultValue + '-' + placeholder[0]
         },
@@ -71,7 +71,7 @@ export default {
           placeholder: defaultValue + '-' + placeholder[1]
         },
         prBranch: {
-          label: 'PR + BRANCH 生成 TAR 包规则',
+          label: 'pull request + BRANCH 生成 TAR 包规则',
           value: defaultValue + '-' + placeholder[2],
           placeholder: defaultValue + '-' + placeholder[2]
         },

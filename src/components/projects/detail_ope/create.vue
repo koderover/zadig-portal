@@ -79,7 +79,7 @@
                         <br />
                         <span class="tooltip-key" v-html="'{{.REPO_BRANCH}}'"></span> 代码分支名称
                         <br />
-                        <span class="tooltip-key" v-html="'{{.REPO_PR}}'"></span> 代码 PR ID
+                        <span class="tooltip-key" v-html="'{{.REPO_PR}}'"></span> 代码 pull request ID
                         <br />
                         <span class="tooltip-key" v-html="'{{.REPO_TAG}}'"></span> 代码 TAG
                         <br />

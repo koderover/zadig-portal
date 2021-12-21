@@ -1,4 +1,4 @@
-### What this PR does / Why we need it:
+### What this pull request does / Why we need it:
 
 Issue Number: close #xxx <!-- REMOVE this line if no issue to close -->
 
