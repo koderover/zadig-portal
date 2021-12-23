@@ -269,15 +269,15 @@ export default {
         })
       }
 
-      const workflowList = await getCommonWorkflowListAPI(projectName).catch(err => {
-        console.log(err)
-        return []
-      })
-      workflowList.workflow_list.forEach(list => {
-        list.type = 'common'
-      })
+      // const workflowList = await getCommonWorkflowListAPI(projectName).catch(err => {
+      //   console.log(err)
+      //   return []
+      // })
+      // workflowList.workflow_list.forEach(list => {
+      //   list.type = 'common'
+      // })
       this.workflowListLoading = false
-      this.workflowsList = [...res, ...workflowList.workflow_list]
+      this.workflowsList = [...res]
     },
     deleteProductWorkflow (workflow) {
       const name = workflow.name
