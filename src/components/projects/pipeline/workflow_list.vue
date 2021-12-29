@@ -27,10 +27,17 @@
             </div>
           </div>
           <div class="header-end">
-            <button type="button" class="add-project-btn" @click="showSelectWorkflowType = true">
+            <!-- Todo: enable common workflow -->
+            <!-- <button type="button" class="add-project-btn" @click="showSelectWorkflowType = true">
               <i class="el-icon-plus"></i>
               新建工作流
-            </button>
+            </button> -->
+            <router-link :to="`/workflows/product/create?projectName=${this.projectName ? this.projectName : ''}`">
+              <button type="button" class="add-project-btn">
+                <i class="el-icon-plus"></i>
+                新建工作流
+              </button>
+            </router-link>
           </div>
         </div>
         <div
@@ -111,7 +118,6 @@ export default {
       workflowsList: [],
       showSelectWorkflowType: false,
       selectWorkflowType: 'product',
-
       showStartCommonWorkflowBuild: false,
       commonToRun: {}
     }
@@ -256,28 +262,29 @@ export default {
     },
     async getWorkflows (projectName) {
       this.workflowListLoading = true
-      let res = []
+      let productWorkflows = []
       if (this.projectName) {
-        res = await getWorkflowsInProjectAPI(projectName).catch(err => {
+        productWorkflows = await getWorkflowsInProjectAPI(projectName).catch(err => {
           console.log(err)
           return []
         })
       } else {
-        res = await getWorkflowsAPI().catch(err => {
+        productWorkflows = await getWorkflowsAPI().catch(err => {
           console.log(err)
           return []
         })
       }
-
-      const workflowList = await getCommonWorkflowListAPI(projectName).catch(err => {
-        console.log(err)
-        return []
-      })
-      workflowList.workflow_list.forEach(list => {
-        list.type = 'common'
-      })
+      // Todo: enable common workflow
+      // const commonWorkflows = await getCommonWorkflowListAPI(projectName).catch(err => {
+      //   console.log(err)
+      //   return []
+      // })
+      // commonWorkflows.workflow_list.forEach(list => {
+      //   list.type = 'common'
+      // })
+      // this.workflowsList = [...productWorkflows, ...commonWorkflows.workflow_list]
       this.workflowListLoading = false
-      this.workflowsList = [...res, ...workflowList.workflow_list]
+      this.workflowsList = [...productWorkflows]
     },
     deleteProductWorkflow (workflow) {
       const name = workflow.name
