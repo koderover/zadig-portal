@@ -556,39 +556,39 @@ export function workflowTaskDetailSSEAPI (projectName, workflowName, taskID, wor
 
 // Common Workflow
 export function createCommonWorkflowAPI (projectName = '', payload) {
-  return http.post(`/api/aslan/workflow/v3?projectName=${projectName}`, payload)
+  return http.post(`/api/v1/picket/workflows/v3?projectName=${projectName}`, payload)
 }
 
 export function deleteCommonWorkflowAPI (projectName = '', id) {
-  return http.delete(`/api/aslan/workflow/v3/${id}?projectName=${projectName}`)
+  return http.delete(`/api/v1/picket/workflows/v3/${id}?projectName=${projectName}`)
 }
 
 export function getCommonWorkflowAPI (projectName, id) {
-  return http.get(`/api/aslan/workflow/v3/${id}?projectName=${projectName}`)
+  return http.get(`/api/v1/picket/workflows/v3/${id}?projectName=${projectName}`)
 }
 
 export function updateCommonWorkflowAPI (projectName = '', id, payload) {
-  return http.put(`/api/aslan/workflow/v3/${id}?projectName=${projectName}`, payload)
+  return http.put(`/api/v1/picket/workflows/v3/${id}?projectName=${projectName}`, payload)
 }
 
 export function getCommonWorkflowListAPI (projectName = '', pageNum = 1, pageSize = 999) {
-  return http.get(`/api/aslan/workflow/v3?project_name=${projectName}&projectName=${projectName}&page_num=${pageNum}&page_size=${pageSize}`)
+  return http.get(`/api/v1/picket/workflows/v3?project_name=${projectName}&projectName=${projectName}&page_num=${pageNum}&page_size=${pageSize}`)
 }
 
 export function getCommonBuildArgsAPI (projectName, id) {
-  return http.get(`/api/aslan/workflow/v3/${id}/args?projectName=${projectName}`)
+  return http.get(`/api/v1/picket/workflows/v3/${id}/args?projectName=${projectName}`)
 }
 
 export function runCommonWorkflowAPI (projectName = '', payload) {
-  return http.post(`/api/aslan/workflow/v3/workflowtask?projectName=${projectName}`, payload)
+  return http.post(`/api/v1/picket/workflows/v3/workflowtask?projectName=${projectName}`, payload)
 }
 
 export function getCommonWorkflowTasksAPI (projectName = '', workflowName, start, max) {
-  return http.get(`/api/aslan/workflow/v3/workflowtask/max/${max}/start/${start}/name/${workflowName}?projectName=${projectName}`)
+  return http.get(`/api/v1/picket/workflows/v3/workflowtask/max/${max}/start/${start}/name/${workflowName}?projectName=${projectName}`)
 }
 
 export function getCommonWorkflowTaskDetailAPI (projectName = '', workflowName, taskID) {
-  return http.get(`/api/aslan/workflow/v3/workflowtask/id/${taskID}/name/${workflowName}?projectName=${projectName}`)
+  return http.get(`/api/v1/picket/workflows/v3/workflowtask/id/${taskID}/name/${workflowName}?projectName=${projectName}`)
 }
 
 export function getCommonWorkflowTaskDetailSSEAPI (projectName = '', workflowName, taskID) {
@@ -596,11 +596,11 @@ export function getCommonWorkflowTaskDetailSSEAPI (projectName = '', workflowNam
 }
 
 export function restartCommonWorkflowTaskAPI (projectName = '', workflowName, taskID) {
-  return http.post(`/api/aslan/workflow/v3/workflowtask/id/${taskID}/name/${workflowName}/restart?projectName=${projectName}`)
+  return http.post(`/api/v1/picket/workflows/v3/workflowtask/id/${taskID}/name/${workflowName}/restart?projectName=${projectName}`)
 }
 
 export function cancelCommonWorkflowTaskAPI (projectName = '', workflowName, taskID) {
-  return http.delete(`/api/aslan/workflow/v3/workflowtask/id/${taskID}/name/${workflowName}?projectName=${projectName}`)
+  return http.delete(`/api/v1/picket/workflows/v3/workflowtask/id/${taskID}/name/${workflowName}?projectName=${projectName}`)
 }
 
 export function getCommonWorkflowHistoryLogAPI (projectName = '', workflowName, taskID) {
