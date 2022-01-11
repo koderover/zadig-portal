@@ -310,7 +310,8 @@ export default {
         branch: '',
         checkout_path: '',
         remote_name: 'origin',
-        submodules: false
+        submodules: false,
+        repo_path: ''
       }
       this.showTrigger && (repoMeta.enableTrigger = false)
       this.validateForm().then(res => {
@@ -338,7 +339,8 @@ export default {
         branch: '',
         checkout_path: '',
         remote_name: 'origin',
-        submodules: false
+        submodules: false,
+        repo_path: ''
       }
       this.showTrigger && (repoMeta.enableTrigger = false)
       this.$set(this.codeInfo, 0, {
@@ -406,14 +408,18 @@ export default {
       const repoItem = (this.codeInfo[index].repos.find(item => { return item.name === repo_name }))
       let repoId = ''
       let repoUUID = ''
+      let repoPath = ''
       if (repoItem) {
         repoId = repoItem.repo_id
         repoUUID = repoItem.repo_uuid
+        repoPath = repoItem.path
       }
+      // the repo_path used for gitlab, because repo_name is different from repo_path sometimes
+      this.config.repos[index].repo_path = repoPath || repo_name
       if (repo_owner && repo_name) {
         this.codeInfo[index].branches = []
         this.setLoadingState(index, 'branch', true)
-        getBranchInfoByIdAPI(id, repo_owner, repo_name, repoUUID).then((res) => {
+        getBranchInfoByIdAPI(id, repo_owner, repo_name, repoUUID, repoPath).then((res) => {
           this.$set(this.codeInfo[index], 'branches', res || [])
           this.setLoadingState(index, 'branch', false)
         })
@@ -466,7 +472,7 @@ export default {
               this.$set(this.codeInfo[index], 'origin_repos', orderBy(res, ['name']))
             })
           })
-          getBranchInfoByIdAPI(codehostId, repoOwner, repoName, uuid).then((res) => {
+          getBranchInfoByIdAPI(codehostId, repoOwner, repoName, uuid, element.repo_path).then((res) => {
             this.$set(this.codeInfo[index], 'branches', res || [])
           })
         }
