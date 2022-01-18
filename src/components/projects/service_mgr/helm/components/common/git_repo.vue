@@ -207,6 +207,7 @@ export default {
         codehostId: null,
         repoOwner: '',
         repoName: '',
+        repoPath: '',
         branchName: '',
         remoteName: '',
         gitType: '',
@@ -243,6 +244,7 @@ export default {
         codehostId: null,
         repoOwner: '',
         repoName: '',
+        repoPath: '',
         branchName: '',
         remoteName: '',
         gitType: ''
@@ -301,9 +303,11 @@ export default {
       })
     },
     getBranchInfoById (id, repoOwner, repoName) {
+      const repoPath = this.codeInfo.repos.find(item => { return item.name === repoName }).path || ''
+      this.source.repoPath = repoPath
       this.source.branchName = ''
       if (repoName && repoOwner) {
-        getBranchInfoByIdAPI(id, repoOwner, repoName).then(res => {
+        getBranchInfoByIdAPI(id, repoOwner, repoName, '', repoPath).then(res => {
           this.$set(this.codeInfo, 'branches', res)
         })
       }

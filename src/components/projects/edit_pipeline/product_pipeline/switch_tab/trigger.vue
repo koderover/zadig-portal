@@ -660,7 +660,8 @@ export default {
         this.getBranchInfoById(
           webhookSwap.main_repo.codehost_id,
           webhookSwap.main_repo.repo_owner,
-          webhookSwap.main_repo.repo_name
+          webhookSwap.main_repo.repo_name,
+          webhookSwap.main_repo.repo_path
         )
       }
       this.webhookSwap = {
@@ -785,8 +786,8 @@ export default {
         this.projectEnvs = res
       })
     },
-    getBranchInfoById (id, repo_owner, repo_name) {
-      getBranchInfoByIdAPI(id, repo_owner, repo_name).then(res => {
+    getBranchInfoById (id, repo_owner, repo_name, repo_path) {
+      getBranchInfoByIdAPI(id, repo_owner, repo_name, repo_path).then(res => {
         this.$set(this.webhookBranches, repo_name, res)
       })
     },
@@ -795,7 +796,8 @@ export default {
       this.getBranchInfoById(
         currentRepo.codehost_id,
         currentRepo.repo_owner,
-        currentRepo.repo_name
+        currentRepo.repo_name,
+        currentRepo.repo_path
       )
     },
     switchMode () {

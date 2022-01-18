@@ -34,7 +34,8 @@ export default {
         codehostID: null,
         owner: '',
         repo: '',
-        branch: ''
+        branch: '',
+        repo_path: ''
       },
       codeInfo: {
         repoOwners: [],
@@ -74,9 +75,12 @@ export default {
       })
     },
     getBranchInfoById (id, owner, repo) {
+      const repoInfo = this.codeInfo.repos.find(info => info.name === repo)
+      const repoPath = repoInfo.path || ''
+      this.source.repo_path = repoPath
       this.source.branch = ''
       if (repo && owner) {
-        getBranchInfoByIdAPI(id, owner, repo).then(res => {
+        getBranchInfoByIdAPI(id, owner, repo, '', repoPath).then(res => {
           this.$set(this.codeInfo, 'branches', res)
         })
       }
@@ -104,6 +108,7 @@ export default {
         owner: '',
         repo: '',
         branch: '',
+        repo_path: '',
         valuesPaths: []
       }
       this.$nextTick(() => {

@@ -278,7 +278,7 @@ export default {
       this.webhookEditMode = true
       this.currenteditWebhookIndex = index
       const webhookSwap = this.$utils.cloneObj(this.webhook.items[index])
-      this.getBranchInfoById(webhookSwap.main_repo.codehost_id, webhookSwap.main_repo.repo_owner, webhookSwap.main_repo.repo_name)
+      this.getBranchInfoById(webhookSwap.main_repo.codehost_id, webhookSwap.main_repo.repo_owner, webhookSwap.main_repo.repo_name, webhookSwap.main_repo.repo_path)
       this.webhookSwap = {
         auto_cancel: webhookSwap.auto_cancel,
         repo: webhookSwap.main_repo,
@@ -354,14 +354,14 @@ export default {
         this.webhook.enabled = false
       }
     },
-    getBranchInfoById (id, repo_owner, repo_name) {
-      getBranchInfoByIdAPI(id, repo_owner, repo_name).then((res) => {
+    getBranchInfoById (id, repo_owner, repo_name, repo_path) {
+      getBranchInfoByIdAPI(id, repo_owner, repo_name, repo_path).then((res) => {
         this.$set(this.webhookBranches, repo_name, res)
       })
     },
     repoChange (currentRepo) {
       this.webhookSwap.events = []
-      this.getBranchInfoById(currentRepo.codehost_id, currentRepo.repo_owner, currentRepo.repo_name)
+      this.getBranchInfoById(currentRepo.codehost_id, currentRepo.repo_owner, currentRepo.repo_name, currentRepo.repo_path)
     }
   },
   computed: {

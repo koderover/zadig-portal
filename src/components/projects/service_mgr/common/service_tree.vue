@@ -104,7 +104,7 @@
                          clearable
                          size="small"
                          placeholder="请选择代码库"
-                         filterable>
+                         filterable><!-- TODO: getBranchInfoById -->
                 <el-option v-for="(repo,index) in codeInfo['repos']"
                            :key="index"
                            :label="repo.name"
@@ -824,7 +824,7 @@ export default {
           this.$set(this.codeInfo, 'repos', res)
         })
       })
-      getBranchInfoByIdAPI(codehostId, repoOwner, repoName).then((res) => {
+      getBranchInfoByIdAPI(codehostId, repoOwner, repoName, '', source.repoPath).then((res) => {
         this.$set(this.codeInfo, 'branches', res)
       })
     },
@@ -915,9 +915,11 @@ export default {
     getBranchInfoById (id, repoOwner, repoName) {
       const repoItem = (this.codeInfo.repos.find(item => { return item.name === repoName }))
       const repoUUID = repoItem.repo_uuid ? repoItem.repo_uuid : ''
+      const repoPath = repoItem.path || ''
       this.source.repoUUID = repoUUID
+      this.source.repoPath = repoPath
       if (repoName && repoOwner) {
-        getBranchInfoByIdAPI(id, repoOwner, repoName, repoUUID).then((res) => {
+        getBranchInfoByIdAPI(id, repoOwner, repoName, repoUUID, repoPath).then((res) => {
           this.$set(this.codeInfo, 'branches', res)
         })
         this.source.branchName = ''
@@ -931,6 +933,7 @@ export default {
       this.source.repoOwner = data.repo_owner
       this.source.repoName = data.repo_name
       this.source.repoUUID = data.repo_uuid
+      this.source.repoPath = data.repo_path || ''
       this.source.branchName = data.branch_name
       this.source.path = data.load_path
       this.source.gitType = data.source
