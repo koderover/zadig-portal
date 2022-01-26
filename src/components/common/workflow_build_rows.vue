@@ -94,7 +94,8 @@
                              size="small"
                              placeholder="请选择 PR"
                              filterable
-                             clearable>
+                             clearable
+                             @change="updatePRInfo($event, build)">
 
                     <el-tooltip v-for="item in build.branchPRsMap[build.branch]"
                                 :key="item[build.prNumberPropName]"
@@ -298,6 +299,20 @@ export default {
       }
       repo.tag = ''
       repo.branch = ''
+    },
+    updatePRInfo (value, build) {
+      const builds = build.branchPRsMap[build.branch]
+      const prNumberPropName = build.prNumberPropName
+      if (builds) {
+        const item = builds.find(build => build[prNumberPropName] === value)
+        if (item && item.user) {
+          this.$set(build, 'user', item.user)
+        } else {
+          delete build.user
+        }
+      } else {
+        delete build.user
+      }
     }
   },
   props: {
