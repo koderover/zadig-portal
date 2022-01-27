@@ -52,6 +52,12 @@
           </div>
         </template>
       </el-table-column>
+      <!-- <el-table-column align="center"
+                       label="Committer"
+                       width="120">
+         <template slot-scope="{ row }">
+         </template>
+      </el-table-column> -->
       <el-table-column width="120"
                        label="持续时间">
         <template slot-scope="scope">

@@ -306,12 +306,12 @@ export default {
       if (builds) {
         const item = builds.find(build => build[prNumberPropName] === value)
         if (item && item.user) {
-          this.$set(build, 'user', item.user)
+          this.$set(build, 'committer', item.user)
         } else {
-          delete build.user
+          delete build.committer
         }
       } else {
-        delete build.user
+        delete build.committer
       }
     }
   },
