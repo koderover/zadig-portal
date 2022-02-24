@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="test-advanced-config-container">
     <el-form class="secondary-form" :model="testConfig" ref="advancedRef" label-width="120px" label-position="left">
       <div class="primary-title">测试结果导出</div>
       <el-form-item class="label-icon">
@@ -156,35 +156,39 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.export-input {
-  margin-right: 10px;
+.test-advanced-config-container {
+  /deep/.el-form.secondary-form {
+    .export-input {
+      margin-right: 10px;
 
-  &.el-input {
-    width: calc(~'100% - 100px');
-    min-width: 400px;
+      &.el-input {
+        width: calc(~'100% - 100px');
+        min-width: 400px;
+      }
+    }
   }
-}
 
-.hidden-table {
-  /deep/.el-table {
-    display: none;
+  .hidden-table {
+    /deep/.el-table {
+      display: none;
+    }
   }
-}
 
-.margin-bottom {
-  margin-bottom: 10px;
-}
+  .margin-bottom {
+    margin-bottom: 10px;
+  }
 
-.notify {
-  /deep/.el-card.notify-content {
-    border-color: @borderGray;
-    box-shadow: 0 0 0;
+  .notify {
+    /deep/.el-card.notify-content {
+      border-color: @borderGray;
+      box-shadow: 0 0 0;
 
-    .el-card__body {
-      padding: 10px 20px;
+      .el-card__body {
+        padding: 10px 20px;
 
-      .notify-container {
-        margin: 0;
+        .notify-container {
+          margin: 0;
+        }
       }
     }
   }
