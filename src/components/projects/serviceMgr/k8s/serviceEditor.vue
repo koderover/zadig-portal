@@ -30,9 +30,10 @@
           </li>
         </ul>
       </div>
-      <div v-if="!hideSave" class="controls__wrap">
+      <div class="controls__wrap">
         <div class="controls__right">
-          <el-button type="primary" size="small" :disabled="disabledSave || !yamlChange" @click="updateService">保存</el-button>
+          <el-button v-if="!hideSave" type="primary" size="small" :disabled="disabledSave || !yamlChange" @click="updateService">保存</el-button>
+          <el-button v-if="!isOnboarding" type="primary" size="small" :disabled="!showJoinToEnvBtn" @click="showJoinToEnvDialog">加入环境</el-button>
         </div>
       </div>
     </div>
@@ -68,6 +69,10 @@ export default {
       type: Object,
       required: true
     },
+    isOnboarding: {
+      type: Boolean,
+      default: false
+    },
     yamlChange: Boolean
   },
   data () {
@@ -100,6 +105,7 @@ export default {
       initYaml: '',
       dialogImportYamlVisible: false,
       previewYamlFile: false,
+      showJoinToEnvBtn: false,
       importYaml: {
         id: '',
         yamls: [],
@@ -161,7 +167,11 @@ export default {
           service_status: this.service.status,
           res
         })
+        this.showJoinToEnvBtn = true
       })
+    },
+    showJoinToEnvDialog () {
+      this.$emit('showJoinToEnvDialog', true)
     },
     onCmCodeChange: debounce(function (newCode) {
       this.errors = []
@@ -253,6 +263,7 @@ export default {
           })
         }
       }
+      this.showJoinToEnvBtn = true
       this.$emit('update:showNext', true)
       this.$emit('onRefreshService')
     }
@@ -301,7 +312,7 @@ export default {
         } else if (
           val.product_name === this.projectName &&
           val.source &&
-          (val.source !== 'spock' && val.source !== 'template')
+          val.source !== 'spock' && val.source !== 'template'
         ) {
           this.info = {
             message: '信息：当前服务为仓库管理服务，编辑器为只读模式'

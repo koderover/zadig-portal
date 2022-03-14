@@ -5,29 +5,49 @@
                  direction="rtl">
         <IntegrationCode @cancel="integrationCodeDrawer = false"/>
       </el-drawer>
-      <el-dialog title="是否更新对应环境？"
+      <el-dialog :title="`选择 ${service.service_name} 需要加入的环境？`"
                  custom-class="dialog-upgrade-env"
-                 :visible.sync="updateEnvDialogVisible"
+                 :visible.sync="joinToEnvDialogVisible"
                  width="40%">
         <div class="title">
-          <el-alert title="勾选需要更新的环境，点击确定之后，该服务将自动在对应的环境中进行更新"
-                    :closable="false"
-                    type="warning">
-          </el-alert>
-          <el-checkbox-group v-model="checkedEnvList">
-            <el-checkbox v-for="(env,index) in envNameList"
+          <el-checkbox-group v-model="checkedEnvList" @change="changeUpgradeEnv">
+            <el-checkbox v-for="(env,index) in envNameListWithVars"
                          :key="index"
                          :label="env">{{env.name}}</el-checkbox>
           </el-checkbox-group>
-          <div v-show="checkedEnvList.find(env => env.is_existed)" class="tip-desc">Zadig 中定义的服务将覆盖所选命名空间中的同名服务，请谨慎操作！</div>
+        </div>
+        <div v-if="checkedEnvList.length > 0 && checkedEnvList[0].vars.length > 0" class="env-tabs">
+          <span class="desc">该服务有使用变量，请确认该服务在不同环境中对应的变量值</span>
+          <el-tabs v-model="activeEnvTabName" type="card">
+            <el-tab-pane v-for="(env,index) in checkedEnvList"  :key="index" :label="env.name" :name="env.name">
+              <el-table :data="env.vars" style="width: 100%;">
+                  <el-table-column label="键">
+                    <template slot-scope="scope">
+                      <span>{{ scope.row.key }}</span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column label="值">
+                    <template slot-scope="scope">
+                      <el-input
+                        size="small"
+                        v-model="scope.row.value"
+                        type="textarea"
+                        :autosize="{ minRows: 1, maxRows: 4}"
+                        placeholder="请输入内容"
+                      ></el-input>
+                    </template>
+                  </el-table-column>
+                </el-table>
+            </el-tab-pane>
+          </el-tabs>
         </div>
         <span slot="footer"
               class="dialog-footer">
           <el-button size="small"
-                     type="primary"
-                     @click="autoUpgradeEnv">确 定</el-button>
+                     @click="joinToEnvDialogVisible = false">取消</el-button>
           <el-button size="small"
-                     @click="skipUpdate">跳过</el-button>
+                     type="primary"
+                     @click="autoUpgradeEnv">确定</el-button>
 
         </span>
       </el-dialog>
@@ -62,10 +82,12 @@
                                     :serviceInTree="service"
                                     :showNext.sync="showNext"
                                     :yamlChange.sync="yamlChange"
+                                    :isOnboarding="isOnboarding"
                                     @onParseKind="getYamlKind"
                                     @onRefreshService="getServices"
                                     @onRefreshSharedService="getSharedServices"
                                     @onUpdateService="onUpdateService"
+                                    @showJoinToEnvDialog="showJoinToEnvDialog"
                                     class="service-editor-content" />
                   <div class="modal-block" v-if="service.source === 'template' && showModal">
                     <el-button type="primary" size="small" @click="showModal = false">预览/编辑</el-button>
@@ -106,12 +128,6 @@
                        size="small"
                        @click="showOnboardingNext">下一步</el-button>
           </div>
-          <div v-else v-hasPermi="{projectName: projectName, action: 'config_environment'}" class="controls__right">
-            <el-button type="primary"
-                       size="small"
-                       @click="upgradeEnv"
-                       :disabled="!showNext || !envNameList.length">环境更新</el-button>
-          </div>
       </div>
     </div>
 </template>
@@ -121,7 +137,7 @@ import ServiceAside from './k8s/serviceAside.vue'
 import ServiceEditor from './k8s/serviceEditor.vue'
 import ServiceTree from './common/serviceTree.vue'
 import IntegrationCode from './common/integrationCode.vue'
-import { sortBy } from 'lodash'
+import { sortBy, cloneDeep } from 'lodash'
 import { getSingleProjectAPI, getServiceTemplatesAPI, getServicesTemplateWithSharedAPI, serviceTemplateWithConfigAPI, autoUpgradeEnvAPI, listProductAPI } from '@api'
 import { Multipane, MultipaneResizer } from 'vue-multipane'
 export default {
@@ -146,7 +162,9 @@ export default {
       yamlChange: false,
       updateEnvDialogVisible: false,
       integrationCodeDrawer: false,
+      joinToEnvDialogVisible: false,
       envNameList: [],
+      activeEnvTabName: '',
       showModal: true
     }
   },
@@ -198,18 +216,28 @@ export default {
         this.systemEnvs = res.system_variable ? res.system_variable : []
       })
     },
-    onUpdateService ({ service_name, service_status, res }) {
+    showJoinToEnvDialog () {
+      this.checkedEnvList = []
+      this.joinToEnvDialogVisible = true
+    },
+    changeUpgradeEnv (val) {
+      if (this.checkedEnvList[0].vars.length > 0) {
+        this.activeEnvTabName = val[val.length - 1].name
+      }
+    },
+    onUpdateService ({ serviceName, serviceStatus, res }) {
       this.showNext = true
       this.$router.replace({
         query: Object.assign(
           {},
           {},
           {
-            service_name: service_name,
-            rightbar: 'var'
+            service_name: serviceName,
+            rightbar: 'var',
+            status: serviceStatus
           })
       })
-      if (service_status === 'named') {
+      if (serviceStatus === 'named') {
         this.getServices()
         this.$refs.serviceTree.getServiceGroup()
         this.getSharedServices()
@@ -238,13 +266,17 @@ export default {
       this.projectInfo = await getSingleProjectAPI(projectName)
     },
     autoUpgradeEnv () {
-      const payload = {
-        env_names: this.checkedEnvList.map(env => env.name)
-      }
+      const payload = this.checkedEnvList.map(item => {
+        return {
+          env_name: item.name,
+          service_names: item.vars.length > 0 ? item.vars[0].services : [this.service.service_name],
+          vars: item.vars
+        }
+      })
       const projectName = this.projectName
       const force = false
       autoUpgradeEnvAPI(projectName, payload, force).then((res) => {
-        this.$router.push(`/v1/projects/detail/${projectName}/envs`)
+        this.joinToEnvDialogVisible = false
         this.$message({
           message: '更新环境成功',
           type: 'success'
@@ -282,9 +314,6 @@ export default {
         })
       })
     },
-    skipUpdate () {
-      this.updateEnvDialogVisible = false
-    },
     async getEnvNameList () {
       const projectName = this.projectName
       const envNameList = await listProductAPI(projectName)
@@ -307,6 +336,12 @@ export default {
     },
     serviceName () {
       return this.$route.query.service_name
+    },
+    envNameListWithVars () {
+      return this.envNameList.map(env => {
+        env.vars = cloneDeep(this.detectedEnvs.filter(item => item.services.includes(this.service.service_name)))
+        return env
+      })
     }
   },
   mounted () {
