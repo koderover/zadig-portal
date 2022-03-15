@@ -373,7 +373,7 @@ export function getHelmChartServiceModule (projectName, serviceName) {
 }
 
 export function getHelmRepoChartAPI (repoName) {
-  return http.get(`/api/aslan/system/helm/${repoName}/index`)
+  return http.get(`/api/aslan/system/helm/index?repoName=${repoName}`)
 }
 
 export function imagesAPI (payload, registry = '') {
@@ -410,7 +410,6 @@ export function getBuildConfigDetailAPI (name, projectName = '') {
 }
 
 export function getRepoFilesAPI ({ codehostId = '', repoOwner = '', repoName = '', branchName = '', path = '', type = '', repoLink = '', remoteName = 'origin' }) {
-  const encodeRepoName = encodeURIComponent(repoName)
   const encodeBranchName = encodeURIComponent(branchName)
   if (type === 'github' || type === 'gitlab' || type === 'helm' || type === 'githubPublic') {
     let params = {}
@@ -421,7 +420,7 @@ export function getRepoFilesAPI ({ codehostId = '', repoOwner = '', repoName = '
       }
     } else {
       params = {
-        repo: encodeRepoName,
+        repo: repoName,
         path,
         branch: branchName,
         owner: repoOwner,
@@ -430,17 +429,16 @@ export function getRepoFilesAPI ({ codehostId = '', repoOwner = '', repoName = '
     }
     return http.get(`/api/aslan/code/workspace/tree`, { params })
   } else if (type === 'gerrit') {
-    return http.get(`/api/aslan/code/workspace/git/${codehostId}?repoName=${encodeRepoName}&branchName=${encodeBranchName}&remoteName=${remoteName}&repoOwner=${repoOwner}&dir=${path}`)
+    return http.get(`/api/aslan/code/workspace/git/${codehostId}?repoName=${repoName}&branchName=${encodeBranchName}&remoteName=${remoteName}&repoOwner=${repoOwner}&dir=${path}`)
   } else if (type === 'codehub') {
-    return http.get(`/api/aslan/code/workspace/codehub/${codehostId}?repoName=${encodeRepoName}&branchName=${encodeBranchName}&path=${path}`)
+    return http.get(`/api/aslan/code/workspace/codehub/${codehostId}?repoName=${repoName}&branchName=${encodeBranchName}&path=${path}`)
   }
 }
 
 export function getRepoFileServiceAPI (codehostId, repoOwner, repoName, branchName, path, isDir, remoteName = '') {
-  const encodeRepoName = encodeURIComponent(repoName)
   const encodeBranchName = encodeURIComponent(branchName)
   return http.get(
-    `/api/aslan/service/loader/preload/${codehostId}?branchName=${encodeBranchName}&repoOwner=${repoOwner}&repoName=${encodeRepoName}&path=${path}&isDir=${isDir}&remoteName=${remoteName}`
+    `/api/aslan/service/loader/preload/${codehostId}?branchName=${encodeBranchName}&repoOwner=${repoOwner}&repoName=${repoName}&path=${path}&isDir=${isDir}&remoteName=${remoteName}`
   )
 }
 
@@ -450,19 +448,17 @@ export function getCodehubRepoFileServiceAPI (codehostId, repoUUID, repoName, br
 }
 
 export function loadRepoServiceAPI (projectName, codehostId, repoOwner, repoName, branchName, remoteName = '', repoUUID = '', payload) {
-  const encodeRepoName = encodeURIComponent(repoName)
   const encodeBranchName = encodeURIComponent(branchName)
   return http.post(
-    `/api/aslan/service/loader/load/${codehostId}?branchName=${encodeBranchName}&projectName=${projectName}&repoOwner=${repoOwner}&repoName=${encodeRepoName}&remoteName=${remoteName}&repoUUID=${repoUUID}`,
+    `/api/aslan/service/loader/load/${codehostId}?branchName=${encodeBranchName}&projectName=${projectName}&repoOwner=${repoOwner}&repoName=${repoName}&remoteName=${remoteName}&repoUUID=${repoUUID}`,
     payload
   )
 }
 
 export function validPreloadService (codehostId, repoOwner, repoName, branchName, path, serviceName, isDir = false, remoteName = '', repoUUID = '') {
-  const encodeRepoName = encodeURIComponent(repoName)
   const encodeBranchName = encodeURIComponent(branchName)
   return http.get(
-    `/api/aslan/service/loader/validateUpdate/${codehostId}?branchName=${encodeBranchName}&repoOwner=${repoOwner}&repoName=${encodeRepoName}&path=${path}&serviceName=${serviceName}&isDir=${isDir}&remoteName=${remoteName}&repoUUID=${repoUUID}`
+    `/api/aslan/service/loader/validateUpdate/${codehostId}?branchName=${encodeBranchName}&repoOwner=${repoOwner}&repoName=${repoName}&path=${path}&serviceName=${serviceName}&isDir=${isDir}&remoteName=${remoteName}&repoUUID=${repoUUID}`
   )
 }
 
@@ -777,11 +773,10 @@ export function getRepoNameByIdAPI (id, type, repo_owner, key = '', project_uuid
 
 export function getBranchInfoByIdAPI (id, repoOwner, repoName, repoUUID = '', page = 1, perPage = 200, key = '') {
   const encodeRepoOwner = encodeURIComponent(repoOwner)
-  const encodeRepoName = encodeURIComponent(repoName)
   if (repoUUID) {
     return http.get(`/api/aslan/code/codehost/${id}/namespaces/projects/${repoUUID}/branches?repoOwner=${encodeRepoOwner}`)
   } else {
-    return http.get(`/api/aslan/code/codehost/${id}/namespaces/projects/branches?repoOwner=${encodeRepoOwner}&repoName=${encodeRepoName}&page=${page}&per_page=${perPage}&key=${key}`)
+    return http.get(`/api/aslan/code/codehost/${id}/namespaces/projects/branches?repoOwner=${encodeRepoOwner}&repoName=${repoName}&page=${page}&per_page=${perPage}&key=${key}`)
   }
 }
 
