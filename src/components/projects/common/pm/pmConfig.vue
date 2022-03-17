@@ -316,6 +316,22 @@ export default {
         desc: '部署的交付物包，通过该变量可获取交付物包'
       },
       {
+        variable: '<ENV>_HOST_NAMEs',
+        desc: '获取指定环境关联的所有主机名称'
+      },
+      {
+        variable: '<HOST_NAME>_PK',
+        desc: '获取主机密钥'
+      },
+      {
+        variable: '<HOST_NAME>_USERNAME',
+        desc: '获取主机用户名'
+      },
+      {
+        variable: '<HOST_NAME>_IP',
+        desc: '获取主机 IP'
+      },
+      {
         variable: '',
         desc:
           "远程部署时，可以通过使用命令 `ssh -i $<AGENT_NAME>_PK $<AGENT_NAME>_USERNAME@$<AGENT_NAME>_IP '自定义脚本'` 进行部署操作"
