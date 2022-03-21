@@ -174,12 +174,12 @@ export default {
     },
     async changeSchedule (projectName) {
       const workflowInfo = this.workflowInfo
-      workflowInfo.schedulerEnabled = !workflowInfo.schedulerEnabled
+      workflowInfo.schedule_enabled = !workflowInfo.schedule_enabled
       const res = await updateWorkflowAPI(this.workflowInfo).catch(error =>
         console.log(error)
       )
       if (res) {
-        if (workflowInfo.schedulerEnabled) {
+        if (workflowInfo.schedule_enabled) {
           this.$message.success('定时器开启成功')
         } else {
           this.$message.success('定时器关闭成功')
