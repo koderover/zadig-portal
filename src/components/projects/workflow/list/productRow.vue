@@ -236,8 +236,8 @@ export default {
   }
 
   .product-header {
-    flex: 0 0 200px;
-    max-width: 200px;
+    flex: 0 0 300px;
+    max-width: 300px;
     cursor: auto;
 
     .workflow-name {
@@ -250,8 +250,8 @@ export default {
 
         .name-span {
           display: inline-block;
-          width: 160px;
-          max-width: 160px;
+          width: 300px;
+          max-width: 300px;
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
