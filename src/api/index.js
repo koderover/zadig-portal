@@ -561,7 +561,7 @@ export function createWorkflowAPI (data) {
 }
 
 export function updateWorkflowAPI (data, ifPassFilter = false) {
-  return http.put(`/api/aslan/workflow/workflow?projectName=${data.product_tmpl_name}&ifPassFilter=${ifPassFilter}`, data)
+  return http.put(`/api/aslan/workflow/workflow/${data.name}?projectName=${data.product_tmpl_name}&ifPassFilter=${ifPassFilter}`, data)
 }
 
 export function deleteProductWorkflowAPI (projectName, name) {
