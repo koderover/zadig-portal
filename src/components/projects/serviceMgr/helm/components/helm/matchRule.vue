@@ -38,6 +38,7 @@
                 <el-form-item>
                   <el-input v-model="rule.repo" placeholder="仓库地址/命名空间" size="mini"></el-input>
                 </el-form-item>
+                <span class="warning" v-if="rule.showWarningText">请至少填入一个选项</span>
               </el-col>
               <el-col :span="1" class="separator">/</el-col>
               <el-col :span="4">
@@ -154,6 +155,21 @@ export default {
       if (val) {
         this.getMatchRules()
       }
+    },
+    'formModel.matchRules': {
+      handler (newVal, oldVal) {
+        const curItem = newVal[newVal.length - 1]
+        if (
+          !curItem.image &&
+            !curItem.tag &&
+            !curItem.repo
+        ) {
+          curItem.showWarningText = true
+        } else {
+          curItem.showWarningText = false
+        }
+      },
+      deep: true
     }
   },
   methods: {
@@ -172,9 +188,18 @@ export default {
     },
     addMatchRule () {
       if (this.$refs.ruleForm) {
-        this.$refs.ruleForm.validate().then(() => {
+        // 至少填入一个表单 即可通过检验
+        const curItem = this.formModel.matchRules[this.formModel.matchRules.length - 1]
+        if (
+          !curItem.image &&
+          !curItem.tag &&
+          !curItem.repo
+        ) {
+          curItem.showWarningText = true
+        } else {
+          curItem.showWarningText = false
           this.formModel.matchRules.push(cloneDeep(this.customRule))
-        })
+        }
       } else {
         this.formModel.matchRules.push(cloneDeep(this.customRule))
       }
@@ -357,6 +382,11 @@ export default {
 
       .el-form-item {
         margin-bottom: 0;
+      }
+
+      .warning {
+        color: red;
+        font-size: 12px;
       }
     }
   }
