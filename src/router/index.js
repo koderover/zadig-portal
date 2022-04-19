@@ -223,6 +223,42 @@ const routes = [
             }
           },
           {
+            path: 'scanner',
+            component: () => import(/* webpackChunkName: "Project Delivery" */ '@/components/projects/scanner/home.vue'),
+            meta: {
+              requiresAuth: true,
+              requiresSuperAdmin: false,
+              title: '代码扫描'
+            }
+          },
+          {
+            path: 'scanner/create',
+            component: () => import(/* webpackChunkName: "Project Delivery" */ '@/components/projects/scanner/create.vue'),
+            meta: {
+              requiresAuth: true,
+              requiresSuperAdmin: false,
+              title: '新建扫描'
+            }
+          },
+          {
+            path: 'scanner/edit/:scanner_name',
+            component: () => import(/* webpackChunkName: "Project Delivery" */ '@/components/projects/scanner/create.vue'),
+            meta: {
+              requiresAuth: true,
+              requiresSuperAdmin: false,
+              title: '编辑扫描'
+            }
+          },
+          {
+            path: 'scanner/detail/:scanner_name',
+            component: () => import(/* webpackChunkName: "Project Delivery" */ '@/components/projects/scanner/history.vue'),
+            meta: {
+              requiresAuth: true,
+              requiresSuperAdmin: false,
+              title: '扫描列表'
+            }
+          },
+          {
             path: 'version',
             component: () => import(/* webpackChunkName: "Project Delivery" */ '@/components/projects/version/index.vue'),
             meta: {
