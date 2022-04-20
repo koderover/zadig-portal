@@ -339,7 +339,7 @@ export default {
           {},
           qs.parse(window.location.search, { ignoreQueryPrefix: true }),
           {
-            rightbar: (this.$route.query.rightbar ? this.$route.query.rightbar : 'var')
+            rightbar: 'var'
           }
         )
       })

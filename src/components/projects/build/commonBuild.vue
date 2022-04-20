@@ -140,14 +140,21 @@ export default {
           payload.product_name = this.projectName
           this.saveLoading = true
           this.$emit('updateBtnLoading', true)
-          reqAPI(payload).then(() => {
-            this.saveLoading = false
-            this.followUpFn && this.followUpFn()
-            this.$message({
-              type: 'success',
-              message: this.isEdit ? '保存构建成功' : '新建构建成功'
+          reqAPI(payload)
+            .then(() => {
+              this.saveLoading = false
+              this.followUpFn &&
+                this.followUpFn({
+                  buildName: payload.name
+                })
+              this.$message({
+                type: 'success',
+                message: this.isEdit ? '保存构建成功' : '新建构建成功'
+              })
             })
-          })
+            .catch(() => {
+              this.saveLoading = false
+            })
         })
         .catch(err => {
           console.log('傻了吧', err)

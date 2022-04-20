@@ -67,7 +67,7 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item label="私钥" prop="private_key">
-        <el-input size="small" type="passsword" show-password   v-model="host.private_key" placeholder="请输入私钥"></el-input>
+        <el-input size="small" type="textarea"   v-model="host.private_key" placeholder="请输入私钥"></el-input>
       </el-form-item>
     </el-form>
   </div>

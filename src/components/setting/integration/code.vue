@@ -432,7 +432,7 @@
                         prop="client_secret">
             <el-input v-model="codeAdd.client_secret"
                       placeholder="Client Secret"
-                      show-password v-if='dialogCodeEditFormVisible'
+                      show-password v-if='dialogCodeAddFormVisible'
                       type="password"
                       auto-complete="off"></el-input>
           </el-form-item>
@@ -468,7 +468,7 @@
                         prop="client_secret">
             <el-input v-model="codeAdd.client_secret"
                       placeholder="Secret Key"
-                      show-password v-if='dialogCodeEditFormVisible'
+                      show-password v-if='dialogCodeAddFormVisible'
                       type="password"
                       auto-complete="off"></el-input>
           </el-form-item>
@@ -723,11 +723,11 @@ export default {
     handleCodeCancel () {
       if (this.$refs.codeForm) {
         this.$refs.codeForm.resetFields()
-        this.dialogCodeAddFormVisible = false
       } else if (this.$refs.codeUpdateForm) {
         this.$refs.codeUpdateForm.resetFields()
-        this.dialogCodeEditFormVisible = false
       }
+      this.dialogCodeEditFormVisible = false
+      this.dialogCodeAddFormVisible = false
     },
     clearValidate (ref) {
       this.$refs[ref].clearValidate()
@@ -798,6 +798,9 @@ export default {
       getCodeProviderAPI(key).then((res) => {
         res.forEach(item => {
           item.client_secret = this.$utils.aesDecrypt(item.client_secret)
+          if (item.password) {
+            item.password = this.$utils.aesDecrypt(item.password)
+          }
         })
         this.code = res
       })

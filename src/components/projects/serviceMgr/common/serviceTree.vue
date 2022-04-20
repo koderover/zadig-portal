@@ -681,6 +681,9 @@ export default {
                 this.$router.replace({
                   query: { service_name: firstServiceName, rightbar: 'help' }
                 })
+                this.$nextTick(() => {
+                  this.$emit('onShowJoinToEnvBtn', true)
+                })
               }
             })
             .finally(() => {
@@ -1143,6 +1146,7 @@ export default {
     },
     importYamlSuccess (serviceName) {
       this.$emit('update:showNext', true)
+      this.$emit('onShowJoinToEnvBtn', true)
       this.$emit('onRefreshService')
       this.$router.replace({
         query: { service_name: serviceName, rightbar: (this.$route.query.rightbar ? this.$route.query.rightbar : 'var') }

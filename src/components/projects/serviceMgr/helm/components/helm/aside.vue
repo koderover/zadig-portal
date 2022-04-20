@@ -170,10 +170,21 @@ export default {
         service_name: this.serviceName,
         naming: this.currentService.release_naming
       }
-      renamingHelmReleaseAPI(projectName, payload).then((res) => {
+      this.$confirm('修改后服务会在已部署的环境中重建，请确认?', '修改 Helm Release 名称', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        renamingHelmReleaseAPI(projectName, payload).then((res) => {
+          this.$message({
+            message: '服务正在重启，稍后请前往环境中确认',
+            type: 'success'
+          })
+        })
+      }).catch(() => {
         this.$message({
-          message: 'Release 名称保存成功',
-          type: 'success'
+          type: 'info',
+          message: '已取消保存'
         })
       })
     },

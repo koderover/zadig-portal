@@ -97,10 +97,10 @@
                            @onDeleteService="deleteService"
                            @onRefreshSharedService="getSharedServices"
                            @onSelectServiceChange="onSelectServiceChange"
+                           @onShowJoinToEnvBtn="showJoinToEnvBtnEvent"
                            @updateYaml="updateYaml($event)" />
             </div>
             <template v-if="service.service_name  &&  services.length >0">
-              <template v-if="service.type==='k8s'">
                 <MultipaneResizer/>
                 <div class="service-editor-container"
                      :style="{ minWidth: '300px', width: '500px' }">
@@ -109,15 +109,13 @@
                                     :showNext.sync="showNext"
                                     :yamlChange.sync="yamlChange"
                                     :isOnboarding="isOnboarding"
+                                    :showJoinToEnvBtn.sync="showJoinToEnvBtn"
                                     @onParseKind="getYamlKind"
                                     @onRefreshService="getServices"
                                     @onRefreshSharedService="getSharedServices"
                                     @onUpdateService="onUpdateService"
                                     @showJoinToEnvDialog="showJoinToEnvDialog"
                                     class="service-editor-content" />
-                  <div class="modal-block" v-if="service.source === 'template' && showModal">
-                    <el-button type="primary" size="small" @click="showModal = false">预览/编辑</el-button>
-                  </div>
                 </div>
                 <MultipaneResizer/>
                 <aside class="service-aside service-aside-right"
@@ -130,7 +128,6 @@
                                 @getServiceModules="getServiceModules"/>
                 </aside>
 
-              </template>
             </template>
             <div v-else
                  class="no-content">
@@ -185,6 +182,7 @@ export default {
       checkedEnvList: [],
       currentServiceYamlKinds: {},
       showNext: false,
+      showJoinToEnvBtn: false,
       yamlChange: false,
       updateEnvDialogVisible: false,
       integrationCodeDrawer: false,
@@ -192,8 +190,7 @@ export default {
       envNameList: [],
       deployableEnvs: [],
       activeEnvTabName: '',
-      deletedService: '',
-      showModal: true
+      deletedService: ''
     }
   },
   methods: {
@@ -211,7 +208,6 @@ export default {
       this.updateEnvDialogVisible = true
     },
     onSelectServiceChange (service) {
-      this.showModal = true
       this.$set(this, 'service', service)
     },
     getServices () {
@@ -293,6 +289,9 @@ export default {
     async checkProjectFeature () {
       const projectName = this.projectName
       this.projectInfo = await getSingleProjectAPI(projectName)
+    },
+    showJoinToEnvBtnEvent () {
+      this.showJoinToEnvBtn = true
     },
     joinToEnv () {
       const payload = this.checkedEnvList.map(item => {

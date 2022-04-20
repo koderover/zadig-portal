@@ -23,13 +23,15 @@
 </template>
 
 <script>
-import { getAnnouncementsAPI, checkEmailHostAPI } from '@api'
+import { getAnnouncementsAPI, checkEmailHostAPI, getPublicKeyAPI } from '@api'
 import Sidebar from './home/sidebar.vue'
 import Topbar from './home/topbar.vue'
 import BottomBar from './home/bottomBar.vue'
 import Announcement from './home/announcement.vue'
 import FloatLink from './home/floatLink.vue'
 import { mapGetters } from 'vuex'
+import localStore from 'storejs'
+
 export default {
   data () {
     return {
@@ -40,6 +42,11 @@ export default {
     }
   },
   methods: {
+    getPublicKey () {
+      getPublicKeyAPI().then(res => {
+        localStore.set('publicKey', res.publicKey)
+      })
+    },
     getAnnouncements () {
       getAnnouncementsAPI().then(res => {
         this.announcements = res
@@ -86,6 +93,7 @@ export default {
     this.$store.dispatch('GETUSERINFO')
     this.$store.dispatch('getProjectList')
     this.getAnnouncements()
+    this.getPublicKey()
   }
 }
 </script>

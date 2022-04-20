@@ -77,15 +77,15 @@
         <template v-if="registry.advanced_setting.modified">
           <el-alert type="info" :closable="false">
             <template>
-              <div >修改以下配置后，如使用跨集群构建功能，需重启对应集群中 koderover-agent 命名空间下的 koderover-agent-node-agent 服务，修改后的配置方可生效</div>
+              <div >修改以下配置后，如使用跨集群构建功能，需重启对应集群中 koderover-agent 命名空间下的 koderover-agent-node-agent 服务，重启后配置方可生效</div>
             </template>
           </el-alert>
           <el-form-item label="开启 SSL 校验" prop="enable_tls">
-            <el-switch v-model='registry.advanced_setting.enable_tls'></el-switch>
+            <el-switch v-model='registry.advanced_setting.enable_tls' @change="showTip($event,registry,'switch')"></el-switch>
           </el-form-item>
           <span></span>
           <el-form-item label="TLS 证书内容（公钥）" prop="secret_key" v-if="registry.advanced_setting.enable_tls">
-            <el-input type="textarea" placeholder="选填" rows="4" clearable v-model="registry.advanced_setting.tls_cert"></el-input>
+            <el-input type="textarea" placeholder="选填" rows="4" @input="showTip($event,registry,'input')" clearable v-model="registry.advanced_setting.tls_cert"></el-input>
           </el-form-item>
         </template>
       </el-form>
@@ -279,7 +279,7 @@ export default {
         region: [{ required: true, message: '请输入区域', trigger: ['blur'] }],
         namespace: [{ required: true, message: '请输入 Namespace', trigger: ['blur'] }]
       },
-      isShowHighSetting: false
+      isModify: false
     }
   },
   computed: {
@@ -288,6 +288,11 @@ export default {
     }
   },
   methods: {
+    showTip (val, row, type) {
+      if ((type === 'switch' && val !== row.tempSetting.enable_tls) || (type === 'input' && val !== row.tempSetting.tls_cert)) { this.isModify = true } else {
+        this.isModify = false
+      }
+    },
     addRegistryBtn () {
       this.registry = {
         namespace: '',
@@ -342,15 +347,22 @@ export default {
       if (action === 'add') {
         this.$refs.registry.validate(valid => {
           if (valid) {
-            this.$confirm(`修改「开启 SSL 校验」或 「TLS 证书内容（公钥）」会对正在运行的工作流任务产生影响，确认修改？`, '确认', {
-              confirmButtonText: '确定',
-              cancelButtonText: '取消',
-              type: 'warning'
-            }).then(() => {
-              const payload = this.registry
+            const payload = this.registry
+            if (!this.registry.advanced_setting.enable_tls || this.registry.advanced_setting.tls_cert) {
+              this.$confirm(`修改「开启 SSL 校验」或 「TLS 证书内容（公钥）」会对正在运行的工作流任务产生影响，确认修改？`, '确认', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+                this.dialogRegistryFormVisible = false
+                this.isModify = false
+                this.addRegistry(payload)
+              })
+            } else {
               this.dialogRegistryFormVisible = false
+              this.isModify = false
               this.addRegistry(payload)
-            })
+            }
           } else {
             return false
           }
@@ -365,16 +377,23 @@ export default {
       } else if (action === 'update') {
         this.$refs.registry.validate(valid => {
           if (valid) {
-            this.$confirm(`修改「开启 SSL 校验」或 「TLS 证书内容（公钥）」会对正在运行的工作流任务产生影响，确认修改？`, '确认', {
-              confirmButtonText: '确定',
-              cancelButtonText: '取消',
-              type: 'warning'
-            }).then(() => {
-              const id = this.registry.id
-              const payload = this.registry
+            const id = this.registry.id
+            const payload = this.registry
+            if (this.isModify) {
+              this.$confirm(`修改「开启 SSL 校验」或 「TLS 证书内容（公钥）」会对正在运行的工作流任务产生影响，确认修改？`, '确认', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+                this.isModify = false
+                this.dialogRegistryFormVisible = false
+                this.updateRegistry(id, payload)
+              })
+            } else {
+              this.isModify = false
               this.dialogRegistryFormVisible = false
               this.updateRegistry(id, payload)
-            })
+            }
           } else {
             return false
           }
@@ -427,6 +446,8 @@ export default {
               enable_tls: true,
               tls_cert: ''
             }
+          } else {
+            item.tempSetting = cloneDeep(item.advanced_setting)
           }
           item.secret_key = this.$utils.aesDecrypt(item.secret_key)
         })

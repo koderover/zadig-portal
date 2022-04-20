@@ -5,12 +5,14 @@
         <div class="row cf-pipeline-yml-build__wrapper">
           <div class="cf-pipeline-yml-build__editor cf-pipeline-yml-build__editor_inline">
             <div
-              v-if="serviceType === 'k8s'"
               class="cf-pipeline-yml-build__editor-wrapper"
               @keydown.meta.83.prevent="updateServiceByKeyword"
             >
               <div class="yaml-desc" v-show="!service.yaml">请输入 Kubernetes YAML 配置</div>
-              <codemirror style="width: 100%; height: 100%;" ref="myCm" :value="service.yaml" :options="cmOptions" @input="onCmCodeChange"></codemirror>
+              <CodeMirror style="width: 100%; height: 100%;" ref="myCm" :value="service.yaml" :options="cmOptions" @input="onCmCodeChange"/>
+            </div>
+            <div class="modal-block" v-if="service.source === 'template' && showModal">
+              <el-button type="primary" size="small" @click="showModal = false">预览/编辑</el-button>
             </div>
           </div>
         </div>
@@ -73,6 +75,10 @@ export default {
       type: Boolean,
       default: false
     },
+    showJoinToEnvBtn: {
+      type: Boolean,
+      default: false
+    },
     yamlChange: Boolean
   },
   data () {
@@ -105,7 +111,7 @@ export default {
       initYaml: '',
       dialogImportYamlVisible: false,
       previewYamlFile: false,
-      showJoinToEnvBtn: false,
+      showModal: true,
       importYaml: {
         id: '',
         yamls: [],
@@ -167,7 +173,7 @@ export default {
           service_status: this.service.status,
           res
         })
-        this.showJoinToEnvBtn = true
+        this.$emit('update:showJoinToEnvBtn', true)
       })
     },
     showJoinToEnvDialog () {
@@ -335,6 +341,9 @@ export default {
           } else {
             this.cmOptions.readOnly = false
           }
+          if (val.source === 'template') {
+            this.showModal = true
+          }
         } else if (val.status === 'named') {
           this.service = {
             yaml: '',
@@ -357,7 +366,7 @@ export default {
     this.editorFocus()
   },
   components: {
-    codemirror
+    CodeMirror: codemirror
   }
 }
 </script>
