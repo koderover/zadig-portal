@@ -41,6 +41,7 @@
                 type="textarea"
                 :autosize="{ minRows: 1, maxRows: 4 }"
                 placeholder="请输入 Value"
+                @input="replaceVar"
               ></el-input>
             </template>
           </el-table-column>
@@ -55,7 +56,7 @@
           </el-button>
         </el-form-item>
       </el-form>
-      <codemirror v-if="previewYamlFile"  v-model="importYaml.content" :options="importTemplateEditorOption" ></codemirror>
+      <codemirror v-if="previewYamlFile"  v-model="temp_content" :options="importTemplateEditorOption" ></codemirror>
       <div slot="footer" class="dialog-footer">
         <el-button plain native-type="submit" @click="$emit('update:dialogImportFromYamlVisible',false)" size="small">取消</el-button>
         <el-button type="primary" native-type="submit" size="small" class="start-create" @click="loadServiceFromKubernetesTemplate">新建</el-button>
@@ -83,6 +84,7 @@ export default {
         variables: [],
         content: ''
       },
+      temp_content: '',
       importTemplateEditorOption: {
         tabSize: 2,
         readOnly: 'nocursor',
@@ -155,6 +157,15 @@ export default {
           this.$emit('importYamlSuccess', serviceName)
         }
       }
+    },
+    replaceVar () {
+      let temp_content = this.importYaml.content
+      this.importYaml.variables.forEach(item => {
+        if (item.value !== undefined) {
+          temp_content = temp_content.replaceAll(`{{.${item.key}}}`, item.value)
+        }
+      })
+      this.temp_content = temp_content
     }
   },
   mounted () {
