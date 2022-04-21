@@ -294,7 +294,7 @@ export default {
 
 <style lang="less" scoped>
 .chart-template-container {
-  height: 100%;
+  height: calc(~'100% - 80px');
   padding: 10px 10px;
   background-color: @globalBackgroundColor;
 

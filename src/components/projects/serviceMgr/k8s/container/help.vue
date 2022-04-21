@@ -45,7 +45,7 @@
         <el-col :span="8">
           <li class="service-aside-help__step-list-item">
             <a target="_blank"
-               href="https://docs.koderover.com/zadig/project/service/#%E6%97%A0%E7%8A%B6%E6%80%81%E6%9C%8D%E5%8A%A1"
+               href="https://docs.koderover.com/zadig/project/service/k8s/#无状态服务"
                class="service-aside-help__step-list-item-link">
               <i class="icon el-icon-link"></i>
               <span class="service-aside-help__step-list-item-link-text">
@@ -55,7 +55,7 @@
         </el-col>
         <el-col :span="8">
           <li class="service-aside-help__step-list-item">
-            <a href="https://docs.koderover.com/zadig/project/service/#%E6%9C%89%E7%8A%B6%E6%80%81%E6%9C%8D%E5%8A%A1"
+            <a href="https://docs.koderover.com/zadig/project/service/k8s/#无状态服务"
                target="_blank"
                class="service-aside-help__step-list-item-link">
               <i class="icon el-icon-link"></i>
@@ -68,7 +68,7 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <li class="service-aside-help__step-list-item">
-            <a href="https://docs.koderover.com/zadig/project/build/#%E6%96%B0%E5%BB%BA%E6%9E%84%E5%BB%BA"
+            <a href="https://docs.koderover.com/zadig/project/build/"
                target="_blank"
                class="service-aside-help__step-list-item-link">
               <i class="icon el-icon-link"></i>

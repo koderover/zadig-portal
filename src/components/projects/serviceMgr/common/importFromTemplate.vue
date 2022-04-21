@@ -149,6 +149,7 @@ export default {
         if (res) {
           this.$refs.importYamlForm.resetFields()
           this.importYaml.variables = []
+          this.previewYamlFile = false
           this.$emit('update:dialogImportFromYamlVisible', false)
           this.$message({
             type: 'success',

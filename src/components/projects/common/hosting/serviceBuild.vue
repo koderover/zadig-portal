@@ -28,6 +28,7 @@
           :name="build.name"
           :isEdit="build.isEdit"
           :buildName="build.buildName"
+          :followUpFn="followUpFn"
         />
       </div>
     </div>
@@ -68,6 +69,12 @@ export default {
     }
   },
   methods: {
+    followUpFn ({ buildName }) {
+      if (!this.build.isEdit) {
+        this.build.isEdit = true
+        this.build.buildName = buildName
+      }
+    },
     async saveBuild () {
       const res = await this.$refs.build.handleBuildConfig()
       if (res) {

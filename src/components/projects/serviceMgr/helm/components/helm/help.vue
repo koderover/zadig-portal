@@ -60,7 +60,7 @@
         <el-col :span="8">
           <li class="service-aside-help__step-list-item">
             <a target="_blank"
-               href="https://docs.koderover.com/zadig/project/service/#服务-yaml-样例"
+               href="https://docs.koderover.com/zadig/project/service/k8s/#服务-yaml-样例"
                class="service-aside-help__step-list-item-link">
               <i class="icon el-icon-link"></i>
               <span class="service-aside-help__step-list-item-link-text">
@@ -70,7 +70,7 @@
         </el-col>
         <el-col :span="8">
           <li class="service-aside-help__step-list-item">
-            <a href="https://docs.koderover.com/zadig/project/service/#服务-yaml-样例"
+            <a href="https://docs.koderover.com/zadig/project/service/k8s/#服务-yaml-样例"
                target="_blank"
                class="service-aside-help__step-list-item-link">
               <i class="icon el-icon-link"></i>
@@ -81,7 +81,7 @@
         <el-col :span="8">
           <li class="service-aside-help__step-list-item">
             <a target="_blank"
-               href="https://docs.koderover.com/zadig/project/service/#k8s-helm-chart-%E6%9C%8D%E5%8A%A1"
+               href="https://docs.koderover.com/zadig/project/service/helm/chart/"
                class="service-aside-help__step-list-item-link">
               <i class="icon el-icon-link"></i>
               <span class="service-aside-help__step-list-item-link-text">

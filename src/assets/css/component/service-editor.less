@@ -32,13 +32,7 @@
     flex-direction: column;
     height: 100%;
     background-color: #fff;
-    -webkit-box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.05);
     box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.05);
-
-    &.gui {
-      overflow-x: hidden;
-      overflow-y: auto !important;
-    }
 
     .no-content {
       display: flex;
@@ -60,10 +54,6 @@
     }
 
     .white-box-with-shadow__content {
-      &.gui {
-        padding: 0 15px 0 15px;
-      }
-
       display: flex;
       flex: 1;
       flex-direction: column;
@@ -75,10 +65,6 @@
         align-items: center;
         justify-content: space-between;
         margin-bottom: 15px;
-        -webkit-box-pack: justify;
-        -ms-flex-pack: justify;
-        -webkit-box-align: center;
-        -ms-flex-align: center;
 
         .service-name {
           span {
@@ -89,19 +75,6 @@
         .method-select {
           .el-button + .el-button {
             margin-left: 0;
-          }
-        }
-
-        .source-dropdown {
-          .el-dropdown {
-            position: relative;
-            display: inline-block;
-            color: @themeColor;
-            font-size: 14px;
-
-            .el-dropdown-link {
-              font-size: 13px;
-            }
           }
         }
       }
@@ -117,29 +90,18 @@
       }
 
       .cf-pipeline-yml-build__editor {
-        display: -webkit-box;
-        display: -ms-flexbox;
         display: flex;
-        -ms-flex-direction: column;
         flex-direction: column;
         height: 100%;
-        -webkit-box-orient: vertical;
-        -webkit-box-direction: normal;
 
         .cf-pipeline-yml-build__editor-wrapper {
           position: relative;
-          -ms-flex: 1;
           flex: 1;
           min-height: 0;
           border: none !important;
-          -webkit-box-flex: 1;
 
           .from-code-container {
             margin-top: 50px;
-          }
-
-          .shared-service-checkbox {
-            padding: 0 15px;
           }
 
           .yaml-desc {
@@ -149,6 +111,18 @@
             color: #ccc;
             font-size: 13px;
           }
+        }
+
+        .modal-block {
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          z-index: 999;
+          padding: 14px;
+          background: rgba(234, 234, 234, 0.92);
+          cursor: not-allowed;
         }
       }
     }
@@ -193,12 +167,10 @@
           }
 
           .yaml-errors__errors-list-item-text {
-            -ms-flex: 1;
             flex: 1;
             width: 300px;
             max-width: 100%;
             padding: 5px 0;
-            -webkit-box-flex: 1;
           }
 
           &:last-child {

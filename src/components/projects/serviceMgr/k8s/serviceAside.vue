@@ -93,7 +93,7 @@
                     >
                       <el-button size="small" type="text">{{scope.row.build_name}}</el-button>
                     </router-link>
-                    <el-button v-else size="small" @click="addBuild(scope.row)" type="text">添加构建</el-button>
+                    <el-button v-else size="small" :disabled="projectName !== projectNameOfService" @click="addBuild(scope.row)" type="text">添加构建</el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -339,7 +339,7 @@ export default {
           {},
           qs.parse(window.location.search, { ignoreQueryPrefix: true }),
           {
-            rightbar: (this.$route.query.rightbar ? this.$route.query.rightbar : 'var')
+            rightbar: 'var'
           }
         )
       })

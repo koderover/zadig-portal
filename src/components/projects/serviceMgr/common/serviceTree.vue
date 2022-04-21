@@ -679,7 +679,10 @@ export default {
                 const firstServiceName = this.source.services[0]
                 this.setServiceSelected(firstServiceName)
                 this.$router.replace({
-                  query: { service_name: firstServiceName, rightbar: 'help' }
+                  query: { service_name: firstServiceName, rightbar: 'var' }
+                })
+                this.$nextTick(() => {
+                  this.$emit('onShowJoinToEnvBtn', true)
                 })
               }
             })
@@ -1143,9 +1146,10 @@ export default {
     },
     importYamlSuccess (serviceName) {
       this.$emit('update:showNext', true)
+      this.$emit('onShowJoinToEnvBtn', true)
       this.$emit('onRefreshService')
       this.$router.replace({
-        query: { service_name: serviceName, rightbar: (this.$route.query.rightbar ? this.$route.query.rightbar : 'var') }
+        query: { service_name: serviceName, rightbar: 'var' }
       })
     },
     listenResize () {
