@@ -1,9 +1,9 @@
 <template>
   <div class="test-advanced-config-container">
-    <el-form class="secondary-form" :model="testConfig" ref="advancedRef" label-width="120px" label-position="left">
+    <el-form class="secondary-form" :model="scannerConfig" ref="advancedRef" label-width="120px" label-position="left">
       <BuildAdvancedConfig
-        :buildConfig="testConfig"
-        :secondaryProp="`pre_test`"
+        :buildConfig="scannerConfig"
+        :secondaryProp="`advanced_settings`"
         :validObj="validObj"
         :isCreate="!isEdit"
         @validateFailed="$emit('validateFailed')"
@@ -19,13 +19,13 @@
         <TestTrigger
           ref="trigger"
           :projectName="projectName"
-          :testName="isEdit ? name : testConfig.name"
-          :webhook="testConfig.hook_ctl"
-          :avaliableRepos="testConfig.repos"
-          :class="{ 'margin-bottom': testConfig.hook_ctl.items.length }"
+          :testName="isEdit ? name : scannerConfig.name"
+          :webhook="scannerConfig.advanced_settings.hook_ctl"
+          :avaliableRepos="scannerConfig.repos"
+          :class="{ 'margin-bottom': scannerConfig.advanced_settings.hook_ctl.items.length }"
         ></TestTrigger>
       </div>
-      <div class="timer">
+      <!-- <div class="timer">
         <el-form-item>
           <template slot="label">定时器触发</template>
           <el-button @click="addTimer" type="primary" size="small" plain>添加</el-button>
@@ -34,37 +34,37 @@
           ref="timer"
           timerType="test"
           :projectName="projectName"
-          :testName="isEdit ? name : testConfig.name"
-          :schedules="testConfig.schedules"
-          :class="[testConfig.schedules.items.length === 0 ? 'hidden-table' : 'margin-bottom']"
+          :testName="isEdit ? name : scannerConfig.name"
+          :schedules="scannerConfig.schedules"
+          :class="[scannerConfig.schedules.items.length === 0 ? 'hidden-table' : 'margin-bottom']"
         >
           <template v-slot:content="{ orgsObject, indexWork }">
             <div>{{indexWork}}</div>
             <div>{{orgsObject}}</div>
           </template>
         </TestTimer>
-      </div>
+      </div>-->
 
-      <div class="notify">
+      <!-- <div class="notify">
         <el-form-item>
           <template slot="label">通知配置</template>
           <el-button
-            @click="testConfig.notify_ctl.enabled = !testConfig.notify_ctl.enabled"
+            @click="scannerConfig.advanced_settings.notify_ctl.enabled = !scannerConfig.advanced_settings.notify_ctl.enabled"
             type="primary"
             size="small"
             plain
-          >{{testConfig.notify_ctl.enabled ? '删除': '添加'}}</el-button>
+          >{{scannerConfig.advanced_settings.notify_ctl.enabled ? '删除': '添加'}}</el-button>
         </el-form-item>
         <Notify
-          v-if="testConfig.notify_ctl.enabled"
+          v-if="scannerConfig.advanced_settings.notify_ctl.enabled"
           ref="notifyComp"
           :editMode="isEdit"
-          :notify="testConfig.notify_ctl"
+          :notify="scannerConfig.advanced_settings.notify_ctl"
           :showTitle="false"
           :fromWorkflow="false"
           class="notify-content"
         />
-      </div>
+      </div> -->
     </el-form>
   </div>
 </template>
@@ -75,7 +75,7 @@ import TestTrigger from '@/components/common/testTrigger.vue'
 import Notify from '@/components/projects/workflow/workflowEditor/productWorkflow/modules/notify.vue'
 export default {
   props: {
-    testConfig: Object,
+    scannerConfig: Object,
     allCodeHosts: Array,
     validObj: Object
   },
@@ -98,7 +98,7 @@ export default {
       ])
     },
     addTrigger () {
-      this.testConfig.repos.forEach(repo => {
+      this.scannerConfig.repos.forEach(repo => {
         this.allCodeHosts.forEach(codehost => {
           if (repo.codehost_id === codehost.id) {
             repo.source = codehost.type
@@ -109,12 +109,6 @@ export default {
     },
     addTimer () {
       this.$refs.timer.addTimerBtn()
-    },
-    addArtifactPath (index) {
-      this.testConfig.artifact_paths.push('')
-    },
-    deleteArtifactPath (index) {
-      this.testConfig.artifact_paths.splice(index, 1)
     }
   },
   components: {

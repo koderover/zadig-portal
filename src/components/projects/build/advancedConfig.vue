@@ -10,7 +10,13 @@
     >
       <div class="item-title">策略配置</div>
       <el-form-item label="超时时间">
-        <el-input-number size="mini" :min="1" v-model="buildConfig.timeout"></el-input-number>
+        <el-input-number v-if="(typeof buildConfig.timeout) !== 'undefined'" size="mini" :min="1" v-model="buildConfig.timeout"></el-input-number>
+        <el-input-number
+          v-else-if="(typeof currentResource.timeout) !== 'undefined'"
+          size="mini"
+          :min="1"
+          v-model="currentResource.timeout"
+        ></el-input-number>
         <span>分钟</span>
       </el-form-item>
       <el-form-item label="缓存配置" v-if="!hiddenCache">

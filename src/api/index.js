@@ -388,8 +388,8 @@ export function initProjectEnvAPI (projectName, isStcov, envType = 'general', is
 }
 
 // Build
-export function getImgListAPI (from = '') {
-  return http.get(`/api/aslan/system/basicImages?image_from=${from}`)
+export function getImgListAPI (from = '', imageFrom = '') {
+  return http.get(`/api/aslan/system/basicImages?image_from=${from}&image_type=${imageFrom}`)
 }
 
 export function deleteBuildConfigAPI (name, version, projectName) {
@@ -726,6 +726,29 @@ export function getTestReportAPI (projectName, workflowName, taskID, testJobName
   return http.get(
     `/api/aslan/testing/itreport/workflow/${workflowName}/id/${taskID}/names/${testJobName}/service/${serviceName}?projectName=${projectName}&testType=${testType}&workflowType=${workflowType}`
   )
+}
+
+// code canner
+export function createCodeScannerAPI (payload) {
+  return http.post(`/api/aslan/testing/scanning?projectName=${payload.product_name}`, payload)
+}
+export function updateCodeScannerAPI (id, payload) {
+  return http.put(`/api/aslan/testing/scanning/${id}?projectName=${payload.product_name}`, payload)
+}
+
+export function getCodeScannerDetailAPI (id, projectName) {
+  return http.get(`/api/aslan/testing/scanning/${id}?projectName=${projectName}`)
+}
+export function deleteCodeScannerAPI (id, projectName) {
+  return http.delete(`/api/aslan/testing/scanning/${id}?projectName=${projectName}`)
+}
+
+export function getCodeScannerListAPI (projectName) {
+  return http.get(`/api/aslan/testing/scanning?projectName=${projectName}`)
+}
+
+export function getCodeScannerHistoryAPI (id, projectName, page_num, page_size) {
+  return http.get(`/api/aslan/testing/scanning/${id}/task?projectName=${projectName}&page_num=${page_num}&page_size=${page_size}`)
 }
 
 // User Management
