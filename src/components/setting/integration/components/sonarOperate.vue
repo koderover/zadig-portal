@@ -47,7 +47,7 @@
   </el-dialog>
 </template>
 <script>
-import { addSonar, checkSonarConnection, editSonar } from '@/api'
+import { addSonarAPI, checkSonarConnectionAPI, editSonarAPI } from '@/api'
 export default {
   name: 'addSonar',
   props: {
@@ -65,11 +65,10 @@ export default {
       },
       formRules: {
         server_address: [
-          { required: true, message: '服务地址不能为空', trigger: 'blur' },
           {
-            pattern: /(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&:/~\+#]*[\w\-\@?^=%&/~\+#])?/,
-            message: '请输入正确的服务地址',
-            trigger: 'blur'
+            type: 'url',
+            message: '请输入正确的 URL，包含协议',
+            trigger: ['blur']
           }
         ],
         token: [
@@ -93,7 +92,7 @@ export default {
       if (this.isEdit) {
         this.edit()
       } else {
-        const res = await addSonar(this.addForm).catch((error) =>
+        const res = await addSonarAPI(this.addForm).catch((error) =>
           console.log(error)
         )
         if (res && res.message === 'success') {
@@ -104,7 +103,7 @@ export default {
       }
     },
     async edit () {
-      const res = await editSonar(this.addForm).catch((error) =>
+      const res = await editSonarAPI(this.addForm).catch((error) =>
         console.log(error)
       )
       if (res && res.message === 'success') {
@@ -115,7 +114,7 @@ export default {
     },
     async checkPassword () {
       this.check = true
-      const res = await checkSonarConnection(this.addForm).catch(error => {
+      const res = await checkSonarConnectionAPI(this.addForm).catch(error => {
         this.checkRes = 'fail'
         this.errorMessage = error.response.data.message
       })

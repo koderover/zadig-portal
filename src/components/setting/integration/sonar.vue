@@ -33,7 +33,7 @@
 <script>
 import Etable from '@/components/common/etable'
 import SonarOperate from './components/sonarOperate'
-import { querySonar, deleteSonar } from '@/api'
+import { querySonarAPI, deleteSonarAPI } from '@/api'
 import { cloneDeep } from 'lodash'
 export default {
   name: 'Sonar',
@@ -75,7 +75,7 @@ export default {
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
-        deleteSonar(data).then(() => {
+        deleteSonarAPI(data).then(() => {
           this.$message.success('删除成功')
           this.getSonar()
         })
@@ -89,7 +89,7 @@ export default {
     },
     async getSonar () {
       const key = this.$utils.rsaEncrypt()
-      const res = await querySonar(key).catch(error => console.log(error))
+      const res = await querySonarAPI(key).catch(error => console.log(error))
       if (res) {
         this.tableData = res
       }

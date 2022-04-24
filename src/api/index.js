@@ -926,23 +926,23 @@ export function queryJenkinsParams (jobName) {
   return http.get(`/api/aslan/system/jenkins/buildArgs/${jobName}`)
 }
 // Sonar
-export function querySonar (key) {
+export function querySonarAPI (key) {
   return http.get(`/api/aslan/system/sonar/integration?encryptedKey=${key}`)
 }
 
-export function addSonar (payload) {
+export function addSonarAPI (payload) {
   return http.post('/api/aslan/system/sonar/integration', payload)
 }
 
-export function editSonar (payload) {
+export function editSonarAPI (payload) {
   return http.put(`/api/aslan/system/sonar/integration/${payload.id}`, payload)
 }
 
-export function deleteSonar (payload) {
+export function deleteSonarAPI (payload) {
   return http.delete(`/api/aslan/system/sonar/integration/${payload.id}`, payload)
 }
 
-export function checkSonarConnection (payload) {
+export function checkSonarConnectionAPI (payload) {
   return http.post('/api/aslan/system/sonar/validate', payload)
 }
 
