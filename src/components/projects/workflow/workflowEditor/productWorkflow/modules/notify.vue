@@ -38,7 +38,7 @@
                             content="点击查看飞书 webhook 配置文档"
                             placement="top">
                   <a class="help-link"
-                      href="https://docs.koderover.com/zadig/project/workflow/#%E7%8A%B6%E6%80%81%E9%80%9A%E7%9F%A5"
+                      href="https://docs.koderover.com/zadig/project/workflow/#飞书/"
                       target="_blank"><i class="el-icon-question"></i></a>
                 </el-tooltip></span>
             </span>
@@ -55,7 +55,7 @@
                             content="点击查看企业微信 webhook 配置文档"
                             placement="top">
                   <a class="help-link"
-                      href="https://docs.koderover.com/zadig/project/workflow/#%E7%8A%B6%E6%80%81%E9%80%9A%E7%9F%A5"
+                      href="https://docs.koderover.com/zadig/project/workflow/#企业微信/"
                       target="_blank"><i class="el-icon-question"></i></a>
                 </el-tooltip></span>
             </span>
@@ -72,7 +72,7 @@
                             content="点击查看钉钉 webhook 配置文档"
                             placement="top">
                   <a class="help-link"
-                      href="https://docs.koderover.com/zadig/project/workflow/#%E7%8A%B6%E6%80%81%E9%80%9A%E7%9F%A5"
+                      href="https://docs.koderover.com/zadig/project/workflow/#钉钉/"
                       target="_blank"><i class="el-icon-question"></i></a>
                 </el-tooltip></span>
             </span>

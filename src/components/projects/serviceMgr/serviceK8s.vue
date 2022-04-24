@@ -42,7 +42,7 @@
                          :label="env">{{env.name}}</el-checkbox>
           </el-checkbox-group>
         </div>
-        <div v-if="checkedEnvList.length > 0 && checkedEnvList[0].vars.length > 0" class="env-tabs">
+        <div v-if="checkedEnvList.length > 0 && checkedEnvList[0] && checkedEnvList[0].vars &&checkedEnvList[0].vars.length > 0" class="env-tabs">
           <span class="desc">该服务有使用变量，请确认该服务在不同环境中对应的变量值</span>
           <el-tabs v-model="activeEnvTabName" type="card">
             <el-tab-pane v-for="(env,index) in checkedEnvList"  :key="index" :label="env.name" :name="env.name">

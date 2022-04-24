@@ -299,13 +299,8 @@
           :rules="userAccountCustomRules"
           ref="userAccountCustomForm"
           label-position="left"
-          label-width="120px"
+          label-width="140px"
         >
-          <!-- <el-alert type="info" :closable="false" style="margin-bottom: 15px;">
-            <slot>
-              <span class="tips">{{`请参考文档获取帮助`}}</span>
-            </slot>
-          </el-alert> -->
           <el-form-item label="账号系统类型" prop="type">
             <el-input v-model="userAccountCustom.type" :disabled="userAccount.mode ==='edit'" placeholder="输入自定义账号系统类型" autofocus clearable auto-complete="off"></el-input>
           </el-form-item>
@@ -313,6 +308,10 @@
             <el-input v-model="userAccountCustom.name" placeholder="输入账号系统名称" autofocus clearable auto-complete="off"></el-input>
           </el-form-item>
           <el-form-item label="YAML 配置" prop="yaml">
+            <span slot="label">
+              YAML 配置
+              <HelpLink :inline="true" :keyword="{location:'账号系统',key:'custom'}" />
+            </span>
           </el-form-item>
         </el-form>
         <div class="yaml-editor">
@@ -394,6 +393,7 @@ import {
 import { cloneDeep, omit } from 'lodash'
 import { codemirror } from 'vue-codemirror'
 import jsyaml from 'js-yaml'
+import HelpLink from '../../profile/common/helpLink.vue'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/yaml/yaml'
 import 'codemirror/theme/neo.css'
@@ -1181,7 +1181,7 @@ export default {
     }
   },
   components: {
-    codemirror
+    codemirror, HelpLink
   },
   mounted () {
     this.getAccountConfig()

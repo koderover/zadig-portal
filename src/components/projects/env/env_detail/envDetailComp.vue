@@ -1108,8 +1108,9 @@ export default {
       })
     },
     getProdStatus (status, updatable) {
+      // k8s and helm don't show updatable status
       const hiddenUpdatable =
-        this.envSource === '' || this.envSource === 'spock'
+        this.envSource === '' || this.envSource === 'spock' || this.envSource === 'helm'
       return translateEnvStatus(status, hiddenUpdatable ? false : updatable)
     },
     rollbackToVersion () {

@@ -33,7 +33,7 @@
                   size="small"
                   value-key="id"
                   placeholder="请选择分支或标签"
-                  @change="build[build.prNumberPropName] = null"
+                  @change="changeBranchOrTag(build)"
                 >
                   <el-option-group v-for="group in build.branchAndTagList" :key="group.label" :label="group.label">
                     <el-option v-for="(item, index) in group.options" :key="index" :label="item.name" :value="item"></el-option>
@@ -279,6 +279,11 @@ export default {
     }
   },
   methods: {
+    changeBranchOrTag (build) {
+      if (build.branchOrTag) {
+        build[build.prNumberPropName] = null
+      }
+    },
     async searchRepoInfo (build, query) {
       let reposQuery = []
       if (build.source === 'codehub') {

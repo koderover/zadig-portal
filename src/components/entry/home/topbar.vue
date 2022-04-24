@@ -64,13 +64,13 @@
               </a>
             </li>
             <li>
-              <a href="https://docs.koderover.com/zadig/env/service/" target="_blank">
+              <a href="https://docs.koderover.com/zadig/env/loadbalance/" target="_blank">
                 <i class="icon el-icon-link"></i>
                 <span>环境</span>
               </a>
             </li>
             <li>
-              <a href="https://docs.koderover.com/zadig/project/service/" target="_blank">
+              <a href="https://docs.koderover.com/zadig/project/overview/" target="_blank">
                 <i class="icon el-icon-link"></i>
                 <span>项目管理</span>
               </a>
