@@ -164,23 +164,23 @@ export default {
           required: true,
           message: '扫描环境不能为空',
           trigger: ['blur', 'change']
+        },
+        sonar_id: {
+          required: true,
+          message: 'Sonar 地址不能为空',
+          trigger: ['blur', 'change']
         }
-        // sonar_id: {
-        //   required: true,
-        //   message: 'Sonar 地址不能为空',
-        //   trigger: ['blur', 'change']
-        // }
       },
       scannerConfig: {
         name: '',
         product_name: '',
         description: '',
         scanner_type: 'sonarQube',
-        image_id: '', // 扫描环境
+        image_id: '', // scanner environment
         sonar_id: '',
         repos: [],
-        parameter: '# Sonar 参数\n', // sonar参数字段
-        script: '#!/bin/bash\nset -e', // 其他类型的脚本
+        parameter: '# Sonar 参数\n', // sonar parameters
+        script: '#!/bin/bash\nset -e', // for other type
         advanced_settings: {
           timeout: 60,
           cluster_id: '',
@@ -193,11 +193,11 @@ export default {
             enabled: true,
             items: []
           }
-          // schedules: {
+          // schedules: { // for timing trigger
           //   enabled: false,
           //   items: []
           // },
-          // notify_ctl: {
+          // notify_ctl: {  // for notify
           //   enabled: false,
           //   weChat_webHook: '',
           //   notify_type: []
