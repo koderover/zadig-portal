@@ -31,8 +31,8 @@
       </el-table-column>
       <el-table-column label="执行人" min-width="120">
         <template slot-scope="{ row }">
-          <div class="common-column">{{ row.task_creator }}</div>
-          <div class="common-column column-gray">{{ convertTimestamp(row.created_at) }}</div>
+          <div class="common-column">{{ row.creator }}</div>
+          <div class="common-column column-gray">{{ unix(row.created_at).format('MM-DD HH:mm') }}</div>
         </template>
       </el-table-column>
     </el-table>
@@ -50,17 +50,15 @@
 
 <script>
 import { wordTranslate } from '@utils/wordTranslate.js'
-import moment from 'moment'
+import { unix } from 'moment'
 export default {
   data () {
     return {
-      durationSet: {}
+      durationSet: {},
+      unix
     }
   },
   methods: {
-    convertTimestamp (value) {
-      return moment.unix(value).format('MM-DD HH:mm')
-    },
     wordTranslation (word, category, subitem) {
       return wordTranslate(word, category, subitem)
     },

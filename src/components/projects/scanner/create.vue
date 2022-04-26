@@ -217,7 +217,7 @@ export default {
       return this.$route.params.project_name
     },
     scannerId () {
-      return this.$route.params.scanner_id
+      return this.$route.query.id
     },
     isEdit () {
       return !!this.scannerId
@@ -320,6 +320,14 @@ export default {
 
     if (this.isEdit) {
       getCodeScannerDetailAPI(this.scannerId, this.projectName).then(res => {
+        res.advanced_settings.hook_ctl.items = res.advanced_settings.hook_ctl.items.map(
+          item => {
+            return {
+              main_repo: item
+            }
+          }
+        )
+        res.advanced_setting_modified = true
         this.scannerConfig = res
         this.loading = false
       })

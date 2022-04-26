@@ -4,11 +4,7 @@
       <el-button type="primary" effect="dark" @click="startTask" class="left">
         <span class="iconfont iconzhixing">&nbsp;执行</span>
       </el-button>
-      <router-link
-        v-hasPermi="{projectName: workflow.projectName, action: 'edit_workflow'}"
-        :to="`/v1/projects/detail/${projectName}/scanner/detail/${scannerName}?id=${scannerID}`"
-        class="middle"
-      >
+      <router-link :to="`/v1/projects/detail/${projectName}/scanner/edit/${scannerName}?id=${scannerID}`" class="middle">
         <span class="iconfont icondeploy edit-setting"></span>
       </router-link>
       <div class="right">
@@ -23,7 +19,7 @@
       </div>
     </el-card>
 
-    <el-card class="box-card full" :body-style="{ padding: '0px', margin: '15px 0 30px 0' }">
+    <el-card class="box-card" :body-style="{ padding: '0px', margin: '15px 0 30px 0' }">
       <div slot="header" class="block-title">历史任务</div>
       <TaskList
         :taskList="scannerTasks"
@@ -79,12 +75,14 @@ export default {
         this.projectName,
         this.pageStart,
         this.pageSize
-      )
-      this.scannerInfo = res.scan_info
-      this.scannerTasks = res.scan_tasks
-      this.total = res.total_tasks
-      if (!this.timeTimeoutFinishFlag) {
-        this.timerId = setTimeout(this.autoRefreshHistoryTask, 3000) // Keep only one timer
+      ).catch(err => console.log(err))
+      if (res) {
+        this.scannerInfo = res.scan_info
+        this.scannerTasks = res.scan_tasks
+        this.total = res.total_tasks
+        if (!this.timeTimeoutFinishFlag) {
+          this.timerId = setTimeout(this.autoRefreshHistoryTask, 3000) // Keep only one timer
+        }
       }
     },
     getCommonScannerTasks (start, max) {
@@ -97,9 +95,8 @@ export default {
       })
     },
     changeTaskPage (val) {
-      const start = (val - 1) * this.pageSize
-      this.pageStart = start
-      this.getCommonScannerTasks(start, this.pageSize)
+      this.pageStart = val
+      this.getCommonScannerTasks(val, this.pageSize)
     },
     startTask () {
       console.log('开始代码扫描')
@@ -201,27 +198,15 @@ export default {
   }
 
   .box-card {
-    width: 600px;
+    width: 100%;
     margin-top: 15px;
     background-color: #fff;
     border: none;
     box-shadow: none;
   }
 
-  .full {
-    width: 100%;
-  }
-
   .el-card__header {
     padding-left: 0;
-  }
-
-  .el-row {
-    margin-bottom: 15px;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
   }
 
   .run-scanner {

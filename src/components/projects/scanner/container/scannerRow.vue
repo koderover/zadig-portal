@@ -15,7 +15,7 @@
       <el-button type="primary" class="button-exec" @click="runCodeScanner(scannerInfo.name)">
         <span class="iconfont iconzhixing">&nbsp;执行</span>
       </el-button>
-      <router-link :to="`/v1/projects/detail/${this.projectName}/scanner/edit/${scannerInfo.name}`">
+      <router-link :to="`/v1/projects/detail/${projectName}/scanner/edit/${scannerInfo.name}?id=${scannerInfo.id}`">
         <span class="menu-item iconfont icondeploy"></span>
       </router-link>
       <el-dropdown>
