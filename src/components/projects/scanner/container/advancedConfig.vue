@@ -22,6 +22,7 @@
           :testName="isEdit ? name : scannerConfig.name"
           :webhook="scannerConfig.advanced_settings.hook_ctl"
           :avaliableRepos="scannerConfig.repos"
+          :canSwitchBranch="false"
           :class="{ 'margin-bottom': scannerConfig.advanced_settings.hook_ctl.items.length }"
         ></TestTrigger>
       </div>
