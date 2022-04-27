@@ -14,7 +14,7 @@
           <el-input v-model="scannerConfig.name" placeholder="请输入代码扫描名称" autofocus size="small" :disabled="isEdit" auto-complete="off"></el-input>
         </el-form-item>
         <el-form-item label="描述信息">
-          <el-input v-model="scannerConfig.description" placeholder="请输入描述信息" autofocus size="small" :disabled="isEdit" auto-complete="off"></el-input>
+          <el-input v-model="scannerConfig.description" placeholder="请输入描述信息" autofocus size="small" auto-complete="off"></el-input>
         </el-form-item>
         <el-form-item label="扫描工具">
           <el-select v-model="scannerConfig.scanner_type" placeholder="选择扫描工具" size="small">
