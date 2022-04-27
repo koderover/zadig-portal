@@ -105,7 +105,7 @@ export default {
       },
       {
         name: '代码扫描',
-        icon: 'iconfont iconvery-testing',
+        icon: 'iconfont iconvery-scanner',
         url: `/v1/projects/detail/${this.projectName}/scanner`
       }]
       const versionRoute = {

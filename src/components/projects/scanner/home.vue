@@ -2,7 +2,7 @@
   <div
     v-loading="loading"
     element-loading-text="加载中..."
-    element-loading-spinner="iconfont iconfont-loading iconvery-testing"
+    element-loading-spinner="iconfont iconfont-loading iconvery-scanner"
     class="code-scanner-list-container"
   >
     <div v-if="scannerList.length > 0" class="tab-container">
