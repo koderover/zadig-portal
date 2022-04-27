@@ -173,7 +173,7 @@ export default {
       },
       scannerConfig: {
         name: '',
-        product_name: '',
+        project_name: '',
         description: '',
         scanner_type: 'sonarQube',
         image_id: '', // scanner environment
@@ -298,7 +298,7 @@ export default {
         }
       ]
     })
-    this.scannerConfig.product_name = this.projectName
+    this.scannerConfig.project_name = this.projectName
 
     const key = this.$utils.rsaEncrypt()
     getCodeSourceMaskedAPI(key).then(response => {
