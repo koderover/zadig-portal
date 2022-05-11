@@ -395,8 +395,8 @@ export function initProjectEnvAPI (projectName, isStcov, envType = 'general', is
 }
 
 // Build
-export function getImgListAPI (from = '') {
-  return http.get(`/api/aslan/system/basicImages?image_from=${from}`)
+export function getImgListAPI (from = '', imageFrom = '') {
+  return http.get(`/api/aslan/system/basicImages?image_from=${from}&image_type=${imageFrom}`)
 }
 
 export function deleteBuildConfigAPI (name, version, projectName) {
@@ -739,6 +739,53 @@ export function getTestReportAPI (projectName, workflowName, taskID, testJobName
   )
 }
 
+// Code Scanner
+export function createCodeScannerAPI (payload) {
+  return http.post(`/api/aslan/testing/scanning?projectName=${payload.product_name}`, payload)
+}
+export function updateCodeScannerAPI (id, payload) {
+  return http.put(`/api/aslan/testing/scanning/${id}?projectName=${payload.product_name}`, payload)
+}
+
+export function getCodeScannerDetailAPI (id, projectName) {
+  return http.get(`/api/aslan/testing/scanning/${id}?projectName=${projectName}`)
+}
+export function deleteCodeScannerAPI (id, projectName) {
+  return http.delete(`/api/aslan/testing/scanning/${id}?projectName=${projectName}`)
+}
+
+export function getCodeScannerListAPI (projectName) {
+  return http.get(`/api/aslan/testing/scanning?projectName=${projectName}`)
+}
+
+export function getCodeScannerHistoryAPI (id, projectName, page_num, page_size) {
+  return http.get(`/api/aslan/testing/scanning/${id}/task?projectName=${projectName}&page_num=${page_num}&page_size=${page_size}`)
+}
+
+export function runCodeScannerTaskAPI (id, payload) {
+  return http.post(`/api/aslan/testing/scanning/${id}/task`, payload)
+}
+
+export function scannerTaskDetailAPI (scannerId, taskId) {
+  return http.get(`/api/aslan/testing/scanning/${scannerId}/task/${taskId}`)
+}
+
+export function scannerTaskDetailSSEAPI (scannerId, taskId) {
+  return makeEventSource(`/api/aslan/testing/scanning/${scannerId}/task/${taskId}/sse`)
+}
+
+export function restartScannerTaskAPI (scannerId, taskId, payload) {
+  return http.post(`/api/aslan/testing/scanning/${scannerId}/task/${taskId}`, payload)
+}
+
+export function cancelScannerTaskAPI (scannerId, taskId, payload) {
+  return http.post(`/api/aslan/testing/scanning/${scannerId}/task/${taskId}`, payload)
+}
+
+export function getScannerTaskLogAPI (scannerId, taskId) {
+  return http.get(`/api/aslan/logs/log/scanning/${scannerId}/task/${taskId}`)
+}
+
 // User Management
 export function usersAPI (payload, projectName = '') {
   return http.post(`/api/v1/users/search?projectName=${projectName}`, payload)
@@ -963,6 +1010,26 @@ export function queryJenkinsJob (id) {
 
 export function queryJenkinsParams (id, jobName) {
   return http.get(`/api/aslan/system/jenkins/buildArgs/${id}/${jobName}`)
+}
+// Sonar
+export function querySonarAPI (key) {
+  return http.get(`/api/aslan/system/sonar/integration?encryptedKey=${key}`)
+}
+
+export function addSonarAPI (payload) {
+  return http.post('/api/aslan/system/sonar/integration', payload)
+}
+
+export function editSonarAPI (payload) {
+  return http.put(`/api/aslan/system/sonar/integration/${payload.id}`, payload)
+}
+
+export function deleteSonarAPI (payload) {
+  return http.delete(`/api/aslan/system/sonar/integration/${payload.id}`, payload)
+}
+
+export function checkSonarConnectionAPI (payload) {
+  return http.post('/api/aslan/system/sonar/validate', payload)
 }
 
 // External System

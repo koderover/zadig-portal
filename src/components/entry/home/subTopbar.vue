@@ -30,6 +30,9 @@
       <template v-if="$route.path === `/v1/projects/detail/${projectName}/test`">
         <el-button v-hasPermi="{projectName: projectName, action: 'create_test'}" @click="bindComp(comp,'test')" icon="el-icon-plus" plain>新建测试</el-button>
       </template>
+      <template v-if="$route.path === `/v1/projects/detail/${projectName}/scanner`">
+        <el-button v-hasPermi="{projectName: projectName, action: 'create_scanner'}" @click="bindComp(comp,'scanner')" icon="el-icon-plus" plain>新建代码扫描</el-button>
+      </template>
       <template v-if="$route.path === `/v1/projects/detail/${projectName}/version` && deployType === 'helm'">
         <el-button v-hasPermi="{projectName: projectName, action: 'create_delivery'}" @click="bindComp(comp,'version')" icon="el-icon-plus" plain>创建版本</el-button>
       </template>
@@ -99,6 +102,11 @@ export default {
         name: '测试',
         icon: 'iconfont iconvery-testing',
         url: `/v1/projects/detail/${this.projectName}/test`
+      },
+      {
+        name: '代码扫描',
+        icon: 'iconfont iconvery-scanner',
+        url: `/v1/projects/detail/${this.projectName}/scanner`
       }]
       const versionRoute = {
         name: '版本管理',
@@ -121,6 +129,10 @@ export default {
       } else if (type === 'test') {
         this.$router.push(
           `/v1/projects/detail/${this.projectName}/test/add/function`
+        )
+      } else if (type === 'scanner') {
+        this.$router.push(
+          `/v1/projects/detail/${this.projectName}/scanner/create`
         )
       } else if (type === 'version') {
         this.$router.push(

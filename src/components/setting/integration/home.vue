@@ -27,6 +27,11 @@
             <Jira v-if="currentTab === 'jira'" />
           </keep-alive>
         </el-tab-pane>
+        <el-tab-pane name="sonar" label="Sonar 集成">
+          <keep-alive>
+            <Sonar v-if="currentTab === 'sonar'" />
+          </keep-alive>
+        </el-tab-pane>
         <el-tab-pane name="external" label="其他系统集成">
           <keep-alive>
             <External v-if="currentTab === 'external'" />
@@ -44,6 +49,7 @@ import Jenkins from './jenkins.vue'
 import Jira from './jira.vue'
 import External from './external.vue'
 import Account from './account.vue'
+import Sonar from './sonar.vue'
 
 export default {
   name: 'integration',
@@ -53,7 +59,8 @@ export default {
     Jenkins,
     Jira,
     Account,
-    External
+    External,
+    Sonar
   },
   data () {
     return {

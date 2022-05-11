@@ -10,10 +10,16 @@
     >
       <div class="item-title">策略配置</div>
       <el-form-item label="超时时间">
-        <el-input-number size="mini" :min="1" v-model="buildConfig.timeout"></el-input-number>
+        <el-input-number v-if="(typeof buildConfig.timeout) !== 'undefined'" size="mini" :min="1" v-model="buildConfig.timeout"></el-input-number>
+        <el-input-number
+          v-else-if="(typeof currentResource.timeout) !== 'undefined'"
+          size="mini"
+          :min="1"
+          v-model="currentResource.timeout"
+        ></el-input-number>
         <span>分钟</span>
       </el-form-item>
-      <el-form-item label="缓存配置">
+      <el-form-item label="缓存配置" v-if="!hiddenCache">
         <el-switch v-model="buildConfig.cache_enable"></el-switch>
         <br />
         <el-radio-group v-if="buildConfig.cache_enable" v-model="buildConfig.cache_dir_type" class="radio-group">
@@ -32,12 +38,20 @@
         </el-radio-group>
       </el-form-item>
       <div class="item-title">资源配置</div>
-      <el-form-item label="集群选择" :prop="`${secondaryProp}.cluster_id`" :rules="{ required: true, message: '请选择集群名称', trigger: ['change', 'blur'] }">
+      <el-form-item
+        label="集群选择"
+        :prop="`${secondaryProp}.cluster_id`"
+        :rules="{ required: true, message: '请选择集群名称', trigger: ['change', 'blur'] }"
+      >
         <el-select v-model="currentResource.cluster_id" placeholder="请选择集群名称" size="small">
           <el-option v-for="cluster in clusters" :key="cluster.id" :label="$utils.showClusterName(cluster)" :value="cluster.id"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="操作系统规格" :prop="`${secondaryProp}.res_req`" :rules="{ required: true, message: '请选择操作系统', trigger: ['change', 'blur'] }">
+      <el-form-item
+        label="操作系统规格"
+        :prop="`${secondaryProp}.res_req`"
+        :rules="{ required: true, message: '请选择操作系统', trigger: ['change', 'blur'] }"
+      >
         <el-select size="small" v-model="currentResource.res_req" placeholder="请选择">
           <el-option label="高 | CPU: 16 核 内存: 32 GB" value="high"></el-option>
           <el-option label="中 | CPU: 8 核 内存: 16 GB" value="medium"></el-option>
@@ -84,6 +98,10 @@ export default {
     secondaryProp: {
       default: 'pre_build',
       type: String
+    },
+    hiddenCache: {
+      default: false,
+      type: Boolean
     }
   },
   data () {

@@ -31,7 +31,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="目标分支" prop="repo.branch"
-          v-if="checkGitRepo"
+          v-if="checkGitRepo && canSwitchBranch"
           :rules="[
           { required: true, message: webhookSwap.repo.is_regular ? '请输入正则表达式配置' : '请选择目标分支', trigger: ['blur', 'change'] }
         ]">
@@ -291,6 +291,10 @@ export default {
     avaliableRepos: {
       required: true,
       type: Array
+    },
+    canSwitchBranch: {
+      type: Boolean,
+      default: true
     }
   },
   methods: {
