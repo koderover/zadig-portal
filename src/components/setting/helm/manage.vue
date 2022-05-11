@@ -15,7 +15,7 @@
     >
       <el-form ref="helm" :rules="rules" label-width="90px" tab-position="left" :model="helm">
         <el-form-item label="URL" prop="url">
-          <el-input size="small" placeholder="http(s)://example.com" v-model="helm.url"></el-input>
+          <el-input size="small" placeholder="请输入 http/https/acr 开头的 URL" v-model="helm.url"></el-input>
         </el-form-item>
         <el-form-item label="仓库名称" prop="repo_name">
           <el-input size="small" placeholder="请输入仓库名称" v-model="helm.repo_name"></el-input>
@@ -44,7 +44,7 @@
     >
       <el-form ref="swapHelm" :rules="rules" label-width="90px" tab-position="left" :model="swapHelm">
         <el-form-item label="URL" prop="url">
-          <el-input size="small" placeholder="http(s)://example.com" v-model="swapHelm.url"></el-input>
+          <el-input size="small" placeholder="请输入 http/https/acr 开头的 URL" v-model="swapHelm.url"></el-input>
         </el-form-item>
         <el-form-item label="仓库名称" prop="repo_name">
           <el-input size="small" placeholder="请输入仓库名称" v-model="swapHelm.repo_name"></el-input>

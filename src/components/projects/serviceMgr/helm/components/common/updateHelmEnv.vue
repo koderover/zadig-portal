@@ -1,5 +1,5 @@
 <template>
-  <el-dialog :title="`选择 ${chartInfo.actionServiceName} 需要加入的环境`" :visible.sync="updateHelmEnvDialogVisible" width="60%">
+  <el-dialog :title="dialogTitle" :visible.sync="updateHelmEnvDialogVisible" width="60%">
     <div class="content">
       <el-checkbox-group v-model="checkedEnvList">
         <el-checkbox v-for="(env, index) in envList" :key="index" :label="env">{{env.name}}</el-checkbox>
@@ -26,8 +26,7 @@
 </template>
 <script>
 import ChartValues from '@/components/projects/env/env_detail/common/updateHelmEnvChart.vue'
-import { updateHelmEnvAPI, listProductAPI } from '@api'
-import { mapGetters } from 'vuex'
+import { updateHelmEnvAPI, getServiceDeployableEnvsAPI } from '@api'
 
 export default {
   name: 'updateHelmEnv',
@@ -60,44 +59,35 @@ export default {
       } else {
         payload.deletedServices = [this.chartInfo.actionServiceName]
       }
+      this.$store.commit('CHART_NAMES', [
+        {
+          serviceName: this.chartInfo.actionServiceName,
+          type: 'clear'
+        }
+      ])
+      const projectName = this.projectName
 
-      this.$confirm('更新环境, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        this.$store.commit('CHART_NAMES', [
-          {
-            serviceName: this.chartInfo.actionServiceName,
-            type: 'clear'
-          }
-        ])
-        const projectName = this.projectName
-
-        updateHelmEnvAPI(projectName, payload).then(res => {
-          this.updateHelmEnvDialogVisible = false
-          this.$router.push(`/v1/projects/detail/${projectName}/envs`)
-          this.$message({
-            message: '更新环境成功',
-            type: 'success'
-          })
+      updateHelmEnvAPI(projectName, payload).then(res => {
+        this.updateHelmEnvDialogVisible = false
+        this.$router.push(`/v1/projects/detail/${projectName}/envs`)
+        this.$message({
+          message: '环境更新成功',
+          type: 'success'
         })
       })
     },
     skipUpdate () {
       this.updateHelmEnvDialogVisible = false
     },
-    async getProducts () {
-      await this.$store.dispatch('getProjectList')
-    },
     async getEnvNameList () {
+      const serviceName = this.chartInfo.actionServiceName
       const projectName = this.projectName
-      const envNameList = await listProductAPI(projectName)
+      const envNameList = await getServiceDeployableEnvsAPI(projectName, serviceName)
       if (envNameList.length) {
         this.envList = envNameList.map(env => {
           return {
-            name: env.name,
-            is_existed: env.is_existed || false
+            name: env,
+            is_existed: false
           }
         })
       }
@@ -115,27 +105,26 @@ export default {
         this.$emit('input', val)
       }
     },
-    ...mapGetters(['projectList']),
-    envNameList () {
-      const envNameList = []
-      this.projectList.forEach(element => {
-        if (element.name === this.projectName) {
-          element.envs.forEach(envName => {
-            envNameList.push({
-              envName
-            })
-          })
-        }
-      })
-      return envNameList
-    },
     projectName () {
       return this.$route.params.project_name
+    },
+    dialogTitle () {
+      if (this.chartInfo.type === 'delete') {
+        return `选择需要将 ${this.chartInfo.actionServiceName} 服务删除的环境`
+      } else {
+        return `选择需要将 ${this.chartInfo.actionServiceName} 服务加入的环境`
+      }
     }
   },
-  mounted () {
-    this.getProducts()
-    this.getEnvNameList()
+  watch: {
+    updateHelmEnvDialogVisible: {
+      handler: function (val) {
+        if (val) {
+          this.getEnvNameList()
+        }
+      },
+      immediate: true
+    }
   },
   components: {
     ChartValues

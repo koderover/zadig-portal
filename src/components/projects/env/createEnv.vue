@@ -17,8 +17,11 @@ export default {
   },
   methods: {
     async checkProjectFeature () {
-      const projectName = this.$route.params.project_name
-      this.projectInfo = await getSingleProjectAPI(projectName)
+      const projectName = this.projectName
+      const createEnvType = this.createEnvType
+      const isBaseEnv = this.isBaseEnv
+      const baseEnvName = this.baseEnvName
+      this.projectInfo = await getSingleProjectAPI(projectName, createEnvType, isBaseEnv, baseEnvName)
       const feature = this.projectInfo.product_feature
       if (feature) {
         if (feature.create_env_type === 'external') {
@@ -33,6 +36,23 @@ export default {
       } else {
         this.currentComponents = CreateK8sEnv
       }
+    }
+  },
+  computed: {
+    projectName () {
+      return this.$route.params.project_name
+    },
+    createShare () {
+      return this.$route.query.createShare === 'true'
+    },
+    baseEnvName () {
+      return this.$route.query.baseEnvName ? this.$route.query.baseEnvName : ''
+    },
+    createEnvType () {
+      return this.createShare ? 'share' : 'general'
+    },
+    isBaseEnv () {
+      return !this.baseEnvName
     }
   },
   created () {

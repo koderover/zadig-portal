@@ -323,7 +323,7 @@ export default {
       return this.$route.query.clusterId
     },
     baseEnvName () {
-      return this.$route.query.baseEnvName
+      return this.$route.query.baseEnvName ? this.$route.query.baseEnvName : ''
     },
     createEnvType () {
       return this.createShare ? 'share' : 'general'

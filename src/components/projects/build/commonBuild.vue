@@ -1,10 +1,11 @@
 <template>
   <div class="build-config-container" :class="{'mini-width': mini}">
-    <div v-if="jenkinsEnabled" class="build-source" :class="{'small-padding': mini}">
+    <div class="build-source" :class="{'small-padding': mini}">
       <span class="build-source-title">构建方式</span>
-      <el-select v-model="source" size="small" value-key="key" :disabled="isEdit" @change="loadBuild(buildName)" filterable>
+      <el-select v-model="source" size="small" value-key="key" :disabled="isEdit || !jenkinsEnabled" @change="loadBuild(buildName)" filterable>
         <el-option v-for="(item,index) in originOptions" :key="index" :label="item.label" :value="item.value"></el-option>
       </el-select>
+      <el-checkbox v-if="source ==='zadig'" v-model="useTemplate">使用模板</el-checkbox>
     </div>
     <JenkinsBuild
       v-if="jenkinsEnabled"
@@ -13,12 +14,14 @@
       :jenkinsBuildData="jenkinsBuild"
       :isCreate="!isEdit"
       :serviceTargets="serviceTargets"
+      :jenkinsList = "jenkinsList"
       :mini="mini"
     ></JenkinsBuild>
     <ZadigBuild
       v-show="source === 'zadig'"
       ref="zadigBuildForm"
       :isCreate="!isEdit"
+      :useTemplate="useTemplate"
       :jenkinsEnabled="jenkinsEnabled"
       :buildConfigData="buildConfig"
       :serviceTargets="serviceTargets"
@@ -66,7 +69,9 @@ import {
   checkJenkinsConfigExistsAPI,
   getBuildConfigDetailAPI,
   getServiceTargetsAPI,
-  getBuildConfigsAPI
+  getBuildConfigsAPI,
+  queryJenkins,
+  createBuildTemplateAPI
 } from '@api'
 
 export default {
@@ -100,6 +105,10 @@ export default {
     fromServicePage: {
       type: Boolean,
       default: false
+    },
+    buildNameIndex: {
+      type: Number,
+      default: 0
     }
   },
   data () {
@@ -118,8 +127,10 @@ export default {
       jenkinsEnabled: false,
       jenkinsBuild: {},
       serviceTargets: [],
+      jenkinsList: [],
       saveLoading: false,
       configDataLoading: true,
+      useTemplate: false,
       buildConfig: {},
       buildInfos: []
     }
@@ -157,9 +168,41 @@ export default {
             })
         })
         .catch(err => {
-          console.log('傻了吧', err)
+          console.log(err)
           this.saveLoading = false
         })
+    },
+    async saveBuildConfigToTemplate () {
+      if (this.source === 'zadig') {
+        this.$confirm('保存为系统全局构建模板，其中的代码信息将会被去除，构建信息将会作为构建模板内容保存，请确认?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.$refs.zadigBuildForm
+            .validate()
+            .then(data => {
+              const payload = data
+              this.$emit('updateBtnLoading', true)
+              createBuildTemplateAPI(payload)
+                .then(() => {
+                  this.$message({
+                    type: 'success',
+                    message: '保存模板成功'
+                  })
+                  this.$emit('updateBtnLoading', false)
+                })
+                .catch(() => {
+                  this.$emit('updateBtnLoading', false)
+                })
+            })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消保存'
+          })
+        })
+      }
     },
     async loadBuild (buildConfigName) {
       this.buildConfig = {
@@ -201,6 +244,9 @@ export default {
         buildConfig.targets.forEach(t => {
           t.key = t.service_name + '/' + t.service_module
         })
+        buildConfig.target_repos.forEach(t => {
+          t.service.key = t.service.service_name + '/' + t.service.service_module
+        })
         if (buildConfig.source === 'jenkins') {
           this.source = 'jenkins'
           this.jenkinsBuild = buildConfig
@@ -208,12 +254,11 @@ export default {
         if (!buildConfig.timeout) {
           this.$set(buildConfig, 'timeout', 60)
         }
+        if (buildConfig.template_id) {
+          this.useTemplate = true
+        }
         this.buildConfig = buildConfig
 
-        this.serviceTargets = [
-          ...this.serviceTargets,
-          ...this.buildConfig.targets
-        ]
         if (!this.isEdit) {
           const currentServices = [
             ...this.buildConfig.targets,
@@ -228,7 +273,30 @@ export default {
           }
         }
       }
-      this.$refs.zadigBuildForm.initData(this.buildConfig)
+      if (!this.useTemplate) {
+        this.$refs.zadigBuildForm.initData(this.buildConfig)
+      }
+      // Add current service to template targets_repos when creating a new build
+      if (this.useTemplate && !this.isEdit) {
+        const service = this.buildConfig.targets.find(
+          element => element.service_module === this.name
+        )
+        if (service) {
+          this.buildConfig.target_repos.push({
+            service: service,
+            repos: [{
+              codehost_id: null,
+              repo_owner: '',
+              repo_name: '',
+              branch: '',
+              checkout_path: '',
+              remote_name: 'origin',
+              submodules: false
+            }]
+          })
+        }
+        this.$refs.zadigBuildForm.initServiceRepoSelectData(this.buildConfig)
+      }
     },
     async initBuildInfo () {
       const currentService = this.serviceTargets.filter(element => {
@@ -246,11 +314,17 @@ export default {
       checkJenkinsConfigExistsAPI().then(res => {
         this.jenkinsEnabled = res.exists
       })
-
       // get all builds of the current project
       return await getBuildConfigsAPI(this.projectName).then(res => {
         this.buildInfos = res
       })
+    },
+    async getJenkins () {
+      const key = this.$utils.rsaEncrypt()
+      const res = await queryJenkins(key).catch(error => console.log(error))
+      if (res) {
+        this.jenkinsList = res
+      }
     }
   },
   computed: {
@@ -275,7 +349,9 @@ export default {
     },
     defaultBuildName () {
       return this.initServiceName
-        ? this.projectName + '-build-' + this.name
+        ? `${this.projectName}-build-${this.name}${
+          this.buildNameIndex ? '-' + this.buildNameIndex : ''
+        }`
         : ''
     }
   },
@@ -290,6 +366,9 @@ export default {
     this.initGlobalData().then(() => {
       this.loadBuild(this.buildName)
     })
+  },
+  mounted () {
+    this.getJenkins()
   },
   components: {
     JenkinsBuild,

@@ -72,7 +72,7 @@ export default {
       },
       formRules: {
         name: [
-          { required: true, message: '请输入角色名称', trigger: 'blur' }
+          { trigger: ['blur', 'change'], validator: this.validateFileName }
         ],
         isPublic: [
           { required: true, message: '请选择项目类型', trigger: 'blur' }
@@ -85,6 +85,17 @@ export default {
     }
   },
   methods: {
+    validateFileName (rule, value, callback) {
+      if (typeof value === 'undefined' || value === '') {
+        callback(new Error('填写角色名称'))
+      } else {
+        if (!/^[a-z0-9-]+$/.test(value)) {
+          callback(new Error('角色名称只支持小写字母和数字，特殊字符只支持中划线'))
+        } else {
+          callback()
+        }
+      }
+    },
     initNewForm () {
       this.form = _.cloneDeep(initFormData)
     },
@@ -137,7 +148,9 @@ export default {
     },
     async getPolicyDefinitions () {
       const projectName = this.projectName
-      const res = await queryPolicyDefinitionsAPI(projectName).catch(error => console.log(error))
+      const currentProject = this.$store.getters.projectList.find(project => project.name === projectName)
+      const projectType = currentProject && currentProject.deployType === 'cloud_host' ? 'pm' : 'k8s'
+      const res = await queryPolicyDefinitionsAPI(projectName, 'project', projectType).catch(error => console.log(error))
       if (res) {
         res.forEach(group => {
           group.rules.forEach(item => {

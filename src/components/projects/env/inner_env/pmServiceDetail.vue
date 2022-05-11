@@ -61,7 +61,7 @@
             </el-table-column>
             <el-table-column>
               <template slot-scope="{ row, $index }">
-                <el-button v-hasPermi="{projectName: projectName, action: 'manage_environment'}" @click="showContainerExec($index,row)"
+                <el-button v-hasPermi="{projectName: projectName, action: 'ssh_pm'}" @click="showContainerExec($index,row)"
                            icon="iconfont iconTerminal login-icon"
                            size="small">登录</el-button>
               </template>

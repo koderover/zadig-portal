@@ -39,19 +39,10 @@
               <el-table-column prop="image" label="当前镜像版本"></el-table-column>
               <el-table-column label="构建信息/操作">
                 <template slot-scope="scope">
-                  <!-- <router-link v-if="scope.row.build_name"
-                  :to="`${buildBaseUrl}?rightbar=build&service_name=${scope.row.name}&build_name=${scope.row.build_name}`">-->
-                  <el-button
-                    size="small"
-                    v-if="scope.row.build_name"
-                    @click="editBuild(scope.row.name, scope.row.build_name)"
-                    type="text"
-                  >{{scope.row.build_name}}</el-button>
-                  <!-- </router-link> -->
-                  <!-- <router-link v-else
-                  :to="`${buildBaseUrl}?rightbar=build&service_name=${scope.row.name}&build_add=true`">-->
-                  <el-button size="small" v-else type="text" @click="addBuild(scope.row.name)">添加构建</el-button>
-                  <!-- </router-link> -->
+                  <div v-for="(buildName, index) in scope.row.build_names" :key="index">
+                    <span class="build-name" @click="editBuild(scope.row.name, buildName)">{{ buildName }}</span>
+                  </div>
+                  <el-button size="small" type="text" @click="addBuild(scope.row.name, scope.row.build_names)">添加构建</el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -91,7 +82,13 @@
                   </span>
                 </el-tooltip>
               </span>
-              <el-input size="mini"  style="display: inline-block;" :value="currentService.release_naming" @input="handleInputChange" placeholder="请输入 Release 名称"></el-input>
+              <el-input
+                size="mini"
+                style="display: inline-block;"
+                :value="currentService.release_naming"
+                @input="handleInputChange"
+                placeholder="请输入 Release 名称"
+              ></el-input>
               <el-button size="mini" @click="renamingHelmRelease" type="primary" plain>保存</el-button>
             </div>
           </div>
@@ -136,14 +133,27 @@ export default {
     }
   },
   methods: {
-    addBuild (name) {
+    addBuild (name, build_names) {
+      // no build: no suffix
+      // build: the last number, take the maximum value + 1
+      const buildNameIndex = build_names.length
+        ? Math.max.apply(
+          null,
+          build_names.map(buildName => {
+            const names = buildName.split('-')
+            const last = names[names.length - 1]
+            return isNaN(last) ? 1 : Number(last) + 1
+          })
+        )
+        : 0
       const item = {
         id: name,
         type: 'components',
         componentsName: 'CommonBuild',
         label: '新增构建',
         name: name,
-        isEdit: false
+        isEdit: false,
+        buildNameIndex
       }
       this.changeExpandFileList('add', item)
     },
@@ -170,23 +180,29 @@ export default {
         service_name: this.serviceName,
         naming: this.currentService.release_naming
       }
-      this.$confirm('修改后服务会在已部署的环境中重建，请确认?', '修改 Helm Release 名称', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        renamingHelmReleaseAPI(projectName, payload).then((res) => {
-          this.$message({
-            message: '服务正在重启，稍后请前往环境中确认',
-            type: 'success'
+      this.$confirm(
+        '修改后服务会在已部署的环境中重建，请确认?',
+        '修改 Helm Release 名称',
+        {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }
+      )
+        .then(() => {
+          renamingHelmReleaseAPI(projectName, payload).then(res => {
+            this.$message({
+              message: '服务正在重启，稍后请前往环境中确认',
+              type: 'success'
+            })
           })
         })
-      }).catch(() => {
-        this.$message({
-          type: 'info',
-          message: '已取消保存'
+        .catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消保存'
+          })
         })
-      })
     },
     changeRoute (step) {
       this.$router.replace({
@@ -388,6 +404,19 @@ export default {
           .el-table td,
           .el-table th {
             padding: 6px 0;
+          }
+
+          .build-name {
+            display: inline-block;
+            margin-top: 5px;
+            color: @themeColor;
+            font-size: 12px;
+            line-height: 16px;
+            cursor: pointer;
+
+            &:hover {
+              color: @themeBorderColor;
+            }
           }
         }
 

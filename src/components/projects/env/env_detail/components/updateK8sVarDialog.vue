@@ -2,7 +2,7 @@
   <el-dialog
     title="更新环境变量"
     :visible.sync="updateK8sEnvVarDialogVisible"
-    width="40%"
+    width="60%"
     class="update-env-variable"
   >
     <div class="search-variable">
@@ -24,6 +24,7 @@
       >
         <span class="el-icon-question"></span>
       </el-tooltip>
+      <VariablePreviewEditor :services="previewServices" :projectName="productInfo.product_name" :envName="productInfo.env_name" :variables="remainingVars" />
     </div>
     <div class="kv-container">
       <el-table :data="remainingVars" style="width: 100%;">
@@ -34,13 +35,7 @@
         </el-table-column>
         <el-table-column label="Value">
           <template slot-scope="scope">
-            <el-input
-              size="small"
-              v-model="scope.row.value"
-              type="textarea"
-              :autosize="{ minRows: 1, maxRows: 4 }"
-              placeholder="请输入 Value"
-            ></el-input>
+            <VariableEditor :varKey="scope.row.key" :value.sync="scope.row.value" />
           </template>
         </el-table-column>
         <el-table-column label="关联服务">
@@ -84,6 +79,7 @@
       <el-button
         size="small"
         type="primary"
+        :disabled="remainingVars.length === 0"
         :loading="updataK8sEnvVarLoading"
         @click="updateK8sEnvVar"
         >更新</el-button
@@ -116,6 +112,9 @@ export default {
     remainingVars () {
       const varSearch = this.varSearch.toLocaleLowerCase()
       return this.vars.filter(item => item.key.toLocaleLowerCase().includes(varSearch))
+    },
+    previewServices () {
+      return this.services.map(item => { return { service_name: item } })
     }
   },
   methods: {

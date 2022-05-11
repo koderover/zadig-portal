@@ -133,7 +133,8 @@ export default {
     },
     async getPolicyDefinitions () {
       const res = await queryPolicyDefinitionsAPI(
-        this.projectName
+        this.projectName,
+        'project'
       ).catch(error => console.log(error))
       if (res) {
         Object.keys(this.policy).forEach(key => {

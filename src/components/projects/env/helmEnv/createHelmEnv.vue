@@ -143,7 +143,6 @@
 import {
   initProjectEnvAPI,
   getClusterListAPI,
-  getSingleProjectAPI,
   createHelmEnvAPI,
   getEnvironmentsAPI,
   getRegistryWhenBuildAPI,
@@ -181,7 +180,6 @@ export default {
         registry_id: '',
         selectedService: [] // will delete
       },
-      projectInfo: {},
       allCluster: [],
       startDeployLoading: false,
       loading: false,
@@ -231,14 +229,20 @@ export default {
     nsIsExisted () {
       return this.hostingNamespace.includes(this.projectConfig.defaultNamespace)
     },
-    createShare () {
-      return this.$route.query.createShare === 'true'
-    },
     clusterId () {
       return this.$route.query.clusterId
     },
     baseEnvName () {
-      return this.$route.query.baseEnvName
+      return this.$route.query.baseEnvName ? this.$route.query.baseEnvName : ''
+    },
+    createShare () {
+      return this.$route.query.createShare === 'true'
+    },
+    createEnvType () {
+      return this.createShare ? 'share' : 'general'
+    },
+    isBaseEnv () {
+      return !this.baseEnvName
     }
   },
   methods: {
@@ -265,13 +269,14 @@ export default {
         this.changeCluster(this.projectConfig.cluster_id)
       }
     },
-    async checkProjectFeature () {
-      const projectName = this.projectName
-      this.projectInfo = await getSingleProjectAPI(projectName)
-    },
     async getTemplateAndImg () {
+      const projectName = this.projectName
+      const isStcov = this.isStcov
+      const createEnvType = this.createEnvType
+      const isBaseEnv = this.isBaseEnv
+      const baseEnvName = this.baseEnvName
       this.loading = true
-      const template = await initProjectEnvAPI(this.projectName, this.isStcov)
+      const template = await initProjectEnvAPI(projectName, isStcov, createEnvType, isBaseEnv, baseEnvName)
       this.loading = false
       this.projectChartNames = template.chart_infos
         ? template.chart_infos.map(chart => {
@@ -413,7 +418,6 @@ export default {
       ]
     })
     this.projectConfig.product_name = this.projectName
-    this.checkProjectFeature()
     this.getCluster()
     this.getEnvNames()
     getRegistryWhenBuildAPI(this.projectName).then(res => {

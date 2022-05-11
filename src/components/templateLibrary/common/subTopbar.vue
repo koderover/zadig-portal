@@ -41,6 +41,11 @@ export default {
           name: 'Dockerfile',
           icon: 'iconfont icondocker',
           url: `/v1/template/dockerfiles`
+        },
+        {
+          name: '构建',
+          icon: 'iconfont iconvery-build',
+          url: `/v1/template/builds`
         }
       ]
     }

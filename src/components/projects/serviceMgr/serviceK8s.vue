@@ -42,7 +42,7 @@
                          :label="env">{{env.name}}</el-checkbox>
           </el-checkbox-group>
         </div>
-        <div v-if="checkedEnvList.length > 0 && checkedEnvList[0].vars.length > 0" class="env-tabs">
+        <div v-if="checkedEnvList.length > 0 && checkedEnvList[0] && checkedEnvList[0].vars &&checkedEnvList[0].vars.length > 0" class="env-tabs">
           <span class="desc">该服务有使用变量，请确认该服务在不同环境中对应的变量值</span>
           <el-tabs v-model="activeEnvTabName" type="card">
             <el-tab-pane v-for="(env,index) in checkedEnvList"  :key="index" :label="env.name" :name="env.name">
@@ -110,6 +110,7 @@
                                     :yamlChange.sync="yamlChange"
                                     :isOnboarding="isOnboarding"
                                     :showJoinToEnvBtn.sync="showJoinToEnvBtn"
+                                    @onGetTemplateId="getTemplateId"
                                     @onParseKind="getYamlKind"
                                     @onRefreshService="getServices"
                                     @onRefreshSharedService="getSharedServices"
@@ -121,6 +122,7 @@
                 <aside class="service-aside service-aside-right"
                        :style="{ flexGrow: 1 }">
                   <ServiceAside :service="service"
+                                :services="services"
                                 :detectedEnvs="detectedEnvs"
                                 :detectedServices="detectedServices"
                                 :systemEnvs="systemEnvs"
@@ -232,7 +234,7 @@ export default {
       })
     },
     getServiceModules () {
-      const serviceName = this.service.service_name
+      const serviceName = this.serviceName
       const projectName = this.projectName
       serviceTemplateWithConfigAPI(serviceName, projectName).then(res => {
         this.detectedEnvs = res.custom_variable ? res.custom_variable : []
@@ -280,6 +282,15 @@ export default {
     },
     getYamlKind (payload) {
       this.currentServiceYamlKinds = payload
+    },
+    getTemplateId (payload) {
+      if (payload) {
+        this.services.forEach(service => {
+          if (service.service_name === payload.service_name) {
+            this.$set(service, 'template_id', payload.template_id)
+          }
+        })
+      }
     },
     jumpToKind (payload) {
       this.$nextTick(() => {

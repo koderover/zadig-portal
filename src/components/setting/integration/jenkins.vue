@@ -15,7 +15,6 @@
     </el-alert>
     <div class="sync-container">
       <el-button
-        v-if="tableData.length === 0"
         size="small"
         type="primary"
         plain

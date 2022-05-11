@@ -36,6 +36,7 @@
               :isEdit="!!$route.query.build_name"
               :followUpFn="followUpFn"
               :saveDisabled="projectName !== projectNameOfService"
+              :buildNameIndex="buildNameIndex"
               canSelectBuildName
               mini
               fromServicePage
@@ -70,7 +71,7 @@
               <el-table :data="serviceModules" stripe style="width: 100%;">
                 <el-table-column prop="name" label="服务组件"></el-table-column>
                 <el-table-column prop="image_name" label="镜像名"></el-table-column>
-                <el-table-column prop="image" label>
+                <el-table-column prop="image">
                   <template slot="header">
                     <span>当前镜像版本($IMAGE)</span>
                     <el-tooltip effect="dark" placement="top">
@@ -87,13 +88,12 @@
                 </el-table-column>
                 <el-table-column v-hasPermi="{projectName: projectName, action: 'create_build'}" label="构建信息/操作">
                   <template slot-scope="scope">
-                    <router-link
-                      v-if="scope.row.build_name"
-                      :to="`${buildBaseUrl}?rightbar=build&service_name=${scope.row.name}&build_name=${scope.row.build_name}`"
-                    >
-                      <el-button size="small" type="text">{{scope.row.build_name}}</el-button>
-                    </router-link>
-                    <el-button v-else size="small" @click="addBuild(scope.row)" type="text">添加构建</el-button>
+                    <div v-for="(buildName, index) in scope.row.build_names" :key="index">
+                      <router-link :to="`${buildBaseUrl}?rightbar=build&service_name=${scope.row.name}&build_name=${buildName}`">
+                        <span class="build-name">{{ buildName }}</span>
+                      </router-link>
+                    </div>
+                    <el-button size="small" :disabled="projectName !== projectNameOfService" @click="addBuild(scope.row)" type="text">添加构建</el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -129,6 +129,7 @@
                     <i class="el-icon-question"></i>
                   </span>
                 </el-tooltip>
+                 <VariablePreviewEditor :serviceName="service.service_name" :services="services" :projectName="projectName" :variables="customEnvs" />
               </h4>
               <div class="kv-container">
                 <el-table :data="customEnvs" style="width: 100%;">
@@ -139,14 +140,7 @@
                   </el-table-column>
                   <el-table-column label="Value">
                     <template slot-scope="scope">
-                      <el-input
-                        size="small"
-                        :disabled="!editEnvIndex[scope.$index]"
-                        v-model="scope.row.value"
-                        type="textarea"
-                        :autosize="{ minRows: 1, maxRows: 4}"
-                        placeholder="请输入内容"
-                      ></el-input>
+                      <VariableEditor :disabled="!editEnvIndex[scope.$index]" @onSave="saveRenderKey(scope.$index,scope.row.state)" :varKey="scope.row.key" :value.sync="scope.row.value" />
                     </template>
                   </el-table-column>
                   <el-table-column v-hasPermi="{projectName: projectName, action: 'edit_service'}" label="操作" width="150">
@@ -238,7 +232,7 @@
             <div class="service-aside-box__title">策略</div>
           </header>
           <div class="service-aside-help__content">
-            <Policy :service="serviceModules"/>
+            <Policy :service="serviceModules" />
           </div>
         </div>
         <div v-if="selected === 'help'" class="service-aside--variables">
@@ -317,11 +311,24 @@ export default {
           }
         ]
       },
-      registryCreateVisible: false
+      registryCreateVisible: false,
+      buildNameIndex: 0
     }
   },
   methods: {
     async addBuild (item) {
+      // no build: no suffix
+      // build: the last number, take the maximum value + 1
+      this.buildNameIndex = item.build_names.length
+        ? Math.max.apply(
+          null,
+          item.build_names.map(buildName => {
+            const names = buildName.split('-')
+            const last = names[names.length - 1]
+            return isNaN(last) ? 1 : Number(last) + 1
+          })
+        )
+        : 0
       const key = this.$utils.rsaEncrypt()
       const res = await getCodeProviderAPI(key)
       if (res && res.length > 0) {
@@ -366,6 +373,7 @@ export default {
         ).then(res => {
           this.serviceModules = res.service_module
           this.sysEnvs = res.system_variable
+          this.$store.dispatch('queryk8sService', res)
         })
       }
       if (this.service.status === 'named') {
@@ -518,6 +526,10 @@ export default {
     service: {
       required: false,
       type: Object
+    },
+    services: {
+      required: false,
+      type: Array
     },
     buildBaseUrl: {
       required: true,
@@ -742,6 +754,13 @@ export default {
             .el-table td,
             .el-table th {
               padding: 6px 0;
+            }
+
+            .build-name {
+              display: inline-block;
+              margin-top: 5px;
+              font-size: 12px;
+              line-height: 16px;
             }
           }
 

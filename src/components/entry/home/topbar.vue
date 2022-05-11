@@ -64,13 +64,13 @@
               </a>
             </li>
             <li>
-              <a href="https://docs.koderover.com/zadig/env/service/" target="_blank">
+              <a href="https://docs.koderover.com/zadig/env/loadbalance/" target="_blank">
                 <i class="icon el-icon-link"></i>
                 <span>环境</span>
               </a>
             </li>
             <li>
-              <a href="https://docs.koderover.com/zadig/project/service/" target="_blank">
+              <a href="https://docs.koderover.com/zadig/project/overview/" target="_blank">
                 <i class="icon el-icon-link"></i>
                 <span>项目管理</span>
               </a>
@@ -410,7 +410,6 @@ export default {
   top: 0;
   right: 0;
   left: 66px;
-  z-index: 1010;
   height: 40px;
   padding: 0 30px;
   font-size: 14px;

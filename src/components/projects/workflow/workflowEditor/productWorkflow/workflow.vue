@@ -39,7 +39,7 @@
                   :buildTargets="buildTargets"/>
       <Notify v-show="currentTab==='notify'"
               :editMode="editMode"
-              :notify="workflowInfo.notify_ctl"/>
+              :notify="workflowInfo.notify_ctls"/>
       <Trigger v-show="currentTab==='trigger'"
                :editMode="editMode"
                :projectName="workflowInfo.product_tmpl_name"
@@ -102,11 +102,7 @@ export default {
         reset_image_policy: '',
         team: '',
         description: '',
-        notify_ctl: {
-          enabled: false,
-          weChat_webHook: '',
-          notify_type: []
-        },
+        notify_ctls: [],
         build_stage: {
           enabled: false,
           modules: []
@@ -249,7 +245,9 @@ export default {
       }
 
       if (alias === 'notify') {
-        this.workflowInfo.notify_ctl.enabled = isEnabled
+        if (this.workflowInfo.notify_ctls.length > 0) {
+          this.workflowInfo.notify_ctls.forEach(item => { item.enabled = isEnabled })
+        }
       }
 
       if (alias === 'extension') {
@@ -269,7 +267,7 @@ export default {
             this.$router.push(`/v1/projects/detail/${this.workflowInfo.product_tmpl_name}/pipelines/multi/${this.workflowInfo.name}`)
           }
         })
-      })
+      }).catch(err => console.log(err))
     },
     saveDistributeDeploy ($event) {
       this.workflowInfo.distribute_stage = $event
@@ -309,13 +307,12 @@ export default {
             items: []
           })
         };
-        if (!this.workflowInfo.notify_ctl) {
-          this.$set(this.workflowInfo, 'notify_ctl', {
-            enabled: false,
-            weChat_webHook: '',
-            notify_type: []
-          })
+        if (!this.workflowInfo.notify_ctls) {
+          this.$set(this.workflowInfo, 'notify_ctls', [])
         };
+        if (this.workflowInfo.notify_ctls.length > 0) {
+          this.workflowInfo.notify_ctls = this.workflowInfo.notify_ctls.filter(item => item.enabled)
+        }
         if (!this.workflowInfo.artifact_stage) {
           this.$set(this.workflowInfo, 'artifact_stage', {
             enabled: false,
@@ -368,7 +365,7 @@ export default {
           artifactDeploy: res.artifact_stage.enabled || (res.artifact_stage && res.artifact_stage.enabled),
           test: res.test_stage.enabled,
           distribute: res.distribute_stage.enabled,
-          notify: res.notify_ctl.enabled,
+          notify: res.notify_ctls.length > 0,
           trigger: res.hook_ctl.enabled || res.schedules.enabled,
           extension: res.extension_stage ? res.extension_stage.enabled : false
         }

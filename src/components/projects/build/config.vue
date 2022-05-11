@@ -1,24 +1,10 @@
 <template>
-  <div v-loading="loading" element-loading-text="加载中..." element-loading-spinner="iconfont iconfont-loading iconvery-build" class="buildConfig-container">
-    <!--start of edit service target dialog-->
-    <el-dialog title="更新服务组件" width="40%" custom-class="create-buildconfig" :visible.sync="dialogEditTargetVisible">
-      <el-form label-position="top" :model="editBuildManageTargets" @submit.native.prevent ref="editTargetForm">
-        <el-form-item label="服务组件">
-          <el-select v-model="editBuildManageTargets.targets" value-key="key" multiple filterable>
-            <el-option
-              v-for="(service,index) in serviceTargets"
-              :key="index"
-              :label="`${service.service_module}(${service.service_name})`"
-              :value="service"
-            ></el-option>
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button type="primary" native-type="submit" @click="saveServiceTarget()" class="start-create">确定</el-button>
-      </div>
-    </el-dialog>
-    <!--end of edit service target dialog-->
+  <div
+    v-loading="loading"
+    element-loading-text="加载中..."
+    element-loading-spinner="iconfont iconfont-loading iconvery-build"
+    class="buildConfig-container"
+  >
     <section v-if="buildConfigs.length > 0" class="tab-container">
       <div class="build-search-container">
         <el-input v-model.lazy="searchBuildConfig" placeholder="请输入构建名称" class="search-test" autofocus prefix-icon="el-icon-search"></el-input>
@@ -34,9 +20,6 @@
                     <span>{{ item.service_module }}</span>
                   </el-tooltip>
                 </div>
-              </div>
-              <div v-hasPermi="{projectName: projectName, action: 'edit_build'}" class="change-serviceTarget">
-                <i @click="changeServiceTargets(scope.row)" class="el-icon-edit-outline"></i>
               </div>
             </div>
           </template>
@@ -74,40 +57,19 @@
 <script>
 import {
   getBuildConfigsAPI,
-  deleteBuildConfigAPI,
-  saveBuildConfigTargetsAPI,
-  getServiceTargetsAPI
+  deleteBuildConfigAPI
 } from '@api'
-import { flattenDeep } from 'lodash'
 import bus from '@utils/eventBus'
 export default {
   data () {
     return {
       buildConfigs: [],
-      serviceTargets: [],
-      editBuildManageTargets: {
-        name: '',
-        targets: []
-      },
       searchBuildConfig: '',
-      dialogEditTargetVisible: false,
       searchInputVisible: false,
       loading: false
     }
   },
   methods: {
-    filterAvailableServices (services) {
-      const existServices = []
-      this.buildConfigs.forEach(element => {
-        existServices.push(element.targets)
-      })
-      return services.filter(element => {
-        if (!flattenDeep(existServices).includes(element.service_name)) {
-          return element
-        }
-        return false
-      })
-    },
     removeBuildConfig (obj) {
       const projectName = this.projectName
       const str =
@@ -122,36 +84,6 @@ export default {
         deleteBuildConfigAPI(obj.name, obj.version, projectName).then(() => {
           this.$message.success('删除成功')
           this.getBuildConfig()
-        })
-      })
-    },
-    changeServiceTargets (scope) {
-      const projectName = this.projectName
-      getServiceTargetsAPI(projectName).then(data => {
-        this.serviceTargets = [
-          ...this.filterAvailableServices(data),
-          ...scope.targets
-        ].map(element => {
-          element.key = element.service_name + '/' + element.service_module
-          return element
-        })
-      })
-      this.editBuildManageTargets = this.$utils.cloneObj(scope)
-      this.dialogEditTargetVisible = true
-    },
-    saveServiceTarget () {
-      const projectName = this.projectName
-      const targetsPayload = {
-        name: this.editBuildManageTargets.name,
-        targets: this.editBuildManageTargets.targets,
-        productName: projectName
-      }
-      saveBuildConfigTargetsAPI(projectName, targetsPayload).then(() => {
-        this.dialogEditTargetVisible = false
-        this.getBuildConfig()
-        this.$message({
-          type: 'success',
-          message: '更新服务组件成功'
         })
       })
     },
@@ -242,20 +174,6 @@ export default {
     }
   }
 
-  .create-buildconfig {
-    width: 400px;
-
-    .dialog-footer {
-      .start-create {
-        width: 100%;
-      }
-    }
-
-    .el-select {
-      width: 100%;
-    }
-  }
-
   .build-search-container {
     height: 40px;
     margin-bottom: 10px;
@@ -272,13 +190,6 @@ export default {
 
     .service-left {
       width: 180px;
-    }
-
-    .change-serviceTarget {
-      margin-left: 20px;
-      color: @themeColor;
-      font-size: 16px;
-      cursor: pointer;
     }
   }
 }

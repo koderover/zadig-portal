@@ -299,13 +299,8 @@
           :rules="userAccountCustomRules"
           ref="userAccountCustomForm"
           label-position="left"
-          label-width="120px"
+          label-width="140px"
         >
-          <!-- <el-alert type="info" :closable="false" style="margin-bottom: 15px;">
-            <slot>
-              <span class="tips">{{`请参考文档获取帮助`}}</span>
-            </slot>
-          </el-alert> -->
           <el-form-item label="账号系统类型" prop="type">
             <el-input v-model="userAccountCustom.type" :disabled="userAccount.mode ==='edit'" placeholder="输入自定义账号系统类型" autofocus clearable auto-complete="off"></el-input>
           </el-form-item>
@@ -313,6 +308,10 @@
             <el-input v-model="userAccountCustom.name" placeholder="输入账号系统名称" autofocus clearable auto-complete="off"></el-input>
           </el-form-item>
           <el-form-item label="YAML 配置" prop="yaml">
+            <span slot="label">
+              YAML 配置
+              <HelpLink :inline="true" :keyword="{location:'账号系统',key:'custom'}" />
+            </span>
           </el-form-item>
         </el-form>
         <div class="yaml-editor">
@@ -361,9 +360,17 @@
       <div class="sync-container">
         <el-button size="small" type="primary" plain @click="addAccount()">添加</el-button>
       </div>
-      <el-table :data="accounts" style="width: 100%;">
+      <el-table :data="accounts" style="width: 100%;"  @cell-mouse-enter="enter" @cell-mouse-leave="leave">
         <el-table-column label="账号系统名称">
-          <template slot-scope="scope">{{scope.row.name}}</template>
+          <template slot-scope="scope">
+            <span>{{scope.row.name}}</span>
+             <el-tag size="mini" type="primary" plain  class="btn" v-show="scope.row.is_default">默认</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column align="right">
+          <span slot-scope="scope"  style="display: none;" :ref="'popover' + scope.row.id">
+            <el-checkbox  :value="scope.row.is_default"  @change="setDefaultAccount(scope.row)">设置为默认账号系统</el-checkbox >
+          </span>
         </el-table-column>
         <el-table-column label="操作" width="300">
           <template slot-scope="scope">
@@ -389,11 +396,13 @@ import {
   deleteConnectorAPI,
   updateConnectorAPI,
   createConnectorAPI,
-  syncLDAPAPI
+  syncLDAPAPI,
+  setDefaultAccountAPI
 } from '@api'
 import { cloneDeep, omit } from 'lodash'
 import { codemirror } from 'vue-codemirror'
 import jsyaml from 'js-yaml'
+import HelpLink from '../../profile/common/helpLink.vue'
 import 'codemirror/lib/codemirror.css'
 import 'codemirror/mode/yaml/yaml'
 import 'codemirror/theme/neo.css'
@@ -1178,10 +1187,50 @@ export default {
           }
         })
       }
+    },
+    enter (row) {
+      if (row.type !== 'github') {
+        this.$refs['popover' + row.id].style.display = 'inline'
+      }
+    },
+    leave (row) {
+      this.$refs['popover' + row.id].style.display = 'none'
+    },
+    setDefaultAccount (row) {
+      const params = {
+        default_login: !row.is_default ? row.id : 'local'
+      }
+      if (!row.is_default) {
+        const confirmInfo = `<p>设置后，系统默认登录页面为默认账号系统登录页。</p>
+                    <p style='color: red' v-if="row.is_default">请确保配置的账号系统可用，否则系统将无法登录。</p>`
+        const cancelInfo = ``
+        this.$confirm(row.is_default ? cancelInfo : confirmInfo, `确定${row.is_default ? '取消' : '设置'}默认账号系统?`, {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning',
+          dangerouslyUseHTMLString: true
+        }).then(res => {
+          setDefaultAccountAPI(params).then(res => {
+            this.$message({
+              type: 'success',
+              message: '设置默认账号系统成功'
+            })
+            this.getAccountConfig()
+          })
+        })
+      } else {
+        setDefaultAccountAPI(params).then(res => {
+          this.$message({
+            type: 'success',
+            message: '取消默认账号系统成功'
+          })
+          this.getAccountConfig()
+        })
+      }
     }
   },
   components: {
-    codemirror
+    codemirror, HelpLink
   },
   mounted () {
     this.getAccountConfig()
@@ -1246,6 +1295,11 @@ export default {
     .el-input {
       display: inline-block;
     }
+  }
+
+  .btn {
+    display: inline-block;
+    margin-left: 16px;
   }
 }
 </style>

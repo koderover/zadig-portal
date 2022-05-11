@@ -72,7 +72,6 @@ export default {
     return {
       opeType: '',
       dialogVisible: false,
-      allServices: [],
       currentServices: [],
       updateServices: {
         service_names: []
@@ -91,6 +90,15 @@ export default {
         delete: '删除'
       }
       return typeEnum[this.opeType] || ''
+    },
+    isBaseEnv () {
+      return this.productInfo.share_env_is_base
+    },
+    baseEnvName () {
+      return this.productInfo.share_env_base_env
+    },
+    envType () {
+      return this.productInfo.share_env_enable ? 'share' : 'general'
     }
   },
   methods: {
@@ -152,16 +160,24 @@ export default {
       this.updateServices.service_names = []
       done && done()
     },
-    openDialog (type) {
+    async openDialog (type) {
+      const projectName = this.projectName
+      const isBaseEnv = this.isBaseEnv
+      const baseEnvName = this.baseEnvName
+      const envType = this.envType
+      let allServices = []
+      const res = await getSingleProjectAPI(projectName, envType, isBaseEnv, baseEnvName)
+      if (res) {
+        allServices = flatten(res.services)
+      }
       this.dialogVisible = true
       this.opeType = type
-
       const productServices = flatten(this.productInfo.services)
 
       let services = []
       switch (this.opeType) {
         case 'add':
-          services = difference(this.allServices, productServices)
+          services = difference(allServices, productServices)
           break
         case 'update':
           services = (this.productStatus.services || [])
@@ -183,18 +199,10 @@ export default {
           type: 'common'
         }
       })
-    },
-    getInitProduct () {
-      getSingleProjectAPI(this.projectName).then(res => {
-        this.allServices = flatten(res.services)
-      })
     }
   },
   components: {
     ChartValues
-  },
-  created () {
-    this.getInitProduct()
   }
 }
 </script>

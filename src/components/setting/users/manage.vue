@@ -27,10 +27,10 @@
           <el-input size="small" v-model="addUser.phone"></el-input>
         </el-form-item>
         <el-form-item label="角色" prop="isAdmin">
-          <el-radio-group v-model="addUser.isAdmin">
-            <el-radio :label="true">管理员</el-radio>
-            <el-radio :label="false">普通用户</el-radio>
-          </el-radio-group>
+          <el-select v-model="addUser.isAdmin" multiple placeholder="请选择">
+            <el-option :label="item.name" :value="item.name"  v-for="item in roleList" :key="item.desc">
+          </el-option>
+        </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -90,7 +90,7 @@
               <div class="name-listing-description">
                 <h3 class="name-listing-title">
                   {{ scope.row.name ? `${scope.row.name}(${scope.row.account})`: scope.row.account }}
-                  <el-tag size="mini" effect="plain">{{ scope.row.role === 'admin'?'管理员':'普通用户' }}</el-tag>
+                  <el-tag size="mini" v-if="scope.row.admin"  effect="plain">{{ '管理员' }}</el-tag>
                 </h3>
                 <!-- Name Listing Footer -->
                 <div class="name-listing-footer">
@@ -109,9 +109,9 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="lastLoginTime" label="登录信息">
+        <el-table-column prop="last_login_time" label="登录信息">
           <template slot-scope="scope">
-            <span v-if="scope.row.lastLoginTime">{{$utils.convertTimestamp(scope.row.lastLoginTime)}}</span>
+            <span v-if="scope.row.last_login_time">{{$utils.convertTimestamp(scope.row.last_login_time)}}</span>
             <span v-else>{{'尚未登录'}}</span>
           </template>
         </el-table-column>
@@ -152,16 +152,15 @@
 <script>
 import {
   addUserAPI,
-  usersAPI,
+  getUsersAPI,
   deleteUserAPI,
-  getSystemRoleBindingsAPI,
-  addSystemRoleBindingsAPI,
+  updateSystemRoleBindingsAPI,
   checkRegistrationAPI,
-  changeRegistrationAPI
+  changeRegistrationAPI,
+  getRoleListAPI
 } from '@api'
 import bus from '@utils/eventBus'
 import EditUserRole from './editUserInfo.vue'
-import { sortBy } from 'lodash'
 export default {
   components: {
     EditUserRole
@@ -233,11 +232,13 @@ export default {
             trigger: 'blur'
           }
         ]
-      }
+      },
+      roleList: []
     }
   },
   methods: {
     editUserInfo (user) {
+      user.isAdmin = user.system_role_bindings.map(item => item.role)
       this.editUser = user
       this.$refs.editUserInfo.dialogEditRoleVisible = true
     },
@@ -255,29 +256,12 @@ export default {
         per_page: page_size,
         name: keyword
       }
-      const usersData = await usersAPI(payload).catch(error =>
+      const usersData = await getUsersAPI(payload).catch(error =>
         console.log(error)
       )
-      const rolesData = await getSystemRoleBindingsAPI().catch(error =>
-        console.log(error)
-      )
-      if (usersData && rolesData) {
-        this.totalUser = usersData.totalCount
-        this.users = sortBy(
-          usersData.users.map(user => {
-            const roleInfo = rolesData.find(role => {
-              return role.uid === user.uid
-            })
-            if (roleInfo) {
-              user.role = roleInfo.role
-              user.roleBindingName = roleInfo.name
-            } else {
-              user.role = ''
-            }
-            return user
-          }),
-          'account'
-        )
+      if (usersData) {
+        this.totalUser = usersData.total_count
+        this.users = usersData.users
       }
       this.loading = false
     },
@@ -317,16 +301,21 @@ export default {
     addUserOperation () {
       this.$refs.addUserForm.validate(valid => {
         if (valid) {
+          const params = []
           const payload = this.addUser
           addUserAPI(payload).then(async res => {
             this.dialogAddUserVisible = false
             if (payload.isAdmin) {
-              const payload = {
-                name: `user:${res.uid},role:admin`,
-                role: 'admin',
-                uid: res.uid
-              }
-              await addSystemRoleBindingsAPI(payload).catch(error =>
+              this.addUser.isAdmin.forEach((item, index) => {
+                const obj = {
+                  name: `user:${res.uid},role:${item}`,
+                  role: item,
+                  uid: res.uid
+                }
+                params.push(obj)
+              })
+
+              await updateSystemRoleBindingsAPI(res.uid, params).catch(error =>
                 console.log(error)
               )
             }
@@ -371,11 +360,30 @@ export default {
     handleCurrentChange (val) {
       this.currentPageList = val
       this.getUsers(this.userPageSize, this.currentPageList, this.searchUser)
+    },
+    async getRoleList (page_size = 0, page_index = 0) {
+      const payload = {
+        page: page_index,
+        per_page: page_size
+      }
+      const res = await getRoleListAPI(payload).catch(error => {
+        console.log(error)
+      }
+      )
+
+      if (res) {
+        this.roleList = res
+      }
     }
   },
   watch: {
     searchUser: function (val, oldVal) {
       this.getUsers(this.userPageSize, this.currentPageList, val)
+    },
+    dialogAddUserVisible: function (val, oldVal) {
+      if (val) {
+        this.getRoleList()
+      }
     }
   },
   created () {
@@ -391,8 +399,8 @@ export default {
 .users-overview-container {
   position: relative;
   flex: 1;
-  padding: 15px 30px;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   font-size: 13px;
 
   .users-container {

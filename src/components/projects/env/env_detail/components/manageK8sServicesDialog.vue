@@ -15,12 +15,14 @@
         </el-form-item>
       </el-form>
       <template v-if="opeType !== 'delete'">
-        <div class="var-title">所选服务有使用环境变量，请确认对应变量值</div>
+        <div class="var-title">所选服务有使用环境变量，请确认对应变量值
+          <VariablePreviewEditor :services="previewServices" :projectName="productInfo.product_name" :envName="productInfo.env_name" :variables="currentVars" />
+        </div>
         <el-table :data="currentVars" style="width: 100%;">
           <el-table-column prop="key" label="键"></el-table-column>
           <el-table-column label="值">
             <template slot-scope="{ row }">
-              <el-input v-model="row.value" placeholder="请输入值" size="small"></el-input>
+              <VariableEditor :varKey="row.key" :value.sync="row.value" />
             </template>
           </el-table-column>
         </el-table>
@@ -89,6 +91,9 @@ export default {
     },
     envType () {
       return this.productInfo.share_env_enable ? 'share' : 'general'
+    },
+    previewServices () {
+      return this.updateServices.service_names.map(item => { return { service_name: item } })
     }
   },
   methods: {

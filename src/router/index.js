@@ -223,6 +223,51 @@ const routes = [
             }
           },
           {
+            path: 'scanner',
+            component: () => import(/* webpackChunkName: "Project Scanner" */ '@/components/projects/scanner/home.vue'),
+            meta: {
+              requiresAuth: true,
+              requiresSuperAdmin: false,
+              title: '代码扫描'
+            }
+          },
+          {
+            path: 'scanner/create',
+            component: () => import(/* webpackChunkName: "Project Scanner" */ '@/components/projects/scanner/create.vue'),
+            meta: {
+              requiresAuth: true,
+              requiresSuperAdmin: false,
+              title: '新建扫描'
+            }
+          },
+          {
+            path: 'scanner/edit/:scanner_name',
+            component: () => import(/* webpackChunkName: "Project Scanner" */ '@/components/projects/scanner/create.vue'),
+            meta: {
+              requiresAuth: true,
+              requiresSuperAdmin: false,
+              title: '编辑扫描'
+            }
+          },
+          {
+            path: 'scanner/detail/:scanner_name',
+            component: () => import(/* webpackChunkName: "Project Scanner" */ '@/components/projects/scanner/history.vue'),
+            meta: {
+              requiresAuth: true,
+              requiresSuperAdmin: false,
+              title: '扫描列表'
+            }
+          },
+          {
+            path: 'scanner/detail/:scanner_name/task/:task_id',
+            component: () => import(/* webpackChunkName: "Project Scanner" */ '@/components/projects/scanner/taskDetail.vue'),
+            meta: {
+              requiresAuth: true,
+              requiresSuperAdmin: false,
+              title: '扫描任务详情'
+            }
+          },
+          {
             path: 'version',
             component: () => import(/* webpackChunkName: "Project Delivery" */ '@/components/projects/version/index.vue'),
             meta: {
@@ -346,6 +391,13 @@ const routes = [
             component: () => import(/* webpackChunkName: "K8s Template" */ '@/components/templateLibrary/k8s/index.vue'),
             meta: {
               title: 'Kubernetes YAML 模板库'
+            }
+          },
+          {
+            path: 'builds',
+            component: () => import(/* webpackChunkName: "Build Template" */ '@/components/templateLibrary/builds/index.vue'),
+            meta: {
+              title: '构建模板库'
             }
           }]
       },
@@ -831,7 +883,7 @@ const routes = [
       },
       {
         path: 'users',
-        component: () => import(/* webpackChunkName: "Setting" */ '@/components/setting/users/manage.vue'),
+        component: () => import(/* webpackChunkName: "Setting" */ '@/components/setting/users/home.vue'),
         meta: {
           requiresAuth: true,
           requiresSuperAdmin: true,

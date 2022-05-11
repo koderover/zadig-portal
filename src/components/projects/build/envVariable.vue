@@ -222,21 +222,38 @@ export default {
           desc: '值恒等于 true，表示在 Zadig 系统上执行脚本'
         },
         {
+          // eslint-disable-next-line no-template-curly-in-string
+          variable: '$REPONAME_index',
+          desc: '代码库名称，其中 index 为构建配置中代码的位置，初始值为 0'
+        },
+        {
+          // eslint-disable-next-line no-template-curly-in-string
+          variable: '$REPO_index',
+          desc: '代码库名称（可用于代码信息相关变量名，仓库名称中的中划线 "-" 替换成下划线"_"），其中 index 为构建配置中代码的位置，初始值为 0'
+        },
+        {
+          // eslint-disable-next-line no-template-curly-in-string
           variable: '$<REPO>_PR',
-          desc:
-            '构建过程中指定代码仓库使用的 Pull Request 信息，其中 <REPO> 是具体的代码仓库名称，使用时需要自己填写完整'
+          // eslint-disable-next-line no-template-curly-in-string
+          desc: '构建时使用的代码 Pull Request 信息，其中 <REPO> 是具体的代码仓库名称，使用时可以填写仓库名称或者结合 $REPO_index 变量使用，比如可以通过 eval PR=\\${${REPO_0}_PR} 方式获取第一个代码库的 Pull Request 信息'
         },
         {
+          // eslint-disable-next-line no-template-curly-in-string
           variable: '$<REPO>_BRANCH',
-          desc: '构建过程中指定代码仓库使用的分支信息'
+          // eslint-disable-next-line no-template-curly-in-string
+          desc: '构建时使用的代码分支信息，其中 <REPO> 是具体的代码仓库名称，使用时可以填写仓库名称或者结合 $REPO_index 变量使用，比如可以通过 eval BRANCH=\\${${REPO_0}_BRANCH} 方式获取第一个代码库的分支信息'
         },
         {
+          // eslint-disable-next-line no-template-curly-in-string
           variable: '$<REPO>_TAG',
-          desc: '构建过程中指定代码仓库使用 Tag 信息'
+          // eslint-disable-next-line no-template-curly-in-string
+          desc: '构建时使用代码 Tag 信息，其中 <REPO> 是具体的代码仓库名称，使用时可以填写仓库名称或者结合 $REPO_index 变量使用，比如可以通过 eval TAG=\\${${REPO_0}_TAG} 方式获取第一个代码库的分支信息'
         },
         {
+          // eslint-disable-next-line no-template-curly-in-string
           variable: '$<REPO>_COMMIT_ID',
-          desc: '构建过程中指定代码的 commit 信息'
+          // eslint-disable-next-line no-template-curly-in-string
+          desc: '构建时使用代码 Commit 信息，其中 <REPO> 是具体的代码仓库名称，使用时可以填写仓库名称或者结合 $REPO_index]变量使用，比如可以通过 eval COMMITID=\\${${REPO_0}_COMMIT_ID} 方式获取第一个代码库的 COMMIT 信息'
         }
       ],
       testVars: [

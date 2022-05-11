@@ -301,7 +301,7 @@ export default {
     },
     addBuildRepo (index) {
       const repoMeta = {
-        codehost_id: '',
+        codehost_id: null,
         repo_owner: '',
         repo_name: '',
         branch: '',
@@ -331,7 +331,7 @@ export default {
     },
     addFirstBuildRepo () {
       const repoMeta = {
-        codehost_id: '',
+        codehost_id: null,
         repo_owner: '',
         repo_name: '',
         branch: '',

@@ -1,14 +1,7 @@
 <template>
   <div class="content">
     <div class="left">
-      <el-tree
-        ref="treeRef"
-        node-key="id"
-        class="tree"
-        :highlight-current="true"
-        @node-click="handlerNodeClick"
-        :data="nodeData"
-      >
+      <el-tree ref="treeRef" node-key="id" class="tree" :highlight-current="true" @node-click="handlerNodeClick" :data="nodeData">
         <span class="custom-tree-node" slot-scope="{ data }">
           <i class="iconfont iconrongqifuwu" v-if="data.children"></i>
           <span class="label">{{ data.label }}</span>
@@ -16,11 +9,7 @@
       </el-tree>
     </div>
     <div class="right">
-      <ServiceModule
-        :openBuild="openBuild"
-        v-show="!build.showModal"
-        :serviceModules="serviceModules"
-      />
+      <ServiceModule :openBuild="openBuild" v-show="!build.showModal" :serviceModules="serviceModules" />
       <div v-show="build.showModal" class="right-build">
         <CommonBuild
           ref="build"
@@ -29,6 +18,7 @@
           :isEdit="build.isEdit"
           :buildName="build.buildName"
           :followUpFn="followUpFn"
+          :buildNameIndex="build.buildNameIndex"
         />
       </div>
     </div>
@@ -51,8 +41,7 @@ export default {
   },
   data () {
     return {
-      nodeData: [
-      ],
+      nodeData: [],
       serviceModules: [],
       build: {
         name: null,
@@ -86,25 +75,38 @@ export default {
     handlerSubmit () {
       this.build.showModal = false
     },
-    openBuild (data) {
-      if (data.build_name) {
+    openBuild (data, buildName) {
+      if (buildName) {
         this.build.name = data.name
-        this.build.buildName = data.build_name
+        this.build.buildName = buildName
         this.build.isEdit = true
       } else {
         this.build.name = data.name
         this.build.buildName = null
         this.build.isEdit = false
+        // no build: no suffix
+        // build: the last number, take the maximum value + 1
+        this.build.buildNameIndex = data.build_names.length
+          ? Math.max.apply(
+            null,
+            data.build_names.map(buildName => {
+              const names = buildName.split('-')
+              const last = names[names.length - 1]
+              return isNaN(last) ? 1 : Number(last) + 1
+            })
+          )
+          : 0
       }
       this.build.showModal = true
     },
     handlerNodeClick (data) {
-      if (!data.children) {
-        this.openBuild(data)
-      } else {
-        this.getServiceModules(data)
-        this.build.showModal = false
-      }
+      // TODO: temporarily hidden
+      // if (!data.children) {
+      //   this.openBuild(data)
+      // } else {
+      this.getServiceModules(data)
+      this.build.showModal = false
+      // }
     },
     async getServiceModules (data) {
       this.build.serviceName = data.label
@@ -112,12 +114,12 @@ export default {
         data.label,
         this.projectName
       )
-      data.children = service_module.map((item) => ({
-        label: item.name,
-        name: item.name,
-        build_name: item.build_name,
-        id: 'serviceModule' + item.name
-      }))
+      // data.children = service_module.map(item => ({
+      //   label: item.name,
+      //   name: item.name,
+      //   build_name: item.build_name,
+      //   id: 'serviceModule' + item.name
+      // }))
       this.serviceModules = service_module
     },
     async getServices (init) {
@@ -125,9 +127,9 @@ export default {
         this.projectName,
         this.envName
       )
-      this.nodeData = data.map((item) => ({
+      this.nodeData = data.map(item => ({
         label: item.service_name,
-        children: [],
+        // children: [],
         name: item.service_name,
         id: 'serviceName' + item.service_name
       }))
@@ -144,7 +146,7 @@ export default {
   async mounted () {
     await this.getServices('init')
     if (this.serviceName) {
-      const data = this.nodeData.find((item) => item.name === this.serviceName)
+      const data = this.nodeData.find(item => item.name === this.serviceName)
       this.getServiceModules(data)
       this.$nextTick(() => {
         this.currentKey = this.serviceName
@@ -187,5 +189,4 @@ export default {
     }
   }
 }
-
 </style>

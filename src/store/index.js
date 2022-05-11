@@ -12,6 +12,8 @@ import sidebarStatus from './modules/sidebarStatus'
 // Service
 import serviceManage from './modules/serviceManage'
 
+import k8sService from './modules/k8sService'
+
 // External Link
 import externalLink from './modules/externalLink'
 
@@ -32,6 +34,7 @@ export default new Vuex.Store({
     projectPermission,
     sidebarStatus,
     serviceManage,
+    k8sService,
     externalLink,
     commonWorkflow
   },

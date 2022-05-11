@@ -5,7 +5,7 @@
                :close-on-click-modal="false"
                custom-class="edit-form-dialog"
                :visible.sync="dialogMailEditFormVisible">
-      <h3>主机信息</h3>
+      <h3>邮件服务器</h3>
       <el-form :model="mailHostEdit"
                @submit.native.prevent
                :rules="mailRules"
@@ -50,7 +50,7 @@
           <el-checkbox v-model="mailHostEdit.isTLS">启用</el-checkbox>
         </el-form-item>
       </el-form>
-      <h3>发信设置</h3>
+      <h3>邮件发送</h3>
       <el-form :model="mailServiceEdit"
                :rules="mailRules"
                ref="mailServiceForm">
@@ -92,7 +92,7 @@
                :close-on-click-modal="false"
                custom-class="edit-form-dialog"
                :visible.sync="dialogMailAddFormVisible">
-      <h3>主机信息</h3>
+      <h3>邮件服务器</h3>
       <el-form :model="mailHostAdd"
                @submit.native.prevent
                :rules="mailRules"
@@ -137,7 +137,7 @@
           <el-checkbox v-model="mailHostAdd.isTLS">启用</el-checkbox>
         </el-form-item>
       </el-form>
-      <h3>发信设置</h3>
+      <h3>邮件发送</h3>
       <el-form :model="mailServiceAdd"
                :rules="mailRules"
                ref="mailServiceForm">

@@ -388,7 +388,7 @@
 
           <el-table-column label="部署" min-width="250px">
             <template slot-scope="scope">
-              <span :class="colorTranslation(scope.row.release_imageSubTask.distribute_info[0].deploy_status, 'pipeline', 'task')">{{ myTranslate(scope.row.release_imageSubTask.distribute_info[0].deploy_status) }}</span>
+              <span v-if="checkDistributeDeploy(scope.row.release_imageSubTask.distribute_info)" :class="colorTranslation(scope.row.release_imageSubTask.distribute_info[0].deploy_status, 'pipeline', 'task')">{{ myTranslate(scope.row.release_imageSubTask.distribute_info[0].deploy_status) }}</span>
               <!-- {{ makePrettyElapsedTime(scope.row) }}
               <el-tooltip v-if="calcElapsedTimeNum(scope.row)<0" content="本地系统时间和服务端可能存在不一致，请同步。" placement="top">
                 <i class="el-icon-warning" style="color: red;"></i>
@@ -743,6 +743,16 @@ export default {
     }
   },
   methods: {
+    checkDistributeDeploy (deployInfo) {
+      const filterDeploys = deployInfo.filter(item => {
+        return item.deploy_enabled
+      })
+      if (filterDeploys.length > 0) {
+        return true
+      } else {
+        return false
+      }
+    },
     isStageDone (name) {
       if (this.taskDetail.stages.length > 0) {
         const stage = this.taskDetail.stages.find(element => {

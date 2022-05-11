@@ -35,6 +35,9 @@
             <el-button type="primary"
                        size="small"
                        @click="updateFile">保存</el-button>
+                       <el-button type="default"
+                       size="small"
+                       @click="multiUpdate">批量更新</el-button>
           </div>
         </div>
     </div>
@@ -55,7 +58,7 @@ import 'codemirror/addon/dialog/dialog.js'
 import 'codemirror/addon/dialog/dialog.css'
 import 'codemirror/addon/search/searchcursor.js'
 import 'codemirror/addon/search/search.js'
-import { praseKubernetesTemplateAPI, createKubernetesTemplateAPI, updateKubernetesTemplateAPI } from '@api'
+import { praseKubernetesTemplateAPI, createKubernetesTemplateAPI, updateKubernetesTemplateAPI, updateMulKubernetesTemplateAPI } from '@api'
 
 export default {
   props: {
@@ -161,6 +164,22 @@ export default {
     },
     editorFocus () {
       this.codemirror.focus()
+    },
+    multiUpdate () {
+      const fileId = this.fileContent.id
+      this.$confirm(`确认后，所有开启「自动同步」的服务配置会应用最新的模板。`, '确定批量更新？', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(() => {
+          updateMulKubernetesTemplateAPI(fileId).then(res => {
+            this.$message({
+              type: 'success',
+              message: `批量更新成功`
+            })
+          })
+        })
     }
   },
   computed: {
