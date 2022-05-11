@@ -66,13 +66,14 @@ export default {
       formRules: {
         server_address: [
           {
+            required: true,
             type: 'url',
             message: '请输入正确的 URL，包含协议',
             trigger: ['blur']
           }
         ],
         token: [
-          { required: true, message: 'token不能为空', trigger: 'blur' }
+          { required: true, message: 'Token 不能为空', trigger: 'blur' }
         ]
       }
     }
