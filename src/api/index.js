@@ -1018,26 +1018,6 @@ export function deleteSonarAPI (payload) {
 export function checkSonarConnectionAPI (payload) {
   return http.post('/api/aslan/system/sonar/validate', payload)
 }
-// Sonar
-export function querySonarAPI (key) {
-  return http.get(`/api/aslan/system/sonar/integration?encryptedKey=${key}`)
-}
-
-export function addSonarAPI (payload) {
-  return http.post('/api/aslan/system/sonar/integration', payload)
-}
-
-export function editSonarAPI (payload) {
-  return http.put(`/api/aslan/system/sonar/integration/${payload.id}`, payload)
-}
-
-export function deleteSonarAPI (payload) {
-  return http.delete(`/api/aslan/system/sonar/integration/${payload.id}`, payload)
-}
-
-export function checkSonarConnectionAPI (payload) {
-  return http.post('/api/aslan/system/sonar/validate', payload)
-}
 
 // External System
 export function createExternalSystemAPI (payload) {
