@@ -136,15 +136,6 @@
                     <el-dropdown-item @click.native="manageServices('delete')">删除服务</el-dropdown-item>
                   </el-dropdown-menu>
                 </el-dropdown>
-                <el-tooltip
-                  v-else-if="showUpdate(productInfo,productStatus) && (!productInfo.is_prod && envSource==='pm')"
-                  v-hasPermi="{projectName: projectName, action: 'config_environment'}"
-                  content="根据最新环境配置更新，包括服务编排和服务配置的改动"
-                  effect="dark"
-                  placement="top"
-                >
-                  <el-button type="primary" @click="updateK8sEnv(productInfo)" size="mini" plain>更新环境</el-button>
-                </el-tooltip>
               </template>
               <template v-if="envSource==='' || envSource==='spock' || envSource === 'helm'">
                 <el-dropdown trigger="click">
@@ -283,16 +274,6 @@
                   {{ scope.row.service_name }}
                 </span>
               </router-link>
-              <template v-if=" serviceStatus[scope.row.service_name] && serviceStatus[scope.row.service_name]['tpl_updatable']">
-                <el-tooltip
-                  v-hasPermi="{projectName: projectName, action: 'manage_environment'}"
-                  effect="dark"
-                  content="更新主机资源和探活配置"
-                  placement="top"
-                >
-                  <i @click="updateService(scope.row)" class="iconfont icongengxin operation"></i>
-                </el-tooltip>
-              </template>
             </template>
           </el-table-column>
           <el-table-column align="left" label="状态" width="130px">
@@ -415,7 +396,6 @@ import {
   productServicesAPI,
   listProductAPI,
   updateServiceAPI,
-  updateK8sEnvAPI,
   restartPmServiceAPI,
   restartServiceOriginAPI,
   deleteProductEnvAPI,
@@ -464,8 +444,6 @@ export default {
       currentPmServiceData: {},
       selectVersion: '',
       selectVersionDialogVisible: false,
-      updataK8sEnvVarLoading: false,
-      updateK8sEnvVarDialogVisible: false,
       envLoading: false,
       serviceLoading: false,
       isPmService: false,
@@ -530,10 +508,6 @@ export default {
     },
     isProd () {
       return this.productInfo.is_prod
-    },
-    nsIsExisted () {
-      const env = this.envNameList.find(env => env.name === this.envName)
-      return env ? env.is_existed : false
     },
     filteredProducts () {
       return _.uniqBy(
@@ -982,11 +956,8 @@ export default {
       }
     },
     getProdStatus (status, updatable) {
-      // k8s and helm don't show updatable status
-      const hiddenUpdatable =
-        this.envSource === '' ||
-        this.envSource === 'spock' ||
-        this.envSource === 'helm'
+      // k8s/helm/pm don't show updatable status
+      const hiddenUpdatable = this.envSource !== 'external'
       return translateEnvStatus(status, hiddenUpdatable ? false : updatable)
     },
     rollbackToVersion () {
@@ -994,72 +965,7 @@ export default {
         `/v1/projects/detail/${this.projectName}/envs/create?rollbackId=${this.selectVersion}`
       )
     },
-    showUpdate (envInfo, envStatus) {
-      return envStatus.updatable
-    },
-    updateK8sEnv (envInfo) {
-      const content = `<p>更新环境, 是否继续?</p>${
-        this.nsIsExisted
-          ? '<p style="color: #f56c6c; font-size: 13px;">Zadig 中定义的服务将覆盖所选命名空间中的同名服务，请谨慎操作！'
-          : ''
-      }</p>`
-      this.$confirm(content, '更新', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        dangerouslyUseHTMLString: true,
-        type: 'warning'
-      }).then(() => {
-        const projectName = envInfo.product_name
-        const envName = envInfo.env_name
-        const envType = this.isProd ? 'prod' : ''
-        const payload = { vars: envInfo.vars }
-        const force = false
-        updateK8sEnvAPI(projectName, envName, payload, envType, force)
-          .then(response => {
-            this.fetchAllData()
-            this.$message({
-              message: '更新环境成功，请等待服务升级',
-              type: 'success'
-            })
-          })
-          .catch(error => {
-            const description = error.response.data.description
-            const res = description.match(
-              'the following services are modified since last update'
-            )
-            if (res) {
-              this.updateEnv(description, envInfo)
-            }
-          })
-      })
-    },
-    updateEnv (res, envInfo) {
-      const message = JSON.parse(res.match(/{.+}/g)[0])
-      this.$confirm(
-        `您的更新操作将覆盖环境中${message.name}服务变更，确认继续?`,
-        '提示',
-        {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }
-      ).then(() => {
-        const projectName = envInfo.product_name
-        const envName = envInfo.env_name
-        const envType = this.isProd ? 'prod' : ''
-        const payload = { vars: envInfo.vars }
-        const force = true
-        updateK8sEnvAPI(projectName, envName, payload, envType, force).then(
-          response => {
-            this.fetchAllData()
-            this.$message({
-              message: '更新环境成功，请等待服务升级',
-              type: 'success'
-            })
-          }
-        )
-      })
-    },
+
     upgradeServiceByWorkflow (projectName, envName, serviceName, serviceType) {
       getServicePipelineAPI(projectName, envName, serviceName, serviceType)
         .then(res => {
