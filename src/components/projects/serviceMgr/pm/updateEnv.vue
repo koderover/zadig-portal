@@ -30,11 +30,15 @@
 <script>
 import { autoUpgradeEnvAPI, listProductAPI } from '@api'
 export default {
+  props: {
+    followUpFn: Function
+  },
   data () {
     return {
       checkList: [],
       updateEnvDialogVisible: false,
-      envNameList: []
+      envNameList: [],
+      serviceName: ''
     }
   },
   methods: {
@@ -48,8 +52,9 @@ export default {
         this.envNameList = envNameList
       }
     },
-    openDialog () {
+    openDialog (serviceName) {
       this.updateEnvDialogVisible = true
+      this.serviceName = serviceName
     },
     autoUpgradeEnv () {
       const payload = this.checkList.map(env => {
@@ -59,11 +64,13 @@ export default {
       })
       const projectName = this.projectName
       autoUpgradeEnvAPI(projectName, payload, false).then((res) => {
-        this.$router.push(`/v1/projects/detail/${projectName}/envs`)
+        // this.$router.push(`/v1/projects/detail/${projectName}/envs`)
         this.$message({
           message: '更新环境成功',
           type: 'success'
         })
+        this.updateEnvDialogVisible = false
+        this.followUpFn && this.followUpFn(this.serviceName)
       })
     }
   },

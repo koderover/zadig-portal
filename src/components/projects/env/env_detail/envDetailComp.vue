@@ -125,14 +125,15 @@
                 </router-link>
               </template>
               <template v-if="productInfo.status!=='Disconnected' && productInfo.status!=='Creating'">
-                <el-dropdown v-if="envSource===''||envSource==='spock' || envSource==='helm'" trigger="click">
+                <!-- k8s/helm/pm can manage services -->
+                <el-dropdown v-if="envSource !== 'external'" trigger="click">
                   <el-button type="primary" plain>
                     管理服务
                     <i class="el-icon-arrow-down el-icon--right"></i>
                   </el-button>
                   <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item @click.native="manageServices('add')">添加服务</el-dropdown-item>
-                    <el-dropdown-item @click.native="manageServices('update')">更新服务</el-dropdown-item>
+                    <el-dropdown-item @click.native="manageServices('update')" v-if="envSource!=='pm'">更新服务</el-dropdown-item>
                     <el-dropdown-item @click.native="manageServices('delete')">删除服务</el-dropdown-item>
                   </el-dropdown-menu>
                 </el-dropdown>
@@ -377,6 +378,12 @@
       ref="manageHelmServicesRef"
       :productStatus="productStatus"
     />
+    <ManagePmServicesDialog
+      :fetchAllData="fetchAllData"
+      :envName="productInfo.env_name "
+      :services="productInfo.services"
+      ref="managePmServicesRef"
+    />
     <ShareEnvDialog
       :mode="shareEnvDialog.mode"
       :projectName="productInfo.product_name"
@@ -416,6 +423,7 @@ import UpdateHelmVarDialog from './components/updateHelmVarDialog'
 import UpdateK8sVarDialog from './components/updateK8sVarDialog'
 import ManageK8sServicesDialog from './components/manageK8sServicesDialog.vue'
 import ManageHelmServicesDialog from './components/manageHelmServicesDialog.vue'
+import ManagePmServicesDialog from './components/managePmServicesDialog.vue'
 import ChartList from './components/chartList.vue'
 import ServiceList from './components/serviceList.vue'
 
@@ -586,6 +594,8 @@ export default {
     manageServices (type) {
       if (this.envSource === 'helm') {
         this.$refs.manageHelmServicesRef.openDialog(type)
+      } else if (this.envSource === 'pm') {
+        this.$refs.managePmServicesRef.openDialog(type)
       } else {
         this.$refs.manageK8sServicesRef.openDialog(type)
       }
@@ -1262,6 +1272,7 @@ export default {
     UpdateK8sVarDialog,
     ManageK8sServicesDialog,
     ManageHelmServicesDialog,
+    ManagePmServicesDialog,
     ShareEnvDialog,
     ChartList,
     ServiceList
