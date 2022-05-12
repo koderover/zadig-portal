@@ -36,7 +36,7 @@
     <div class="input" v-if="showAddInput">
         <el-input v-model="serviceName"  oninput="value=value.replace(/[^a-zA-Z0-9-_]/g,'')" size="small" @blur="blur" @change="change" ref="input"></el-input>
     </div>
-    <UpdateEnv ref="updateEnv"/>
+    <UpdateEnv ref="updateEnv" />
   </div>
 </template>
 <script>
@@ -141,7 +141,7 @@ export default {
           obj.visibility
         ).then(() => {
           if (this.envNameList.length) {
-            this.$refs.updateEnv.openDialog()
+            this.$refs.updateEnv.openDialog(obj.service_name)
           }
           this.$message({
             type: 'success',

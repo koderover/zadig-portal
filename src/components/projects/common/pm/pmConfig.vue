@@ -247,7 +247,9 @@
     </div>
     <div class="save-btn">
       <el-button size="small" type="primary" @click="savePmService">保存</el-button>
+      <el-button type="primary" size="small" @click="openDialog" v-show="showUpdateEnv">加入环境</el-button>
     </div>
+    <UpdateEnv ref="updateEnv" :followUpFn="followUpFn" />
   </div>
 </template>
 <script>
@@ -265,6 +267,7 @@ import Editor from 'vue2-ace-bind'
 import { cloneDeep } from 'lodash'
 
 import ZadigBuild from '@/components/projects/build/zadigBuild.vue'
+import UpdateEnv from '../../serviceMgr/pm/updateEnv'
 
 const validateServiceName = (rule, value, callback) => {
   if (value === '') {
@@ -282,7 +285,7 @@ export default {
   props: {
     isEdit: Boolean,
     serviceName: String,
-    changeUpdateEnvDisabled: Function
+    addedServices: Array
   },
   data () {
     this.deployVars = [
@@ -427,6 +430,15 @@ export default {
     }
   },
   methods: {
+    openDialog () {
+      this.$refs.updateEnv.openDialog(this.serviceName)
+    },
+    followUpFn (serviceName) {
+      const index = this.addedServices.indexOf(serviceName)
+      if (index !== -1) {
+        this.addedServices.splice(index, 1)
+      }
+    },
     jumpProject (projectName) {
       if (!this.isOnboarding) {
         this.$router.push(`/v1/projects/detail/${projectName}/services`)
@@ -777,17 +789,18 @@ export default {
         combinePayload
       ).then(
         () => {
-          if (this.changeUpdateEnvDisabled) {
-            this.changeUpdateEnvDisabled()
-          }
+          const serviceName = this.currentBuildConfig.service_name
           this.$router.push({
-            query: { serviceName: this.currentBuildConfig.service_name }
+            query: { serviceName }
           })
           this.$emit('listenCreateEvent', 'success')
           this.$message({
             type: 'success',
             message: this.isEdit ? '修改主机服务成功' : '创建主机服务成功'
           })
+          if (!this.isEdit && !this.addedServices.includes(serviceName)) {
+            this.addedServices.push(serviceName)
+          }
         },
         () => {
           this.$emit('listenCreateEvent', 'failed')
@@ -958,6 +971,9 @@ export default {
       return !!this.$route.path.includes(
         `/v1/projects/create/${this.projectName}/pm/config`
       )
+    },
+    showUpdateEnv () {
+      return this.addedServices.includes(this.serviceName)
     }
   },
   created () {
@@ -965,7 +981,8 @@ export default {
   },
   components: {
     Editor,
-    ZadigBuild
+    ZadigBuild,
+    UpdateEnv
   }
 }
 </script>

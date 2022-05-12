@@ -18,10 +18,31 @@
         label-position="left"
         ref="createEnvRef"
         :model="projectConfig"
+        :rules="rules"
         inline-message
       >
         <el-form-item label="环境名称" prop="env_name" :rules="{ required: true, trigger: 'change', validator: validateEnvName }">
           <el-input v-model="projectConfig.env_name" size="small"></el-input>
+        </el-form-item>
+        <el-form-item label="服务选择" prop="selectedService">
+          <div class="select-service">
+            <el-select v-model="projectConfig.selectedService" size="small" placeholder="选择服务" filterable clearable multiple collapse-tags>
+              <el-option
+                disabled
+                label="全选"
+                value="ALL"
+                :class="{selected: projectConfig.selectedService.length === serviceNames.length}"
+                style="color: #606266;"
+              >
+                <span
+                  style=" display: inline-block; width: 100%; font-weight: normal; cursor: pointer;"
+                  @click="projectConfig.selectedService = serviceNames"
+                >全选</span>
+              </el-option>
+              <el-option v-for="serviceName in serviceNames" :key="serviceName" :label="serviceName" :value="serviceName"></el-option>
+            </el-select>
+            <el-button size="mini" plain @click="projectConfig.selectedService = []">清空</el-button>
+          </div>
         </el-form-item>
       </el-form>
       <div class="common-parcel-block">
@@ -32,7 +53,7 @@
             <span class="small-title">(请关联服务的主机资源，后续也可以在服务中进行配置)</span>
           </div>
           <el-form class="service-form-block" label-width="50%" label-position="left">
-            <div class="service-item" v-for="(typeServiceMap, serviceName) in pmServiceMap" :key="serviceName">
+            <div class="service-item" v-for="(typeServiceMap, serviceName) in selectedPmServiceMap" :key="serviceName">
               <div class="primary-title">{{ serviceName }}</div>
               <div class="service-content">
                 <div v-for="service in typeServiceMap" :key="`${service.service_name}-${service.type}`" class="service-block">
@@ -92,6 +113,7 @@ import {
   getHostLabelListAPI
 } from '@api'
 import bus from '@utils/eventBus'
+import { cloneDeep } from 'lodash'
 
 const validateEnvName = (rule, value, callback) => {
   if (typeof value === 'undefined' || value === '') {
@@ -118,7 +140,16 @@ export default {
         isPublic: true,
         roleIds: [],
         registry_id: '',
-        services: []
+        services: [],
+        selectedService: [] // will be deleted when created
+      },
+      rules: {
+        selectedService: {
+          type: 'array',
+          required: true,
+          message: '请选择服务',
+          trigger: 'change'
+        }
       },
       allHost: [],
       startDeployLoading: false,
@@ -131,6 +162,17 @@ export default {
   computed: {
     projectName () {
       return this.$route.params.project_name
+    },
+    serviceNames () {
+      return Object.keys(this.pmServiceMap)
+    },
+    selectedPmServiceMap () {
+      // Filtered Pm Services
+      const pmServiceMap = {}
+      this.projectConfig.selectedService.forEach(service => {
+        pmServiceMap[service] = this.pmServiceMap[service]
+      })
+      return pmServiceMap
     }
   },
   methods: {
@@ -182,11 +224,15 @@ export default {
       }
       this.projectConfig.services = template.services
       this.pmServiceMap = pmServiceMap
+      this.projectConfig.selectedService = Object.keys(pmServiceMap)
     },
     deployPmEnv () {
       this.$refs.createEnvRef.validate(valid => {
         if (valid) {
+          const selectedServices = [] // filtered service: keep the same format as the original services
+          const selectedServiceNames = this.projectConfig.selectedService
           for (const group of this.projectConfig.services) {
+            const currentGroup = []
             for (const ser of group) {
               if (ser.type === 'pm') {
                 ser.env_configs = [
@@ -200,11 +246,18 @@ export default {
                 delete ser.labels
                 delete ser.host_with_labels
                 delete ser.picked
+
+                if (selectedServiceNames.includes(ser.service_name)) {
+                  currentGroup.push(ser)
+                }
               }
             }
+            selectedServices.push(currentGroup)
           }
           const payload = this.$utils.cloneObj(this.projectConfig)
           payload.namespace = payload.defaultNamespace
+          payload.services = cloneDeep(selectedServices)
+          delete payload.selectedService
           this.startDeployLoading = true
           function sleep (time) {
             return new Promise(resolve => setTimeout(resolve, time))
