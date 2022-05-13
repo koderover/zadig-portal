@@ -139,7 +139,14 @@ export default {
                 valuesPaths: [createFrom.yaml_data.source_detail.load_path]
               }
             } else {
-              this.importRepoInfo.gitRepoConfig = {}
+              this.importRepoInfo.gitRepoConfig = {
+                branch: '',
+                codehostID: null,
+                owner: '',
+                repo: '',
+                autoSync: false,
+                valuesPaths: []
+              }
             }
           }
           this.variables = createFrom.variables || []
