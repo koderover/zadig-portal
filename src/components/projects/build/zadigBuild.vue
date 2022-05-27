@@ -30,7 +30,7 @@
           </slot>
           <slot v-if="useTemplate" name="template">
             <el-form-item label="选择模板" prop="template_id">
-              <el-select v-model="buildConfig.template_id" size="small" filterable>
+              <el-select v-model="buildConfig.template_id" size="small" filterable @change="changeTemplate">
                 <el-option
                   v-for="(template,index) in templates"
                   :key="index"
@@ -47,7 +47,7 @@
         <RepoSelect ref="repoSelectRef" :config="buildConfig" :validObj="validObj" class="build-secondary-form" showFirstLine></RepoSelect>
       </div>
       <section v-if="useTemplate">
-        <ServiceRepoSelect ref="serviceRepoSelectRef" :serviceTargets="serviceTargets" :targets="buildConfig.target_repos" :isCreate="isCreate" :validObj="validObj" class="build-secondary-form" showFirstLine/>
+        <ServiceRepoSelect ref="serviceRepoSelectRef" :serviceTargets="serviceTargets" :targets="buildConfig.target_repos" :currentTemplateEnvs="currentTemplateEnvs" :isCreate="isCreate" :validObj="validObj" :mini="mini" class="build-secondary-form" showFirstLine/>
       </section>
       <section v-if="!useTemplate">
         <div class="primary-title not-first-child">构建变量</div>
@@ -97,9 +97,9 @@ import OtherSteps from './otherSteps.vue'
 
 import ValidateSubmit from '@utils/validateAsync'
 
-import { getCodeSourceMaskedAPI, getBuildTemplatesAPI } from '@api'
+import { getCodeSourceMaskedAPI, getBuildTemplatesAPI, getBuildTemplateDetailAPI } from '@api'
 
-import { cloneDeep } from 'lodash'
+import { cloneDeep, differenceBy, intersectionBy } from 'lodash'
 
 const validateBuildConfigName = (rule, value, callback) => {
   if (value === '') {
@@ -116,6 +116,7 @@ const validateBuildConfigName = (rule, value, callback) => {
 const initBuildConfig = {
   name: '',
   targets: [],
+  template_id: '',
   target_repos: [],
   desc: '',
   repos: [],
@@ -198,7 +199,8 @@ export default {
       allCodeHosts: [],
       templates: [],
       configDataLoading: true,
-      buildConfig: cloneDeep(initBuildConfig)
+      buildConfig: cloneDeep(initBuildConfig),
+      currentTemplateEnvs: []
     }
   },
   computed: {
@@ -216,6 +218,22 @@ export default {
     }
   },
   methods: {
+    changeTemplate (id, init = false) {
+      getBuildTemplateDetailAPI(id).then(res => {
+        const currentTemplateEnvs = res.pre_build.envs || []
+        this.currentTemplateEnvs = currentTemplateEnvs
+        if (init) {
+          this.buildConfig.target_repos.forEach(repo => {
+            const envs = intersectionBy(repo.envs || [], currentTemplateEnvs, 'key').concat(differenceBy(currentTemplateEnvs, repo.envs || [], 'key'))
+            this.$set(repo, 'envs', cloneDeep(envs))
+          })
+        } else {
+          this.buildConfig.target_repos.forEach(repo => {
+            this.$set(repo, 'envs', cloneDeep(currentTemplateEnvs))
+          })
+        }
+      })
+    },
     async validate () {
       const valid = []
       if (!this.useTemplate) {
@@ -258,7 +276,8 @@ export default {
       if (!buildConfig) {
         buildConfig = this.buildConfig
       }
-      if (!this.useTemplate) {
+      // template_id: useTemplate
+      if (!buildConfig.template_id) {
         this.$refs.otherStepsRef.initStepStatus(buildConfig)
 
         this.$refs.buildEnvRef.initData()
@@ -269,6 +288,8 @@ export default {
         if (!buildConfig.id && buildConfig.repos.length === 0) {
           this.$refs.repoSelectRef.addFirstBuildRepo()
         }
+      } else if (buildConfig.template_id) {
+        this.changeTemplate(buildConfig.template_id, true)
       }
     },
     initServiceRepoSelectData (buildConfig) {

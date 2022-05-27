@@ -273,9 +273,9 @@ export default {
           }
         }
       }
-      if (!this.useTemplate) {
-        this.$refs.zadigBuildForm.initData(this.buildConfig)
-      }
+
+      this.$refs.zadigBuildForm.initData(this.buildConfig)
+
       // Add current service to template targets_repos when creating a new build
       if (this.useTemplate && !this.isEdit) {
         const service = this.buildConfig.targets.find(
@@ -292,7 +292,8 @@ export default {
               checkout_path: '',
               remote_name: 'origin',
               submodules: false
-            }]
+            }],
+            envs: []
           })
         }
         this.$refs.zadigBuildForm.initServiceRepoSelectData(this.buildConfig)
