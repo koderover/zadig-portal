@@ -60,8 +60,10 @@ export default {
   height: calc(~'100% - 40px');
 
   /deep/ .projects-service-mgr {
+    height: calc(~'100% - 200px');
+
     .service-wrap {
-      height: calc(~'100% - 255px');
+      height: calc(~'100% - 65px');
     }
   }
 
