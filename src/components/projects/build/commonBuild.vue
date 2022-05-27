@@ -149,6 +149,11 @@ export default {
           const payload = data
           payload.source = this.source
           payload.product_name = this.projectName
+          if (payload.target_repos) {
+            payload.target_repos.forEach(repo => {
+              delete repo.showVars
+            })
+          }
           this.saveLoading = true
           this.$emit('updateBtnLoading', true)
           reqAPI(payload)
@@ -257,6 +262,13 @@ export default {
         if (buildConfig.template_id) {
           this.useTemplate = true
         }
+
+        if (buildConfig.target_repos) {
+          buildConfig.target_repos.forEach(repo => {
+            this.$set(repo, 'showVars', false)
+          })
+        }
+
         this.buildConfig = buildConfig
 
         if (!this.isEdit) {
@@ -293,7 +305,8 @@ export default {
               remote_name: 'origin',
               submodules: false
             }],
-            envs: []
+            envs: [],
+            showVars: false
           })
         }
         this.$refs.zadigBuildForm.initServiceRepoSelectData(this.buildConfig)

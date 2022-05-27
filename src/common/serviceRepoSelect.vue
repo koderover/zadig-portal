@@ -251,32 +251,41 @@
           </div>
         </el-form>
         <div v-if="target.envs && target.envs.length" class="build-env-var">
-          <div class="primary-title">变量</div>
-          <el-row v-for="(env, index) in target.envs" :key="index" :gutter="10" class="var-content">
-            <el-col :span="mini ? 6 : 4">
-              <el-select v-model="env.type" size="small" disabled>
-                <el-option label="字符串" value="string"></el-option>
-                <el-option label="枚举" value="choice"></el-option>
-              </el-select>
-            </el-col>
-            <el-col :span="mini ? 6 : 4">
-              <el-input v-model="env.key" size="small" disabled></el-input>
-            </el-col>
-            <el-col :span="mini ? 6 : 4">
-              <el-select v-if="env.type==='choice'" v-model="env.value" placeholder="默认值" size="small">
-                <el-option v-for="option in env.choice_option" :key="option" :label="option" :value="option"></el-option>
-              </el-select>
-              <el-input v-else placeholder="值" v-model="env.value" size="small"></el-input>
-            </el-col>
-            <el-col :span="mini ? 6 : 4" v-show="env.type!=='choice'" style="line-height: 32px;">
-              <el-checkbox v-model="env.is_credential">
-                敏感信息
-                <el-tooltip effect="dark" content="设置为敏感信息变量后，系统会将变量进行加密，使用时进行解密，同时在工作流运行日志里不可见" placement="top">
-                  <i class="el-icon-question"></i>
-                </el-tooltip>
-              </el-checkbox>
-            </el-col>
-          </el-row>
+          <div class="primary-title">
+            变量
+            <i
+              :class="[target.showVars ? 'el-icon-arrow-up' : 'el-icon-arrow-down']"
+              class="icon"
+              @click="target.showVars = !target.showVars"
+            ></i>
+          </div>
+          <div v-show="target.showVars">
+            <el-row v-for="(env, index) in target.envs" :key="index" :gutter="10" class="var-content">
+              <el-col :span="mini ? 6 : 4">
+                <el-select v-model="env.type" size="small" disabled>
+                  <el-option label="字符串" value="string"></el-option>
+                  <el-option label="枚举" value="choice"></el-option>
+                </el-select>
+              </el-col>
+              <el-col :span="mini ? 6 : 4">
+                <el-input v-model="env.key" size="small" disabled></el-input>
+              </el-col>
+              <el-col :span="mini ? 6 : 4">
+                <el-select v-if="env.type==='choice'" v-model="env.value" placeholder="默认值" size="small">
+                  <el-option v-for="option in env.choice_option" :key="option" :label="option" :value="option"></el-option>
+                </el-select>
+                <el-input v-else placeholder="值" v-model="env.value" size="small"></el-input>
+              </el-col>
+              <el-col :span="mini ? 6 : 4" v-show="env.type!=='choice'" style="line-height: 32px;">
+                <el-checkbox v-model="env.is_credential">
+                  敏感信息
+                  <el-tooltip effect="dark" content="设置为敏感信息变量后，系统会将变量进行加密，使用时进行解密，同时在工作流运行日志里不可见" placement="top">
+                    <i class="el-icon-question"></i>
+                  </el-tooltip>
+                </el-checkbox>
+              </el-col>
+            </el-row>
+          </div>
         </div>
       </div>
     </template>
@@ -387,7 +396,8 @@ export default {
         this.targets.push({
           service: {},
           repos: [],
-          envs: cloneDeep(this.currentTemplateEnvs)
+          envs: cloneDeep(this.currentTemplateEnvs),
+          showVars: false
         })
         this.addFirstRepo(this.targets.length - 1)
       } else {
@@ -395,7 +405,8 @@ export default {
           this.targets.push({
             service: {},
             repos: [],
-            envs: cloneDeep(this.currentTemplateEnvs)
+            envs: cloneDeep(this.currentTemplateEnvs),
+            showVars: false
           })
           this.addFirstRepo(this.targets.length - 1)
         })
@@ -837,6 +848,13 @@ export default {
   }
 
   .build-env-var {
+    .primary-title {
+      .icon {
+        margin-left: 5px;
+        cursor: pointer;
+      }
+    }
+
     .var-content {
       margin-bottom: 18px;
     }
