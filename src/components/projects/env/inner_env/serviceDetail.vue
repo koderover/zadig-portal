@@ -737,16 +737,27 @@ export default {
           { top: ${this.$refs[target.name][0].offsetTop + 30}px!important; }`, len + 1)
     },
     restartPod (pod) {
-      const ownerQuery = this.envName ? `&envName=${this.envName}` : ''
-      const projectName = `${this.projectName}${ownerQuery}`
-      const podName = pod.name
-      const envName = this.envName
-      const envType = this.isProd ? 'prod' : ''
-      restartPodAPI(podName, projectName, envName, envType).then((res) => {
-        this.fetchServiceData()
+      this.$confirm('确定重启吗?', '重启', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        const ownerQuery = this.envName ? `&envName=${this.envName}` : ''
+        const projectName = `${this.projectName}${ownerQuery}`
+        const podName = pod.name
+        const envName = this.envName
+        const envType = this.isProd ? 'prod' : ''
+        restartPodAPI(podName, projectName, envName, envType).then((res) => {
+          this.fetchServiceData()
+          this.$message({
+            message: '重启成功',
+            type: 'success'
+          })
+        })
+      }).catch(() => {
         this.$message({
-          message: '重启成功',
-          type: 'success'
+          type: 'info',
+          message: '已取消重启'
         })
       })
     },
