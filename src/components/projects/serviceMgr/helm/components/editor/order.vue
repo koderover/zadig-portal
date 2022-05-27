@@ -86,6 +86,13 @@ export default {
         top: 0,
         behavior: 'smooth'
       })
+      const nodeLength = this.nodeData.length
+      if (this.nodeData[nodeLength - 1].children.length) {
+        this.nodeData.push({
+          label: `启动顺序 ${nodeLength}`,
+          children: []
+        })
+      }
     },
     endDrag () {
       this.$refs.orderTreeRef.root.childNodes.forEach(child => {

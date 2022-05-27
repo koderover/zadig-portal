@@ -730,6 +730,15 @@ export default {
         behavior: 'smooth'
       })
       this.showDragContainer = true
+
+      const serviceLength = this.serviceGroup.length
+      if (this.serviceGroup[serviceLength - 1].children.length) {
+        this.serviceGroup.push({
+          label: `启动顺序 ${serviceLength}`,
+          id: serviceLength,
+          children: []
+        })
+      }
     },
     endDrag () {
       this.$refs.arrangeTreeRef.root.childNodes.forEach(child => {
