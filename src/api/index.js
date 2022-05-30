@@ -1369,7 +1369,7 @@ export function createProjectAPI (payload) {
   return http.post('/api/v1/picket/projects', payload)
 }
 
-export function deleteProjectAPI (projectName, is_delete = '') {
+export function deleteProjectAPI (projectName, is_delete = true) {
   return http.delete(`/api/v1/picket/projects/${projectName}?projectName=${projectName}&is_delete=${is_delete}`)
 }
 
@@ -1414,7 +1414,7 @@ export function rollbackConfigmapAPI (envType = '', payload) {
   return http.post(`/api/aslan/environment/configmaps?projectName=${payload.product_name}&envType=${envType}`, payload)
 }
 
-export function deleteProjectEnvAPI (projectName, envName, envType = '', is_delete = '') {
+export function deleteProjectEnvAPI (projectName, envName, envType = '', is_delete = true) {
   return http.delete(`/api/aslan/environment/environments/${envName}?projectName=${projectName}&envType=${envType}&is_delete=${is_delete}`)
 }
 
