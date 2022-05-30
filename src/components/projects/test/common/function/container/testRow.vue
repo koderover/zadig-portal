@@ -33,12 +33,12 @@
       <div class="gray-desc">
         已关联的工作流
         <span
-          v-if="checkPermissionSyncMixin({projectName: projectName, action: 'edit_test'})"
+          v-if="checkPermissionSyncMixin({projectName: testInfo.product_name, action: 'edit_test'})"
           @click="addConnection(testInfo.name, testInfo.product_name)"
           class="add-connection el-icon-circle-plus-outline"
         ></span>
         <el-tooltip v-else effect="dark" content="无权限操作" placement="top">
-          <span class="add-connection el-icon-circle-plus-outline permission-disabled "></span>
+          <span class="add-connection el-icon-circle-plus-outline permission-disabled"></span>
         </el-tooltip>
       </div>
       <div class="value">
@@ -46,28 +46,36 @@
           <div v-for="(workflow,index) in testInfo.workflows" :key="index" class="info-wrapper">
             <router-link class="link" :to="`/v1/projects/detail/${projectName}/pipelines/multi/${workflow.name}`">{{workflow.name}}</router-link>
             <span
-              v-if="checkPermissionSyncMixin({projectName: projectName, action: 'edit_test'})"
+              v-if="checkPermissionSyncMixin({projectName: testInfo.product_name, action: 'edit_test'})"
               @click="deleteConnection(testInfo.name, workflow)"
               class="delete-connection el-icon-remove-outline"
             ></span>
             <el-tooltip v-else effect="dark" content="无权限操作" placement="top">
-              <span class="delete-connection el-icon-remove-outline permission-disabled "></span>
+              <span class="delete-connection el-icon-remove-outline permission-disabled"></span>
             </el-tooltip>
           </div>
         </div>
       </div>
     </section>
-    <section class="operations">
+    <section v-if="projectName" class="operations">
       <el-button
         type="primary"
-        v-hasPermi="{projectName: projectName, action: 'run_test',isBtn: true}"
+        v-if="checkPermissionSyncMixin({projectName: testInfo.product_name, action: 'run_test',isBtn: true})"
         class="button-exec"
         @click="runTests(testInfo.name, testInfo.product_name)"
       >
         <span class="iconfont iconzhixing">&nbsp;执行</span>
       </el-button>
+      <el-tooltip v-else effect="dark" content="无权限操作" placement="top">
+        <el-button
+          type="primary"
+          class="button-exec permission-disabled"
+        >
+          <span class="iconfont iconzhixing">&nbsp;执行</span>
+        </el-button>
+      </el-tooltip>
       <router-link
-        v-if="checkPermissionSyncMixin({projectName: projectName, action: 'edit_test'})"
+        v-if="checkPermissionSyncMixin({projectName: testInfo.product_name, action: 'edit_test'})"
         :to="`/v1/projects/detail/${testInfo.product_name}/test/function/${testInfo.name}`"
       >
         <span class="menu-item iconfont icondeploy"></span>
@@ -80,7 +88,44 @@
           <i class="iconfont iconmorelist more-operation"></i>
         </span>
         <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item v-hasPermi="{projectName: projectName, action: 'delete_test',isBtn:true}" @click.native="removeTest(testInfo)">
+          <el-dropdown-item
+            v-hasPermi="{projectName: testInfo.product_name, action: 'delete_test',isBtn:true}"
+            @click.native="removeTest(testInfo)"
+          >
+            <span>删除</span>
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+    </section>
+    <section v-else class="operations">
+      <el-button
+        type="primary"
+        v-if="checkPermissionSyncMixin({type: 'system', action: 'run_test',isBtn: true})"
+        class="button-exec"
+        @click="runTests(testInfo.name, testInfo.product_name)"
+      >
+        <span class="iconfont iconzhixing">&nbsp;执行</span>
+      </el-button>
+      <el-tooltip v-else effect="dark" content="无权限操作" placement="top">
+        <el-button type="primary" class="button-exec permission-disabled">
+          <span class="iconfont iconzhixing">&nbsp;执行</span>
+        </el-button>
+      </el-tooltip>
+      <router-link
+        v-if="checkPermissionSyncMixin({type: 'system', action: 'edit_test'})"
+        :to="`/v1/projects/detail/${testInfo.product_name}/test/function/${testInfo.name}`"
+      >
+        <span class="menu-item iconfont icondeploy"></span>
+      </router-link>
+      <el-tooltip v-else effect="dark" content="无权限操作" placement="top">
+        <span class="permission-disabled menu-item iconfont icondeploy"></span>
+      </el-tooltip>
+      <el-dropdown>
+        <span class="el-dropdown-link">
+          <i class="iconfont iconmorelist more-operation"></i>
+        </span>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item v-hasPermi="{type: 'system', action: 'delete_test',isBtn:true}" @click.native="removeTest(testInfo)">
             <span>删除</span>
           </el-dropdown-item>
         </el-dropdown-menu>
