@@ -65,7 +65,7 @@
                   :prop="'repos.' + repoIndex + '.repo_owner'"
                   :rules="{required: true, message: '组织名/用户名不能为空', trigger: ['blur', 'change']}"
                 >
-                  <el-input v-if="repo.type === 'other' || repo.source==='other'"  v-model.trim="target.repos[repoIndex]['repo_owner']" placeholder="请输入" size="small"></el-input>
+                  <el-input v-if="repo.source==='other'"  v-model.trim="target.repos[repoIndex]['repo_owner']" placeholder="请输入" size="small"></el-input>
                   <el-select
                     v-else
                     @change="getRepoNameById(targetIndex,repoIndex,target.repos[repoIndex].codehost_id,target.repos[repoIndex]['repo_owner'])"
@@ -96,7 +96,7 @@
                   :prop="'repos.' + repoIndex + '.repo_name'"
                   :rules="{required: true, message: '名称不能为空', trigger: ['blur', 'change']}"
                 >
-                  <el-input v-if="repo.type === 'other' || repo.source==='other'"  v-model.trim="target.repos[repoIndex]['repo_name']" placeholder="请输入" size="small"></el-input>
+                  <el-input v-if="repo.source==='other'"  v-model.trim="target.repos[repoIndex]['repo_name']" placeholder="请输入" size="small"></el-input>
                   <el-select
                     v-else
                     @change="getBranchInfoById(targetIndex,repoIndex,target.repos[repoIndex].codehost_id,target.repos[repoIndex].repo_owner,target.repos[repoIndex].repo_name,'',repo)"
@@ -127,7 +127,7 @@
                   :prop="'repos.' + repoIndex + '.branch'"
                   :rules="{required: true, message: '分支不能为空', trigger: ['blur', 'change']}"
                 >
-                  <el-input v-if="repo.type === 'other' || repo.source==='other'"  v-model.trim="target.repos[repoIndex]['branch']" placeholder="请输入" size="small"></el-input>
+                  <el-input v-if="repo.source==='other'"  v-model.trim="target.repos[repoIndex]['branch']" placeholder="请输入" size="small"></el-input>
                   <el-select
                     v-else
                     v-model.trim="target.repos[repoIndex].branch"
@@ -527,9 +527,6 @@ export default {
         namespace = repoItem.namespace
         repo.repo_namespace = namespace
       }
-      if (repo.type === 'other') {
-        repo.repo_namespace = repo_owner
-      }
       if (repo_owner && repo_name) {
         this.codeInfo[targetIndex][repoIndex].branches = []
         this.setLoadingState(targetIndex, repoIndex, 'branch', true)
@@ -567,7 +564,7 @@ export default {
       const res = this.allCodeHosts.find(item => {
         return item.id === id
       })
-      row.type = res.type
+      row.source = res.type
       row.auth_type = res.auth_type
       if (!key) {
         if (this.codeInfo[targetIndex][repoIndex]) {
@@ -718,6 +715,22 @@ export default {
     })
     if (!this.isCreate) {
       this.getInitRepoInfo(this.targets)
+    }
+  },
+  watch: {
+    targets: {
+      handler (new_val) {
+        if (new_val) {
+          new_val.forEach(item => {
+            item.repos.forEach(repo => {
+              if (repo.source === 'other') {
+                repo.repo_namespace = repo.repo_owner
+              }
+            })
+          })
+        }
+      },
+      deep: true
     }
   }
 }

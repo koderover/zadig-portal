@@ -71,7 +71,6 @@
 </template>
 
 <script type="text/javascript">
-import bus from '@utils/eventBus'
 
 export default {
   name: 'NotifyItem',

@@ -86,6 +86,7 @@ export default {
     }, // The build name will be available when editing the build
     isEdit: Boolean,
     followUpFn: Function,
+    handlerSubmit: Function,
     saveDisabled: {
       default: false,
       type: Boolean
@@ -162,6 +163,7 @@ export default {
                 type: 'success',
                 message: this.isEdit ? '保存构建成功' : '新建构建成功'
               })
+              this.handlerSubmit()
             })
             .catch(() => {
               this.saveLoading = false

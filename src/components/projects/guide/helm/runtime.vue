@@ -174,8 +174,10 @@ export default {
           registry_id: info.infos.registry_id || this.defaultInfo.registry_id,
           chartValues: [],
           defaultValues: envInfo[info.initName] || '',
-          namespace: `${projectName}-env-${info.envName}`
+          namespace: `${projectName}-env-${info.envName}`,
+          valuesData: envInfo.valuesData
         }
+        payloadObj[info.initName].valuesData.autoSync = payloadObj[info.initName].valuesData.gitRepoConfig.autoSync
       })
 
       chartInfo.forEach(chart => {

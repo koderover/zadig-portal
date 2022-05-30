@@ -74,6 +74,7 @@ export default {
     },
     handlerSubmit () {
       this.build.showModal = false
+      this.getServiceModules({ label: this.build.serviceName })
     },
     openBuild (data, buildName) {
       if (buildName) {
