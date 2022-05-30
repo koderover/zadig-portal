@@ -13,7 +13,7 @@
           type="primary"
         >{{ compBind.isEdit ? '确认修改' : '立即新建' }}</el-button>
         <el-button v-if="showSaveToTemplate"
-          v-hasPermi="{type: 'system', action: compBind.isEdit?'edit_template':'create_template',isBtn:true }"
+          v-hasPermi="{type: 'system', actions: ['edit_template','create_template'],operator:'or',isBtn:true }"
           @click="$refs.buildRef.saveBuildConfigToTemplate()"
           @updateBtnLoading="saveLoading = $event"
           :loading="saveLoading"
