@@ -32,3 +32,9 @@ export default {
   }
 }
 </script>
+<style lang="less" scoped>
+.host {
+  height: 100%;
+  overflow: auto;
+}
+</style>
