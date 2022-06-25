@@ -17,7 +17,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="分发方式">
-          <el-select v-model="distributeStageDetail.methods" @change="changeReleaseMethod" multiple size="small">
+          <el-select v-model="distributeStageDetail.methods" @change="changeReleaseMethod"  @remove-tag="removeReleaseMethod" multiple size="small">
             <el-option label="镜像分发" value="image"></el-option>
             <el-option label="对象存储分发" value="object"></el-option>
           </el-select>
@@ -231,7 +231,6 @@ export default {
           errors.push('image')
         }
       }
-      console.log(errors)
       if (errors.length === 0) {
         bus.$emit('receive-tab-check:distribute', true)
         this.$emit('saveDistributeDeploy', this.distributeStageDetail)
@@ -261,6 +260,14 @@ export default {
             repo_id: ''
           }
         ])
+      }
+    },
+    removeReleaseMethod (val) {
+      if (val === 'object') {
+        this.$set(this.distributeStageDetail, 's3_storage_id', '')
+      }
+      if (val === 'image') {
+        this.$set(this.distributeStageDetail, 'releases', [])
       }
     }
   },
