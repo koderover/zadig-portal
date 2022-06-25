@@ -380,21 +380,19 @@
 
           <el-table-column label="分发" min-width="250px">
             <template slot-scope="scope">
-              <span :class="colorTranslation(scope.row.release_imageSubTask.distribute_info[0].distribute_status, 'pipeline', 'task')">{{ myTranslate(scope.row.release_imageSubTask.distribute_info[0].distribute_status) }}</span>
-              <!-- {{ makePrettyElapsedTime(scope.row) }}
-              <el-tooltip v-if="calcElapsedTimeNum(scope.row)<0" content="本地系统时间和服务端可能存在不一致，请同步。" placement="top">
-                <i class="el-icon-warning" style="color: red;"></i>
-              </el-tooltip> -->
+              <template  v-if="scope.row.release_imageSubTask">
+                <span :class="colorTranslation(scope.row.release_imageSubTask.distribute_info[0].distribute_status, 'pipeline', 'task')">{{'镜像：' + myTranslate(scope.row.release_imageSubTask.distribute_info[0].distribute_status) }}</span>
+              </template>
+              <template v-if="scope.row.distribute2kodoSubTask">
+                <span :class="colorTranslation(scope.row.distribute2kodoSubTask.status, 'pipeline', 'task')">{{ '对象存储：' + myTranslate(scope.row.distribute2kodoSubTask.status) }}</span>
+              </template>
             </template>
           </el-table-column>
 
           <el-table-column label="部署" min-width="250px">
             <template slot-scope="scope">
-              <span v-if="checkDistributeDeploy(scope.row.release_imageSubTask.distribute_info)" :class="colorTranslation(scope.row.release_imageSubTask.distribute_info[0].deploy_status, 'pipeline', 'task')">{{ myTranslate(scope.row.release_imageSubTask.distribute_info[0].deploy_status) }}</span>
-              <!-- {{ makePrettyElapsedTime(scope.row) }}
-              <el-tooltip v-if="calcElapsedTimeNum(scope.row)<0" content="本地系统时间和服务端可能存在不一致，请同步。" placement="top">
-                <i class="el-icon-warning" style="color: red;"></i>
-              </el-tooltip> -->
+              <span v-if="scope.row.release_imageSubTask && checkDistributeDeploy(scope.row.release_imageSubTask.distribute_info)" :class="colorTranslation(scope.row.release_imageSubTask.distribute_info[0].deploy_status, 'pipeline', 'task')">{{ myTranslate(scope.row.release_imageSubTask.distribute_info[0].deploy_status) }}</span>
+              <span v-else>N/A</span>
             </template>
           </el-table-column>
         </el-table>

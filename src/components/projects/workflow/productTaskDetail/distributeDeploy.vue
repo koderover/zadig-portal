@@ -1,6 +1,6 @@
 <template>
   <div class="task-detail-distribute">
-    <el-card class="box-card task-process" :body-style="{ margin: '15px 0 0 0' }">
+    <el-card  v-if="distributeDeploy.release_imageSubTask" class="box-card task-process" :body-style="{ margin: '15px 0 0 0' }">
       <div class="error-wrapper">
         <el-alert
           v-if="distributeDeploy.release_imageSubTask.error"
@@ -207,18 +207,6 @@ export default {
   data () {
     return {}
   },
-  methods: {
-    // serviceUrl (deploy) {
-    //   const path = `/v1/projects/detail/${distributeDeploy.product_name}/envs/detail/${distributeDeploy.service_name}`
-    //   const query = {
-    //     envName: distributeDeploy.env_name,
-    //     projectName: distributeDeploy.product_name,
-    //     namespace: distributeDeploy.namespace,
-    //     clusterId: distributeDeploy.cluster_id ? distributeDeploy.cluster_id : ''
-    //   }
-    //   return path + '?' + qs.stringify(query)
-    // }
-  },
   props: {
     distributeDeploy: {
       type: Object,
@@ -227,11 +215,15 @@ export default {
   },
   computed: {
     deployInfo () {
-      return this.distributeDeploy.release_imageSubTask.distribute_info.filter(
-        item => {
-          return item.deploy_enabled
-        }
-      )
+      if (this.distributeDeploy.release_imageSubTask) {
+        return this.distributeDeploy.release_imageSubTask.distribute_info.filter(
+          item => {
+            return item.deploy_enabled
+          }
+        )
+      } else {
+        return []
+      }
     }
   }
 }
