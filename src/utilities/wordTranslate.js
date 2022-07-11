@@ -64,8 +64,8 @@ export function wordTranslate (word, category, subitem = '') {
     setting: {
       cluster: {
         pending: '等待接入',
-        normal: '正常',
-        abnormal: '异常',
+        normal: '可访问', // 正常
+        abnormal: '不可访问', // 异常
         disconnected: '主动断开'
       }
     },

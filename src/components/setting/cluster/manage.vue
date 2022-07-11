@@ -71,6 +71,12 @@
         </slot>
       </el-alert>
       <el-form ref="cluster" :rules="rules" label-width="150px" label-position="left" :model="cluster">
+        <el-form-item label="连接方式" prop="type">
+          <el-select v-model="cluster.type" style="width: 100%;" size="small" placeholder="请选择连接方式" :disabled="isEdit">
+            <el-option value="agent" label="代理连接"></el-option>
+            <el-option value="kubeconfig" label="直接连接"></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="名称" prop="name">
           <el-input size="small" v-model="cluster.name" placeholder="请输入集群名称"></el-input>
         </el-form-item>
@@ -103,6 +109,11 @@
             <el-radio :label="true">是</el-radio>
             <el-radio :label="false">否</el-radio>
           </el-radio-group>
+        </el-form-item>
+        <el-form-item label="KubeConfig" prop="config" v-if="cluster.type === 'kubeconfig'" :show-message="false">
+          <Resize :resize="'vertical'" :height="'100px'" @sizeChange="$refs.codemirror.refresh()">
+            <Codemirror ref="codemirror" v-model="cluster.config" placeholder="请输入目标集群 KubeConfig"></Codemirror>
+          </Resize>
         </el-form-item>
         <el-button type="text" @click="expandAdvanced = !expandAdvanced">
           高级配置
@@ -384,7 +395,7 @@
             <el-table-column label="最近连接时间">
               <template slot-scope="{ row }">
                 <span>{{$utils.convertTimestamp(row.last_connection_time)}}</span>
-                <el-tooltip v-if="row.update_hubagent_error_msg" effect="dark" content="最近一次 agent 更新失败，点击「更新 agent」按钮再次更新" placement="top">
+                <el-tooltip v-if="row.update_hubagent_error_msg" effect="dark" content="最近一次组件更新失败，点击「更新组件」按钮再次更新" placement="top">
                   <i class="el-icon-warning-outline" style="color: red;"></i>
                 </el-tooltip>
               </template>
@@ -397,7 +408,7 @@
 
             <el-table-column width="310" label="操作">
               <template slot-scope="scope">
-                <span v-show="!scope.row.local">
+                <span v-show="!scope.row.local && scope.row.type !== 'kubeconfig'">
                   <el-button
                     v-if="scope.row.status==='pending'||scope.row.status==='abnormal'"
                     @click="clusterOperation('access',scope.row)"
@@ -408,7 +419,9 @@
                 </span>
                 <el-button @click="clusterOperation('edit',scope.row)" type="primary" size="mini" plain>编辑</el-button>
                 <el-button v-show="!scope.row.local" @click="clusterOperation('delete',scope.row)" size="mini" type="danger" plain>删除</el-button>
-                <el-button v-if="!scope.row.local" :disabled="scope.row.status !== 'normal'" @click="updateAgent(scope.row)" size="mini" type="primary" plain>更新 agent</el-button>
+                <el-tooltip effect="dark" content="更新 Zadig 系统管理集群的相关组件" placement="top">
+                  <el-button v-if="!scope.row.local" :disabled="scope.row.type === 'agent' && scope.row.status !== 'normal'" @click="updateAgent(scope.row)" size="mini" type="primary" plain>更新组件</el-button>
+                </el-tooltip>
               </template>
             </el-table-column>
           </el-table>
@@ -419,6 +432,8 @@
 </template>
 
 <script>
+import Resize from '@/components/common/resize'
+import Codemirror from '@/components/projects/common/codemirror.vue'
 import {
   getClusterListAPI,
   createClusterAPI,
@@ -448,11 +463,12 @@ const validateClusterName = (rule, value, callback) => {
 }
 
 const clusterInfo = {
+  type: 'agent',
   name: '',
   provider: null,
   production: false,
   description: '',
-  namespace: '',
+  config: '',
   cache: {
     medium_type: 'object',
     object_properties: {
@@ -539,7 +555,7 @@ export default {
           }
         ],
         provider: [
-          { required: true, message: '请选择提供商', trigger: 'blur' }
+          { required: true, message: '请选择提供商', trigger: ['blur', 'change'] }
         ],
         production: [
           {
@@ -548,6 +564,12 @@ export default {
             message: '请选择是否为生产集群'
           }
         ],
+        config: {
+          type: 'string',
+          required: true,
+          message: '请输入目标集群 KubeConfig',
+          trigger: 'change'
+        },
         'advanced_config.node_labels': {
           required: false,
           message: '请选择标签',
@@ -883,14 +905,14 @@ export default {
       })
     },
     updateAgent (row) {
-      this.$confirm('确定更新 agent 吗?', '更新', {
+      this.$confirm('确定更新组件吗?', '更新', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'
       }).then(() => {
         upgradeHubAgentAPI(row.id).then(res => {
           this.$message({
-            message: '更新 agent 成功',
+            message: '更新组件成功',
             type: 'success'
           })
           this.getCluster()
@@ -906,6 +928,10 @@ export default {
   created () {
     this.getCluster()
     bus.$emit(`set-topbar-title`, { title: '集群管理', breadcrumb: [] })
+  },
+  components: {
+    Resize,
+    Codemirror
   }
 }
 </script>
