@@ -588,8 +588,8 @@ export default {
     },
     getServiceAndBuildList () {
       const projectName = this.projectName
-      const key = this.$utils.rsaEncrypt()
-      getAssociatedBuildsAPI(projectName, true, key).then(res => {
+      // const key = this.$utils.rsaEncrypt()
+      getAssociatedBuildsAPI(projectName, true).then(res => {
         this.serviceAndBuilds = res
         this.originServiceAndBuilds = res
       })

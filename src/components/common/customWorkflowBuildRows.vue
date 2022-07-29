@@ -11,6 +11,7 @@
                   <el-option v-for="(item,index) in scope.row.choice_option" :key="index" :value="item" :label="item">{{item}}</el-option>
                 </el-select>
                 <el-input
+                  class="password"
                   v-else
                   v-model="scope.row.value"
                   size="small"
@@ -210,6 +211,14 @@ export default {
 }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 @import '~@assets/css/common/build-row.less';
+
+.workflow-build-rows {
+  .password {
+    /deep/.el-input__suffix {
+      display: none !important;
+    }
+  }
+}
 </style>

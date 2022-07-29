@@ -92,8 +92,10 @@
           <el-select v-model="scope.row.value" v-if="scope.row.type === 'choice'" size="small" style="width: 220px;">
             <el-option v-for="(item,index) in scope.row.choice_option" :key="index" :value="item" :label="item">{{item}}</el-option>
           </el-select>
+          <el-input v-if="scope.row.type === 'text'" v-model="scope.row.value" size="small" type="textarea" :rows="2" style="width: 220px;"></el-input>
           <el-input
             v-else
+            class="password"
             v-model="scope.row.value"
             size="small"
             :type="scope.row.is_credential ? 'passsword' : ''"
@@ -196,15 +198,17 @@ export default {
     }
   },
   watch: {
-    'job.spec.steps': {
+    'job.spec': {
       handler (value) {
-        value.forEach(item => {
-          if (item.spec.repos && item.spec.repos.length > 0) {
-            item.spec.repos.forEach(build => {
-              this.searchRepoInfo(build, '')
-            })
-          }
-        })
+        if (value.steps) {
+          value.steps.forEach(item => {
+            if (item.spec.repos && item.spec.repos.length > 0) {
+              item.spec.repos.forEach(build => {
+                this.searchRepoInfo(build, '')
+              })
+            }
+          })
+        }
       },
       immediate: true
     }
@@ -212,6 +216,14 @@ export default {
 }
 </script>
 
-<style lang="less">
+<style lang="less" scoped>
 @import '~@assets/css/common/build-row.less';
+
+.workflow-build-rows {
+  .password {
+    /deep/.el-input__suffix {
+      display: none !important;
+    }
+  }
+}
 </style>

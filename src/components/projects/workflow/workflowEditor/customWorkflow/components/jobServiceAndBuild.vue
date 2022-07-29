@@ -35,6 +35,7 @@
                 <el-option v-for="option in scope.row.choice_option" :key="option" :label="option" :value="option">{{option}}</el-option>
               </el-select>
               <el-input
+                class="password"
                 v-model="scope.row.value"
                 :type="scope.row.is_credential ? 'passsword' : ''"
                 show-password
@@ -113,7 +114,7 @@ export default {
       if (res) {
         res.key_vals.forEach(item => {
           if (item.is_credential) {
-            item.value = this.$utils.aesDecrypt(item.value)
+            // item.value = this.$utils.aesDecrypt(item.value)
           }
         })
       }
@@ -142,6 +143,12 @@ export default {
 
   .title {
     font-weight: 500;
+  }
+
+  .password {
+    /deep/.el-input__suffix {
+      display: none !important;
+    }
   }
 }
 </style>

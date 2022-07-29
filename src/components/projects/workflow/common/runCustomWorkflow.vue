@@ -10,6 +10,10 @@
             :name="`${stageIndex}${jobIndex}`"
             class="mg-l8"
           >
+            <template slot="title">
+              <el-checkbox v-model="job.checked" ></el-checkbox>
+              <span class="mg-l8">{{job.name}}</span>
+            </template>
             <div v-if="job.type === 'zadig-build'">
               <el-form-item label="服务组件">
                 <el-select
@@ -204,17 +208,18 @@ export default {
       }
     },
     getWorkflowPresetInfo (workflowName) {
-      const key = this.$utils.rsaEncrypt()
-      getCustomWorkfloweTaskPresetAPI(workflowName, this.projectName, key).then(
+      // const key = this.$utils.rsaEncrypt()
+      getCustomWorkfloweTaskPresetAPI(workflowName, this.projectName).then(
         res => {
           res.stages.forEach(stage => {
             stage.jobs.forEach(job => {
+              job.checked = true
               if (job.spec && job.spec.service_and_builds) {
                 job.spec.service_and_builds.forEach(service => {
                   service.key_vals.forEach(key => {
-                    if (key.is_credential) {
-                      key.value = this.$utils.aesDecrypt(key.value)
-                    }
+                    // if (key.is_credential) {
+                    //   key.value = this.$utils.aesDecrypt(key.value)
+                    // }
                   })
                 })
               }
@@ -347,9 +352,19 @@ export default {
       // 数据处理
       const payload = cloneDeep(this.payload)
       payload.stages.forEach(stage => {
+        const tmp = []
+        stage.jobs.forEach(job => {
+          if (job.checked) {
+            tmp.push(job)
+          }
+        })
+        stage.jobs = tmp
+      })
+      payload.stages.forEach(stage => {
         stage.jobs.forEach(job => {
           job.spec.service_and_builds = job.pickedTargets
           delete job.pickedTargets
+          delete job.checked
           if (
             job.spec.service_and_images &&
             job.spec.service_and_images.length > 0
